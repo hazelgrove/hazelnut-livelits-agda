@@ -9,10 +9,16 @@ module core where
     ⦇⦈    : htyp
     _==>_ : htyp → htyp → htyp
 
+  data typc : Set where
+    b     : typc
+    ⦇⦈    : typc
+    _·==>_ : typc → typc → typc --todo this is perhaps badly named
+    cell  : typc
+
   -- arrow type constructors bind very tightly
   infixr 25  _==>_
 
-  -- external expressions
+  -- middle layer expressions
   data hexp : Set where
     c       : hexp
     _·:_    : hexp → htyp → hexp
@@ -22,6 +28,41 @@ module core where
     ⦇⦈[_]   : Nat → hexp
     ⦇⌜_⌟⦈[_]  : hexp → Nat → hexp
     _∘_     : hexp → hexp → hexp
+
+  data hexpc : Set where
+    c       : hexpc
+    _·:_    : hexpc → typc → hexpc
+    X       : Nat → hexpc
+    ·λ      : Nat → hexpc → hexpc
+    ·λ_[_]_ : Nat → typc → hexpc → hexpc
+    ⦇⦈[_]   : Nat → hexpc
+    ⦇⌜_⌟⦈[_]  : hexpc → Nat → hexpc
+    _∘_     : hexpc → hexpc → hexpc
+    Cell : Nat → hexpc
+
+  -- todo: better name for π?
+  record π : Set where
+    field
+      expand : hexpc
+      model-type : typc
+      expansion-type : htyp
+
+  -- new outermost layer: a langauge exactly like hexp but also with palettes
+  data pexp : Set where
+    c       : pexp
+    _·:_    : pexp → htyp → pexp
+    X       : Nat → pexp
+    ·λ      : Nat → pexp → pexp
+    ·λ_[_]_ : Nat → htyp → pexp → pexp
+    ⦇⦈[_]   : Nat → pexp
+    ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
+    _∘_     : pexp → pexp → pexp
+    -- new forms below
+    let-pal_be_·in_ : Nat → π → pexp → pexp
+    ap-pal : Nat → hexpc → (htyp × pexp) ctx → pexp
+
+
+  -- todo : rename everything.
 
   -- the type of type contexts, i.e. Γs in the judegments below
   tctx : Set
@@ -590,3 +631,6 @@ module core where
                            → binders-unique (d ⟨ τ1 ⇒ τ2 ⟩)
       BUFailedCast : ∀{d τ1 τ2} → binders-unique d
                                  → binders-unique (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+
+  --palette expansion
+--  data _,_⊢_~~>_:_
