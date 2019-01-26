@@ -632,5 +632,21 @@ module core where
       BUFailedCast : ∀{d τ1 τ2} → binders-unique d
                                  → binders-unique (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
 
-  --palette expansion
---  data _,_⊢_~~>_:_
+  -- palette expansion -- todo, should this be called elaboration?
+  data _,_⊢_~~>_::_ : (Φ : π ctx) →
+                      (Γ : tctx) →
+                      (P : pexp) →
+                      (d : hexp) →
+                      (τ : htyp) →
+                      Set
+    where
+      PEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c :: b
+      PEAsc   : ∀{Φ Γ p d τ} →
+                         Φ , Γ ⊢ p ~~> d :: τ →
+                         Φ , Γ ⊢ (p ·: τ) ~~> d ·: τ :: τ
+      PEVar   : ∀{Φ Γ x τ} →
+                         (x , τ) ∈ Γ →
+                         Φ , Γ ⊢ (X x) ~~> (X x) :: τ
+      PELam1  : ∀{Φ Γ x p d τ} →
+                         Φ , Γ ,, (x , {!!}) ⊢ p ~~> d :: τ →
+                         Φ , Γ ⊢ (·λ x p) ~~> (·λ x d) :: ({!!} ==> τ)
