@@ -9,12 +9,6 @@ module core where
     ⦇⦈    : htyp
     _==>_ : htyp → htyp → htyp
 
-  data typc : Set where
-    b     : typc
-    ⦇⦈    : typc
-    _·==>_ : typc → typc → typc --todo this is perhaps badly named
-    cell  : typc
-
   -- arrow type constructors bind very tightly
   infixr 25  _==>_
 
@@ -29,22 +23,10 @@ module core where
     ⦇⌜_⌟⦈[_]  : hexp → Nat → hexp
     _∘_     : hexp → hexp → hexp
 
-  data hexpc : Set where
-    c       : hexpc
-    _·:_    : hexpc → typc → hexpc
-    X       : Nat → hexpc
-    ·λ      : Nat → hexpc → hexpc
-    ·λ_[_]_ : Nat → typc → hexpc → hexpc
-    ⦇⦈[_]   : Nat → hexpc
-    ⦇⌜_⌟⦈[_]  : hexpc → Nat → hexpc
-    _∘_     : hexpc → hexpc → hexpc
-    Cell : Nat → hexpc
-
-  -- todo: better name for π?
-  record π : Set where
+  record paldef : Set where
     field
-      expand : hexpc
-      model-type : typc
+      expand : hexp
+      model-type : htyp
       expansion-type : htyp
 
   -- new outermost layer: a langauge exactly like hexp but also with palettes
@@ -58,8 +40,8 @@ module core where
     ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
     _∘_     : pexp → pexp → pexp
     -- new forms below
-    let-pal_be_·in_ : Nat → π → pexp → pexp
-    ap-pal : Nat → hexpc → (htyp × pexp) ctx → pexp
+    let-pal_be_·in_ : Nat → paldef → pexp → pexp
+    ap-pal : Nat → hexp → (htyp × pexp) ctx → pexp
 
 
   -- todo : rename everything.
@@ -632,21 +614,70 @@ module core where
       BUFailedCast : ∀{d τ1 τ2} → binders-unique d
                                  → binders-unique (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
 
+  -- big step evaluation for external expressions, via expansion to internal ones
+  _⇓_ : hexp → hexp → Set
+  e1 ⇓ e2 = Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ] Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ](
+       ∅ ⊢ e1 => τ1 ×
+       ∅ ⊢ e2 => τ2 ×
+       ∅ ⊢ e1 ⇒ τ1 ~> d1 ⊣ ∅ ×
+       ∅ ⊢ e2 ⇒ τ2 ~> d2 ⊣ ∅ ×
+       d1 ↦* d2 ×
+       d2 final) -- maybe just boxed val not final?
+
+  -- this is the decoding function, so half the iso. this won't work long term
+  postulate
+    _↑_ : hexp → hexp → Set
+
+-- naming conventions:
+--
+-- pal names are ρ
+-- pexps are p
+-- paldefs are π
+
   -- palette expansion -- todo, should this be called elaboration?
-  data _,_⊢_~~>_::_ : (Φ : π ctx) →
-                      (Γ : tctx) →
-                      (P : pexp) →
-                      (d : hexp) →
-                      (τ : htyp) →
-                      Set
-    where
-      PEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c :: b
-      PEAsc   : ∀{Φ Γ p d τ} →
-                         Φ , Γ ⊢ p ~~> d :: τ →
-                         Φ , Γ ⊢ (p ·: τ) ~~> d ·: τ :: τ
-      PEVar   : ∀{Φ Γ x τ} →
-                         (x , τ) ∈ Γ →
-                         Φ , Γ ⊢ (X x) ~~> (X x) :: τ
-      PELam1  : ∀{Φ Γ x p d τ} →
-                         Φ , Γ ,, (x , {!!}) ⊢ p ~~> d :: τ →
-                         Φ , Γ ⊢ (·λ x p) ~~> (·λ x d) :: ({!!} ==> τ)
+  mutual
+    data _,_⊢_~~>_⇒_ : (Φ : paldef ctx) →
+                       (Γ : tctx) →
+                       (P : pexp) →
+                       (d : hexp) →
+                       (τ : htyp) →
+                       Set
+      where
+        SPEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c ⇒ b
+        SPEAsc   : ∀{Φ Γ p d τ} →
+                           Φ , Γ ⊢ p ~~> d ⇒ τ →
+                           Φ , Γ ⊢ (p ·: τ) ~~> d ·: τ ⇒ τ
+        SPEVar   : ∀{Φ Γ x τ} →
+                           (x , τ) ∈ Γ →
+                           Φ , Γ ⊢ (X x) ~~> (X x) ⇒ τ
+        SPELam   : ∀{Φ Γ x d τ1 τ2} {p : pexp} →
+                           x # Γ →
+                           Φ , Γ ,, (x , τ1) ⊢ p ~~> d ⇒ τ2 →
+                           Φ , Γ ⊢ (·λ_[_]_ x τ1 p) ~~> (·λ x [ τ1 ] d) ⇒ (τ1 ==> τ2)
+
+        SPELetPal : ∀{ Γ Φ π ρ p d τ} →
+                           ∅ ⊢ paldef.expand π => ((paldef.model-type π) ==> {!!}) → -- Exp here is probably parametric, with the iso
+                           (Φ ,, (ρ , π)) , Γ ⊢ p ~~> d ⇒ τ →
+                           Φ , Γ ⊢ let-pal ρ be π ·in p ~~> d ⇒ τ
+        SPEApPal  : ∀{ Φ Γ ρ m π enc exp} →
+                         (ρ , π) ∈ Φ  →
+                         ∅ ⊢ m => paldef.model-type π → -- todo: why is this synth?
+                         ((paldef.expand π) ∘ m) ⇓ enc →
+                         enc ↑ exp → -- todo: this is a use of the iso
+                         {!!} ⊢ exp => paldef.expansion-type π →
+                         Φ , Γ ⊢ ap-pal ρ m {!!} ~~> {!!} ⇒ paldef.expansion-type π
+        -- cases left: ap, hole, ne hole, ap-pal
+
+    data _,_⊢_~~>_⇐_ : (Φ : paldef ctx) →
+                       (Γ : tctx) →
+                       (P : pexp) →
+                       (d : hexp) →
+                       (τ : htyp) →
+                       Set
+      where
+        -- non-annot lambda, hole, ne hole
+        -- subsumtion rule
+
+        -- APELam  : ∀{Φ Γ x p d τ} →
+        --                    Φ , Γ ,, (x , {!!}) ⊢ p ~~> d ⇒ τ →
+        --                    Φ , Γ ⊢ (·λ x p) ~~> (·λ x d) ⇒ ({!!} ==> τ)
