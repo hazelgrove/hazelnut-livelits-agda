@@ -23,27 +23,6 @@ module core where
     ⦇⌜_⌟⦈[_]  : hexp → Nat → hexp
     _∘_     : hexp → hexp → hexp
 
-  record paldef : Set where
-    field
-      expand : ihexp
-      model-type : htyp
-      expansion-type : htyp
-
-  -- new outermost layer: a langauge exactly like hexp but also with palettes
-  data pexp : Set where
-    c       : pexp
-    _·:_    : pexp → htyp → pexp
-    X       : Nat → pexp
-    ·λ      : Nat → pexp → pexp
-    ·λ_[_]_ : Nat → htyp → pexp → pexp
-    ⦇⦈[_]   : Nat → pexp
-    ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
-    _∘_     : pexp → pexp → pexp
-    -- new forms below
-    let-pal_be_·in_ : Nat → paldef → pexp → pexp
-    ap-pal : Nat → ihexp → (htyp × pexp) ctx → pexp
-
-
   -- todo : rename everything.
 
   -- the type of type contexts, i.e. Γs in the judegments below
@@ -70,6 +49,26 @@ module core where
   -- convenient notation for chaining together two agreeable casts
   _⟨_⇒_⇒_⟩ : ihexp → htyp → htyp → htyp → ihexp
   d ⟨ t1 ⇒ t2 ⇒ t3 ⟩ = d ⟨ t1 ⇒ t2 ⟩ ⟨ t2 ⇒ t3 ⟩
+
+  record paldef : Set where
+    field
+      expand : ihexp
+      model-type : htyp
+      expansion-type : htyp
+
+  -- new outermost layer: a langauge exactly like hexp but also with palettes
+  data pexp : Set where
+    c       : pexp
+    _·:_    : pexp → htyp → pexp
+    X       : Nat → pexp
+    ·λ      : Nat → pexp → pexp
+    ·λ_[_]_ : Nat → htyp → pexp → pexp
+    ⦇⦈[_]   : Nat → pexp
+    ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
+    _∘_     : pexp → pexp → pexp
+    -- new forms below
+    let-pal_be_·in_ : Nat → paldef → pexp → pexp
+    ap-pal : Nat → ihexp → (htyp × pexp) ctx → pexp
 
   -- type consistency
   data _~_ : (t1 t2 : htyp) → Set where
@@ -614,13 +613,12 @@ module core where
       BUFailedCast : ∀{d τ1 τ2} → binders-unique d
                                  → binders-unique (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
 
-  -- big step evaluation for external expressions, via expansion to internal ones
   _⇓_ : ihexp → ihexp → Set
   d1 ⇓ d2 = (d1 ↦* d2 × d2 final)
 
   -- this is the decoding function, so half the iso. this won't work long term
   postulate
-    _↑_ : hexp → hexp → Set
+    _↑_ : ihexp → hexp → Set
     Exp : htyp
 
 -- naming conventions:
@@ -651,12 +649,12 @@ module core where
                            Φ , Γ ⊢ (·λ_[_]_ x τ1 p) ~~> (·λ x [ τ1 ] e) ⇒ (τ1 ==> τ2)
 
         SPELetPal : ∀{ Γ Φ π ρ p e τ} →
-                           ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp)
+                           ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
                            (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
         SPEApPal  : ∀{ Φ Γ ρ dm π denc exp} →
                          (ρ , π) ∈ Φ  →
-                         ∅ , ∅ ⊢ dm :: (paldef.model-type π)
+                         ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
                          ((paldef.expand π) ∘ dm) ⇓ denc →
                          denc ↑ exp → -- todo: this is a use of the iso
                          {!!} ⊢ exp <= paldef.expansion-type π →
