@@ -647,8 +647,19 @@ module core where
                            x # Γ →
                            Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇒ τ2 →
                            Φ , Γ ⊢ (·λ_[_]_ x τ1 p) ~~> (·λ x [ τ1 ] e) ⇒ (τ1 ==> τ2)
+        SPEAp    : ∀{Φ Γ p1 p2 τ1 τ2 τ e1 e2} →
+                           Φ , Γ ⊢ p1 ~~> e1 ⇒ τ1 →
+                           τ1 ▸arr τ2 ==> τ →
+                           Φ , Γ ⊢ p2 ~~> e2 ⇐ τ2 →
+                           holes-disjoint e1 e2 →
+                           Φ , Γ ⊢ p1 ∘ p2 ~~> e1 ∘ e2 ⇒ τ
+        SPEHole  : ∀{Φ Γ u} → Φ , Γ ⊢ ⦇⦈[ u ] ~~> ⦇⦈[ u ] ⇒ ⦇⦈
+        SPNEHole : ∀{Φ Γ p e τ u} →
+                           hole-name-new e u →
+                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈
 
-        SPELetPal : ∀{ Γ Φ π ρ p e τ} →
+        SPELetPal : ∀{Γ Φ π ρ p e τ} →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
                            (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
@@ -659,7 +670,6 @@ module core where
                          denc ↑ exp → -- todo: this is a use of the iso
                          {!!} ⊢ exp <= paldef.expansion-type π →
                          Φ , Γ ⊢ ap-pal ρ dm {!!} ~~> {!!} ⇒ paldef.expansion-type π
-        -- cases left: ap, hole, ne hole, ap-pal
 
     data _,_⊢_~~>_⇐_ : (Φ : paldef ctx) →
                        (Γ : tctx) →
@@ -668,9 +678,16 @@ module core where
                        (τ : htyp) →
                        Set
       where
-        -- non-annot lambda, hole, ne hole
-        -- subsumtion rule
-
-        -- APELam  : ∀{Φ Γ x p d τ} →
-        --                    Φ , Γ ,, (x , {!!}) ⊢ p ~~> d ⇒ τ →
-        --                    Φ , Γ ⊢ (·λ x p) ~~> (·λ x d) ⇒ ({!!} ==> τ)
+        APELam     : ∀{Φ Γ x e τ τ1 τ2} {p : pexp} →
+                           x # Γ →
+                           τ ▸arr τ1 ==> τ2 →
+                           Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇐ τ2 →
+                           Φ , Γ ⊢ (·λ x p) ~~> (·λ x e) ⇐ τ
+        APESubsume : ∀{Φ Γ p e τ τ'} →
+                           Φ , Γ ⊢ p ~~> e ⇒ τ' →
+                           τ ~ τ' →
+                           Φ , Γ ⊢ p ~~> e ⇐ τ
+        APELetPal  : ∀{Φ Γ π ρ p e τ} →
+                           ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
+                           (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇐ τ →
+                           Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇐ τ
