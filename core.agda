@@ -652,7 +652,7 @@ module core where
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
                            (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
-        SPEApPal  : ∀{ Φ Γ ρ dm π denc exp} →
+        SPEApPal  : ∀{Φ Γ ρ dm π denc exp} →
                          (ρ , π) ∈ Φ  →
                          ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
                          ((paldef.expand π) ∘ dm) ⇓ denc →
@@ -664,7 +664,7 @@ module core where
     data _,_⊢_~~>_⇐_ : (Φ : paldef ctx) →
                        (Γ : tctx) →
                        (P : pexp) →
-                       (d : hexp) →
+                       (e : hexp) →
                        (τ : htyp) →
                        Set
       where
