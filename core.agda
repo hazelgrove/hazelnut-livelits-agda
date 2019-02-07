@@ -638,7 +638,7 @@ module core where
       where
         SPEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c ⇒ b
         SPEAsc   : ∀{Φ Γ p e τ} →
-                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           Φ , Γ ⊢ p ~~> e ⇐ τ →
                            Φ , Γ ⊢ (p ·: τ) ~~> e ·: τ ⇒ τ
         SPEVar   : ∀{Φ Γ x τ} →
                            (x , τ) ∈ Γ →
