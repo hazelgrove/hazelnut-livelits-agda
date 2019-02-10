@@ -68,7 +68,7 @@ module core where
     _∘_     : pexp → pexp → pexp
     -- new forms below
     let-pal_be_·in_ : Nat → paldef → pexp → pexp
-    ap-pal : Nat → ihexp → (htyp × pexp) ctx → pexp
+    ap-pal : Nat → ihexp → (htyp × pexp) → pexp
 
   -- type consistency
   data _~_ : (t1 t2 : htyp) → Set where
@@ -619,6 +619,8 @@ module core where
   -- this is the decoding function, so half the iso. this won't work long term
   postulate
     _↑_ : ihexp → hexp → Set
+    _↓_ : hexp → ihexp → Set -- not used
+    iso : Set
     Exp : htyp
 
 -- naming conventions:
@@ -658,18 +660,18 @@ module core where
                            hole-name-new e u →
                            Φ , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈
-
         SPELetPal : ∀{Γ Φ π ρ p e τ} →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
                            (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
-        SPEApPal  : ∀{Φ Γ ρ dm π denc exp} →
+        SPEApPal  : ∀{Φ Γ ρ dm π denc exp τsplice psplice esplice} →
                          (ρ , π) ∈ Φ  →
                          ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
                          ((paldef.expand π) ∘ dm) ⇓ denc →
-                         denc ↑ exp → -- todo: this is a use of the iso
-                         {!!} ⊢ exp <= paldef.expansion-type π →
-                         Φ , Γ ⊢ ap-pal ρ dm {!!} ~~> {!!} ⇒ paldef.expansion-type π
+                         denc ↑ exp →
+                         Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice →
+                         ∅ ⊢ exp <= τsplice ==> (paldef.expansion-type π) →
+                         Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> exp ∘ esplice ⇒ paldef.expansion-type π
 
     data _,_⊢_~~>_⇐_ : (Φ : paldef ctx) →
                        (Γ : tctx) →
