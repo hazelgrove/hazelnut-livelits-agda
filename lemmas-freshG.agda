@@ -35,3 +35,7 @@ module lemmas-freshG where
 
   lem-fresh-lam2 : ∀{x τ e} → freshh x (·λ x [ τ ] e) → ⊥
   lem-fresh-lam2 (FRHLam2 x₁ f) = x₁ refl
+
+  fresh-freshΓ : {A : Set} {τ : A} → ∀{x e} → freshh x e → freshΓ (■ (x , τ)) e
+  fresh-freshΓ fr x y with lem-dom-eq y
+  fresh-freshΓ fr x y | refl = fr

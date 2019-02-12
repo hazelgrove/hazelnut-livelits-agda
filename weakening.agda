@@ -42,18 +42,15 @@ module weakening where
   -- often-silent on paper assumption that if you collide with a bound
   -- variable you can just α-convert it away and not worry.
 
-
-  -- todo move
+  -- used in both cases below, so factored into a lemma to save repeated code
   lem-reassoc : {A : Set} {Γ Γ' : A ctx} {x : Nat} {τ : A} → (x # Γ') → (Γ ,, (x , τ)) ∪ Γ' == (Γ ∪ Γ') ,, (x , τ)
   lem-reassoc {A} {Γ} {Γ'} {x} {τ} apt with lem-apart-sing-disj apt
   ... | disj = (∪assoc Γ (■ (x , τ)) Γ' disj) ·
                  (ap1 (λ qq → Γ ∪ qq) (∪comm (■ (x , τ)) (Γ') disj) ·
                    ! (∪assoc Γ Γ' (■ (x , τ)) (##-comm disj)))
 
-  -- note that note that separately we've proven disjointness implies
-  -- commutativity of ∪ so this is one transport away from the other
-  -- possible statement of weakening with union. it's possible that only
-  -- one of them needs the disjointness premise due to the asymmetry in defining ∪.
+  -- first we prove a general form of weakening, that you can add any
+  -- context Γ as long as it's fresh with respect to e
   mutual
     weaken-synth-∪ : ∀{e τ Γ Γ'} → freshΓ Γ' e → Γ ⊢ e => τ → (Γ ∪ Γ')  ⊢ e => τ
     weaken-synth-∪ frsh SConst = SConst
@@ -81,17 +78,16 @@ module weakening where
                         (tr (λ qq → qq ⊢ e <= τ2) (lem-reassoc {Γ = Γ} qq)
                                                   (weaken-ana-∪ (freshΓ-lam1 frsh) wt))
 
+  -- it follows from this that if the term is closed, you can weaken with
+  -- any context that's fresh in e
   weaken-synth-closed : ∀{e τ Γ} → freshΓ Γ e → ∅ ⊢ e => τ → Γ ⊢ e => τ
   weaken-synth-closed {e} {τ} {Γ} f wt = tr (λ qq → qq ⊢ e => τ) ∅∪1 (weaken-synth-∪ f wt)
 
   weaken-ana-closed : ∀{e τ Γ} → freshΓ Γ e → ∅ ⊢ e <= τ → Γ ⊢ e <= τ
   weaken-ana-closed {e} {τ} {Γ} f wt = tr (λ qq → qq ⊢ e <= τ) ∅∪1 (weaken-ana-∪ f wt)
 
-  -- todo: classic forms of weakening probably follow from the union version
-  fresh-freshΓ : {A : Set} {τ : A} → ∀{x e} → freshh x e → freshΓ (■ (x , τ)) e
-  fresh-freshΓ fr x y with lem-dom-eq y
-  fresh-freshΓ fr x y | refl = fr
-
+  -- the very structural forms also follow from the union weakening, since
+  -- ,, is defined by ∪
   weaken-synth : ∀{ x Γ e τ τ'} → freshh x e
                                   → Γ ⊢ e => τ
                                   → (Γ ,, (x , τ')) ⊢ e => τ
@@ -101,7 +97,6 @@ module weakening where
                                → Γ ⊢ e <= τ
                                → (Γ ,, (x , τ')) ⊢ e <= τ
   weaken-ana f wt = weaken-ana-∪ (fresh-freshΓ f) wt
-
 
 
   mutual
