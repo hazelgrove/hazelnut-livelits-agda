@@ -528,6 +528,10 @@ module core where
     FRHNEHole : ∀{x u e} → freshh x e → freshh x (⦇⌜ e ⌟⦈[ u ])
     FRHAp : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x (e1 ∘ e2)
 
+  -- with respect to all bindings in a context
+  freshΓ : {A : Set} → (Γ : A ctx) → (e : hexp) → Set
+  freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshh x e
+
   -- x is not used in a binding site in d
   mutual
     data unbound-in-σ : Nat → env → Set where

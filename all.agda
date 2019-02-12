@@ -23,6 +23,7 @@ open import lemmas-consistency
 open import lemmas-ground
 open import lemmas-matching
 open import synth-unicity
+open import lemmas-freshG
 
 open import elaborability
 open import elaboration-generality
