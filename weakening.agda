@@ -63,6 +63,28 @@ module weakening where
                           x₃
                           (exchange-ana {Γ = Γ} (flip neq) (weaken-ana frsh wt))
 
+  -- a context Γ is fresh if it only has bindings for variables that are fresh in e
+  freshΓ : {A : Set} → (Γ : A ctx) → (e : hexp) → Set
+  freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshh x e
+
+  freshΓ-asc : {A : Set} → {Γ : A ctx} → ∀{e τ} → freshΓ Γ (e ·: τ) → freshΓ Γ e
+  freshΓ-asc fr x x₁ with fr x x₁
+  freshΓ-asc fr x x₁ | FRHAsc qq = qq
+
+  mutual
+    weaken-synth-closed : ∀{e τ Γ} → freshΓ Γ e → ∅ ⊢ e => τ → Γ ⊢ e => τ
+    weaken-synth-closed frsh SConst = SConst
+    weaken-synth-closed frsh (SAsc x) = SAsc (weaken-ana-closed (freshΓ-asc frsh) x)
+    weaken-synth-closed frsh (SVar x₁) = abort (somenotnone (! x₁))
+    weaken-synth-closed frsh (SAp x wt x₁ x₂) = SAp x (weaken-synth-closed {!!} wt) x₁ (weaken-ana-closed {!!} x₂)
+    weaken-synth-closed frsh SEHole = SEHole
+    weaken-synth-closed frsh (SNEHole x wt) = SNEHole x (weaken-synth-closed {!!} wt)
+    weaken-synth-closed frsh (SLam x₁ wt) = SLam {!!} {!!}
+
+    weaken-ana-closed : ∀{e τ Γ} → freshΓ Γ e →  ∅ ⊢ e <= τ → Γ ⊢ e <= τ
+    weaken-ana-closed frsh (ASubsume x x₁) = ASubsume (weaken-synth-closed {!!} x) x₁
+    weaken-ana-closed frsh (ALam x₁ x₂ wt) = ALam {!!} x₂ {!!}
+
   mutual
     weaken-subst-Γ : ∀{ x Γ Δ σ Γ' τ} →
                      envfresh x σ →

@@ -302,3 +302,15 @@ module contexts where
   lem-dom-union-apt2 {A} {Δ1} {Δ2} {x} {y} apt xin with Δ1 x
   lem-dom-union-apt2 apt xin | Some x₁ = xin
   lem-dom-union-apt2 apt xin | None = abort (somenotnone (! xin · apt))
+
+  -- the empty context is a left and right unit for ∪
+  ∅∪1 : {A : Set} {Γ : A ctx} → ∅ ∪ Γ == Γ
+  ∅∪1 {A} {Γ} = refl
+
+  ∅∪2 : {A : Set} {Γ : A ctx} → Γ ∪ ∅ == Γ
+  ∅∪2 {A} {Γ} = funext guts
+    where
+      guts : (x : Nat) → (Γ ∪ ∅) x == Γ x
+      guts x with Γ x
+      guts x | Some x₁ = refl
+      guts x | None = refl

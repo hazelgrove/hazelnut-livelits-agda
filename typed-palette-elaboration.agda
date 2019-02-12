@@ -14,8 +14,7 @@ module typed-palette-elaboration where
     typed-palette-elaboration-synth SPEHole = SEHole
     typed-palette-elaboration-synth (SPNEHole x D) = SNEHole x (typed-palette-elaboration-synth D)
     typed-palette-elaboration-synth (SPELetPal x D) = typed-palette-elaboration-synth D
-    typed-palette-elaboration-synth (SPEApPal x x₁ x₂ x₃ x₄ (ASubsume x₅ x₆)) = {!!}
-    typed-palette-elaboration-synth (SPEApPal x x₁ x₂ x₃ x₄ (ALam x₆ x₇ x₅)) = {!!}
+    typed-palette-elaboration-synth (SPEApPal hd x x₁ x₂ x₃ x₄ x₅) = SAp (HDAsc hd) (SAsc {!x₅!}) MAArr (typed-palette-elaboration-ana x₄)
 
     typed-palette-elaboration-ana : ∀{Φ Γ p e τ} →
                                   Φ , Γ ⊢ p ~~> e ⇐ τ →
