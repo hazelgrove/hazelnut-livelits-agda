@@ -52,3 +52,5 @@ open import weakening
 
 open import binders-disjoint-checks
 open import continuity
+
+open import typed-palette-elaboration

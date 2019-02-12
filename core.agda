@@ -670,7 +670,7 @@ module core where
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
         SPEApPal  : ∀{Φ Γ ρ dm π denc exp τsplice psplice esplice} →
                          holes-disjoint exp esplice →
-                         -- {!!} →
+                         freshΓ Γ exp →
                          (ρ , π) ∈ Φ  →
                          ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
                          ((paldef.expand π) ∘ dm) ⇓ denc →
