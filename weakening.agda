@@ -40,50 +40,136 @@ module weakening where
   -- because we don't have implcit α-conversion. this reifies the
   -- often-silent on paper assumption that if you collide with a bound
   -- variable you can just α-convert it away and not worry.
-  mutual
-    weaken-synth : ∀{ x Γ e τ τ'} → freshh x e
-                                  → Γ ⊢ e => τ
-                                  → (Γ ,, (x , τ')) ⊢ e => τ
-    weaken-synth FRHConst SConst = SConst
-    weaken-synth (FRHAsc frsh) (SAsc x₁) = SAsc (weaken-ana frsh x₁)
-    weaken-synth {Γ = Γ} (FRHVar {x = x} x₁) (SVar {x = y} x₂) = SVar (x∈∪l Γ (■(x , _)) y _  x₂)
-    weaken-synth {Γ = Γ} (FRHLam2 x₁ frsh) (SLam x₂ wt) =
-                    SLam (apart-extend1 Γ (flip x₁) x₂)
-                         (exchange-synth {Γ = Γ} (flip x₁) ((weaken-synth frsh wt)))
-    weaken-synth FRHEHole SEHole = SEHole
-    weaken-synth (FRHNEHole frsh) (SNEHole x₁ wt) = SNEHole x₁ (weaken-synth frsh wt)
-    weaken-synth (FRHAp frsh frsh₁) (SAp x₁ wt x₂ x₃) = SAp x₁ (weaken-synth frsh wt) x₂ (weaken-ana frsh₁ x₃)
+  -- mutual
+  --   weaken-synth : ∀{ x Γ e τ τ'} → freshh x e
+  --                                 → Γ ⊢ e => τ
+  --                                 → (Γ ,, (x , τ')) ⊢ e => τ
+  --   weaken-synth FRHConst SConst = SConst
+  --   weaken-synth (FRHAsc frsh) (SAsc x₁) = SAsc (weaken-ana frsh x₁)
+  --   weaken-synth {Γ = Γ} (FRHVar {x = x} x₁) (SVar {x = y} x₂) = SVar (x∈∪l Γ (■(x , _)) y _  x₂)
+  --   weaken-synth {Γ = Γ} (FRHLam2 x₁ frsh) (SLam x₂ wt) =
+  --                   SLam (apart-extend1 Γ (flip x₁) x₂)
+  --                        (exchange-synth {Γ = Γ} (flip x₁) ((weaken-synth frsh wt)))
+  --   weaken-synth FRHEHole SEHole = SEHole
+  --   weaken-synth (FRHNEHole frsh) (SNEHole x₁ wt) = SNEHole x₁ (weaken-synth frsh wt)
+  --   weaken-synth (FRHAp frsh frsh₁) (SAp x₁ wt x₂ x₃) = SAp x₁ (weaken-synth frsh wt) x₂ (weaken-ana frsh₁ x₃)
 
-    weaken-ana : ∀{x Γ e τ τ'} → freshh x e
-                               → Γ ⊢ e <= τ
-                               → (Γ ,, (x , τ')) ⊢ e <= τ
-    weaken-ana frsh (ASubsume x₁ x₂) = ASubsume (weaken-synth frsh x₁) x₂
-    weaken-ana {Γ = Γ} (FRHLam1 neq frsh) (ALam x₂ x₃ wt) =
-                     ALam (apart-extend1 Γ (flip neq) x₂)
-                          x₃
-                          (exchange-ana {Γ = Γ} (flip neq) (weaken-ana frsh wt))
+  --   weaken-ana : ∀{x Γ e τ τ'} → freshh x e
+  --                              → Γ ⊢ e <= τ
+  --                              → (Γ ,, (x , τ')) ⊢ e <= τ
+  --   weaken-ana frsh (ASubsume x₁ x₂) = ASubsume (weaken-synth frsh x₁) x₂
+  --   weaken-ana {Γ = Γ} (FRHLam1 neq frsh) (ALam x₂ x₃ wt) =
+  --                    ALam (apart-extend1 Γ (flip neq) x₂)
+  --                         x₃
+  --                         (exchange-ana {Γ = Γ} (flip neq) (weaken-ana frsh wt))
 
+  -- todo move
   -- a context Γ is fresh if it only has bindings for variables that are fresh in e
   freshΓ : {A : Set} → (Γ : A ctx) → (e : hexp) → Set
   freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshh x e
 
+  -- the def above buries the sort of obvious pattern matching we'd like to
+  -- do on the freshness in the conclusion, so we need lemmas that extract
+  -- it for each constructor
   freshΓ-asc : {A : Set} → {Γ : A ctx} → ∀{e τ} → freshΓ Γ (e ·: τ) → freshΓ Γ e
   freshΓ-asc fr x x₁ with fr x x₁
   freshΓ-asc fr x x₁ | FRHAsc qq = qq
 
-  mutual
-    weaken-synth-closed : ∀{e τ Γ} → freshΓ Γ e → ∅ ⊢ e => τ → Γ ⊢ e => τ
-    weaken-synth-closed frsh SConst = SConst
-    weaken-synth-closed frsh (SAsc x) = SAsc (weaken-ana-closed (freshΓ-asc frsh) x)
-    weaken-synth-closed frsh (SVar x₁) = abort (somenotnone (! x₁))
-    weaken-synth-closed frsh (SAp x wt x₁ x₂) = SAp x (weaken-synth-closed {!!} wt) x₁ (weaken-ana-closed {!!} x₂)
-    weaken-synth-closed frsh SEHole = SEHole
-    weaken-synth-closed frsh (SNEHole x wt) = SNEHole x (weaken-synth-closed {!!} wt)
-    weaken-synth-closed frsh (SLam x₁ wt) = SLam {!!} {!!}
+  freshΓ-ap1 : {A : Set} → {Γ : A ctx} → ∀{e1 e2} → freshΓ Γ (e1 ∘ e2) → freshΓ Γ e1
+  freshΓ-ap1 fr x y with fr x y
+  freshΓ-ap1 fr x y | FRHAp qq qq₁ = qq
 
-    weaken-ana-closed : ∀{e τ Γ} → freshΓ Γ e →  ∅ ⊢ e <= τ → Γ ⊢ e <= τ
-    weaken-ana-closed frsh (ASubsume x x₁) = ASubsume (weaken-synth-closed {!!} x) x₁
-    weaken-ana-closed frsh (ALam x₁ x₂ wt) = ALam {!!} x₂ {!!}
+  freshΓ-ap2 : {A : Set} → {Γ : A ctx} → ∀{e1 e2} → freshΓ Γ (e1 ∘ e2) → freshΓ Γ e2
+  freshΓ-ap2 fr x y with fr x y
+  freshΓ-ap2 fr x y | FRHAp qq qq₁ = qq₁
+
+  freshΓ-nehole : {A : Set} → {Γ : A ctx} → ∀{e u} → freshΓ Γ (⦇⌜ e ⌟⦈[ u ]) → freshΓ Γ e
+  freshΓ-nehole fr x y with fr x y
+  freshΓ-nehole fr x y | FRHNEHole qq = qq
+
+  freshΓ-lam1 : {A : Set} → {Γ : A ctx} → ∀{e x} → freshΓ Γ (·λ x e) → freshΓ Γ e
+  freshΓ-lam1 fr x y with fr x y
+  freshΓ-lam1 fr x y | FRHLam1 x₂ qq = qq
+
+  freshΓ-lam2 : {A : Set} → {Γ : A ctx} → ∀{e τ x} → freshΓ Γ (·λ_[_]_ x τ e) → freshΓ Γ e
+  freshΓ-lam2 fr x y with fr x y
+  freshΓ-lam2 fr x y | FRHLam2 x₂ qq = qq
+
+  lem-fresh-lam1 : ∀{x e} → freshh x (·λ x e) → ⊥
+  lem-fresh-lam1 (FRHLam1 x₁ f) = x₁ refl
+
+  lem-fresh-lam2 : ∀{x τ e} → freshh x (·λ x [ τ ] e) → ⊥
+  lem-fresh-lam2 (FRHLam2 x₁ f) = x₁ refl
+
+  -- todo move
+  lem-reassoc : {A : Set} {Γ Γ' : A ctx} {x : Nat} {τ : A} → (x # Γ') → (Γ ,, (x , τ)) ∪ Γ' == (Γ ∪ Γ') ,, (x , τ)
+  lem-reassoc {A} {Γ} {Γ'} {x} {τ} apt with lem-apart-sing-disj apt
+  ... | disj = (∪assoc Γ (■ (x , τ)) Γ' disj) ·
+                 (ap1 (λ qq → Γ ∪ qq) (∪comm (■ (x , τ)) (Γ') disj) ·
+                   ! (∪assoc Γ Γ' (■ (x , τ)) (##-comm disj)))
+
+  -- note that note that separately we've proven disjointness implies
+  -- commutativity of ∪ so this is one transport away from the other
+  -- possible statement of weakening with union. it's possible that only
+  -- one of them needs the disjointness premise due to the asymmetry in defining ∪.
+  mutual
+    weaken-synth-∪ : ∀{e τ Γ Γ'} → Γ ## Γ' → freshΓ Γ' e → Γ ⊢ e => τ → (Γ ∪ Γ')  ⊢ e => τ
+    weaken-synth-∪ disj frsh SConst = SConst
+    weaken-synth-∪ disj frsh (SAsc x) = SAsc (weaken-ana-∪ disj (freshΓ-asc frsh) x)
+    weaken-synth-∪ {Γ = Γ} {Γ' = Γ'} disj frsh (SVar {x = x} x₁) = SVar (x∈∪l Γ Γ' x _ x₁)
+    weaken-synth-∪ disj frsh (SAp x wt x₁ x₂) = SAp x (weaken-synth-∪ disj (freshΓ-ap1 frsh) wt)
+                                                      x₁
+                                                      (weaken-ana-∪ disj (freshΓ-ap2 frsh) x₂)
+    weaken-synth-∪ disj frsh SEHole = SEHole
+    weaken-synth-∪ disj frsh (SNEHole x wt) = SNEHole x (weaken-synth-∪ disj (freshΓ-nehole frsh) wt)
+    weaken-synth-∪ {Γ = Γ} {Γ' = Γ'} disj frsh (SLam {e = e} {τ2 = τ2} {x = x}  x₁ wt)
+      with ctxindirect Γ' x
+    ... | Inl qq = abort (lem-fresh-lam2 (frsh x qq))
+    ... | Inr qq = SLam (apart-parts Γ Γ' x x₁ qq)
+                             (tr (λ qq → qq ⊢ e => τ2) (lem-reassoc {Γ = Γ} qq)
+                                                       (weaken-synth-∪ (disjoint-parts disj (lem-apart-sing-disj qq)) (freshΓ-lam2 frsh) wt))
+
+    weaken-ana-∪ : ∀{e τ Γ Γ'} → Γ ## Γ' → freshΓ Γ' e →  Γ ⊢ e <= τ → (Γ ∪ Γ') ⊢ e <= τ
+    weaken-ana-∪ disj frsh (ASubsume x x₁) = ASubsume (weaken-synth-∪ disj frsh x) x₁
+    weaken-ana-∪ {Γ = Γ} {Γ' = Γ'} disj frsh (ALam {e = e} {τ2 = τ2} {x = x} x₁ x₂ wt)
+      with ctxindirect Γ' x
+    ... | Inl qq = abort (lem-fresh-lam1 (frsh x qq))
+    ... | Inr qq = ALam (apart-parts Γ Γ' x x₁ qq)
+                        x₂
+                        (tr (λ qq → qq ⊢ e <= τ2) (lem-reassoc {Γ = Γ} qq)
+                                                  (weaken-ana-∪ (disjoint-parts disj (lem-apart-sing-disj qq)) (freshΓ-lam1 frsh) wt))
+
+  weaken-synth-closed : ∀{e τ Γ} → freshΓ Γ e → ∅ ⊢ e => τ → Γ ⊢ e => τ
+  weaken-synth-closed {e} {τ} {Γ} f wt = tr (λ qq → qq ⊢ e => τ) ∅∪1 (weaken-synth-∪ (empty-disj _) f wt)
+
+  weaken-ana-closed : ∀{e τ Γ} → freshΓ Γ e → ∅ ⊢ e <= τ → Γ ⊢ e <= τ
+  weaken-ana-closed {e} {τ} {Γ} f wt = tr (λ qq → qq ⊢ e <= τ) ∅∪1 (weaken-ana-∪ (empty-disj _) f wt)
+
+  -- todo: classic forms of weakening probably follow from the union version
+  mutual
+    fresh-apart-synth : ∀ {e τ x Γ} → Γ ⊢ e => τ → freshh x e → x # Γ
+    fresh-apart-synth SConst FRHConst = {!!}
+    fresh-apart-synth (SAsc x₁) (FRHAsc f) = {!!}
+    fresh-apart-synth (SVar x₂) (FRHVar x₃) = {!!}
+    fresh-apart-synth (SAp x₁ wt x₂ x₃) (FRHAp f f₁) = {!!}
+    fresh-apart-synth SEHole FRHEHole = {!!}
+    fresh-apart-synth (SNEHole x₁ wt) (FRHNEHole f) = {!!}
+    fresh-apart-synth (SLam x₂ wt) (FRHLam2 x₃ f) = {!!}
+
+    fresh-apart-ana : ∀ {e τ x Γ} → Γ ⊢ e <= τ → freshh x e → x # Γ
+    fresh-apart-ana = {!!}
+
+  weaken-synth : ∀{ x Γ e τ τ'} → freshh x e
+                                  → Γ ⊢ e => τ
+                                  → (Γ ,, (x , τ')) ⊢ e => τ
+  weaken-synth f wt = weaken-synth-∪ {!!} {!!} wt
+
+  weaken-ana : ∀{x Γ e τ τ'} → freshh x e
+                               → Γ ⊢ e <= τ
+                               → (Γ ,, (x , τ')) ⊢ e <= τ
+  weaken-ana f wt = weaken-ana-∪ {!!} {!!} wt
+
+
 
   mutual
     weaken-subst-Γ : ∀{ x Γ Δ σ Γ' τ} →
