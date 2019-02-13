@@ -668,16 +668,16 @@ module core where
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
                            (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
-        SPEApPal  : ∀{Φ Γ ρ dm π denc exp τsplice psplice esplice} →
-                         holes-disjoint exp esplice →
-                         freshΓ Γ exp →
+        SPEApPal  : ∀{Φ Γ ρ dm π denc eexpanded τsplice psplice esplice} →
+                         holes-disjoint eexpanded esplice →
+                         freshΓ Γ eexpanded →
                          (ρ , π) ∈ Φ  →
                          ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
                          ((paldef.expand π) ∘ dm) ⇓ denc →
-                         denc ↑ exp →
+                         denc ↑ eexpanded →
                          Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice →
-                         ∅ ⊢ exp <= τsplice ==> (paldef.expansion-type π) →
-                         Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((exp ·: τsplice ==> paldef.expansion-type π) ∘ esplice) ⇒ paldef.expansion-type π
+                         ∅ ⊢ eexpanded <= τsplice ==> (paldef.expansion-type π) →
+                         Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> paldef.expansion-type π) ∘ esplice) ⇒ paldef.expansion-type π
 
     data _,_⊢_~~>_⇐_ : (Φ : paldef ctx) →
                        (Γ : tctx) →
