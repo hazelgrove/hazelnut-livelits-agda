@@ -8,6 +8,7 @@ module core where
     b     : htyp
     ⦇⦈    : htyp
     _==>_ : htyp → htyp → htyp
+    _⊗_   : htyp → htyp → htyp
 
   -- arrow type constructors bind very tightly
   infixr 25  _==>_
@@ -22,6 +23,9 @@ module core where
     ⦇⦈[_]   : Nat → hexp
     ⦇⌜_⌟⦈[_]  : hexp → Nat → hexp
     _∘_     : hexp → hexp → hexp
+    ⟨_,_⟩   : hexp → hexp → hexp
+    fst     : hexp → hexp
+    snd     : hexp → hexp
 
   -- todo : rename everything.
 
@@ -45,6 +49,10 @@ module core where
       _∘_       : ihexp → ihexp → ihexp
       _⟨_⇒_⟩    : ihexp → htyp → htyp → ihexp
       _⟨_⇒⦇⦈⇏_⟩ : ihexp → htyp → htyp → ihexp
+      ⟨_,_⟩   : ihexp → ihexp → ihexp
+      fst     : ihexp → ihexp
+      snd     : ihexp → ihexp
+
 
   -- convenient notation for chaining together two agreeable casts
   _⟨_⇒_⇒_⟩ : ihexp → htyp → htyp → htyp → ihexp
@@ -66,6 +74,9 @@ module core where
     ⦇⦈[_]   : Nat → pexp
     ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
     _∘_     : pexp → pexp → pexp
+    ⟨_,_⟩   : pexp → pexp → pexp
+    fst     : pexp → pexp
+    snd     : pexp → pexp
     -- new forms below
     let-pal_be_·in_ : Nat → paldef → pexp → pexp
     ap-pal : Nat → ihexp → (htyp × pexp) → pexp
@@ -329,6 +340,9 @@ module core where
   [ d / y ] (d1 ∘ d2) = ([ d / y ] d1) ∘ ([ d / y ] d2)
   [ d / y ] (d' ⟨ τ1 ⇒ τ2 ⟩ ) = ([ d / y ] d') ⟨ τ1 ⇒ τ2 ⟩
   [ d / y ] (d' ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ ) = ([ d / y ] d') ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩
+  [ d / y ] ⟨ d1 , d2 ⟩ = ?
+  [ d / y ] (fst d1) = ?
+  [ d / y ] (snd d1) = ?
 
   -- applying an environment to an expression
   apply-env : env → ihexp → ihexp
