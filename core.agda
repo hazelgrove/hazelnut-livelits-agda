@@ -560,6 +560,25 @@ module core where
       UBCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒ τ2 ⟩)
       UBFailedCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
 
+  mutual
+    natneqb' : (m n : Nat) → bool
+    natneqb' m n
+      with natEQ m n
+    ...  | Inl _ = false
+    ...  | Inr _ = true
+
+    remove-from-free' : Nat → hexp → List Nat
+    remove-from-free' x e = filter (natneqb' x) (free-vars e)
+
+    free-vars : (e : hexp) → List Nat
+    free-vars c = []
+    free-vars (e ·: τ) = free-vars e
+    free-vars (X x) = x :: []
+    free-vars (·λ x e) = remove-from-free' x e
+    free-vars (·λ x [ τ ] e) = remove-from-free' x e
+    free-vars ⦇⦈[ u ] = []
+    free-vars ⦇⌜ e ⌟⦈[ u ] = free-vars e
+    free-vars (e₁ ∘ e₂) = free-vars e₁ ++ free-vars e₂
 
   mutual
     data binders-disjoint-σ : env → ihexp → Set where
