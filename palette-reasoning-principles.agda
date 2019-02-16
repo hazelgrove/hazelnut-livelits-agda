@@ -42,33 +42,52 @@ module palette-reasoning-principles where
 
   -- TODO assign betters name and move to a better place
   mutual
-    -- singleton-with-EQ : ∀{x₁ x₂ τ} → ((■ (x₁ , τ)) x₂ | natEQ x₁ x₂) ≠ None
-    -- singleton-with-EQ = ?
+    rff-lemma-ap : ∀{x} (e₁ e₂ : hexp) → remove-from-free' x e₁ == [] → remove-from-free' x e₂ == [] → remove-from-free' x (e₁ ∘ e₂) == []
+    rff-lemma-ap {x} e₁ e₂ h₀ h₁ with free-vars e₁ | free-vars e₂
+    rff-lemma-ap {x} e₁ e₂ h₁ h₂    | fv-e₁        | fv-e₂        =
+      ! (filter-append-comm (natneqb' x) fv-e₁ fv-e₂) ·
+      tr (λ y → y ++ filter (natneqb' x) fv-e₂ == []) (! h₁) (tr (λ y → [] ++ y == []) (! h₂) refl)
 
-    fv-lemma-rff-ap : ∀{x e₁ e₂} → remove-from-free' x e₁ == [] → remove-from-free' x e₂ == [] → remove-from-free' x (e₁ ∘ e₂) == []
-    fv-lemma-rff-ap x₁ x₂ = {!!}
+    rff-lemma-ana : ∀{x e τ₁ τ₂} → (■ (x , τ₁)) ⊢ e <= τ₂ → remove-from-free' x e == []
+    rff-lemma-ana (ASubsume x₁ x₂) = rff-lemma-syn x₁
+    rff-lemma-ana (ALam x₂ x₃ x₁) = {!!}
 
-    fv-lemma-rff : ∀{x e τ₁ τ₂} → (■ (x , τ₁)) ⊢ e => τ₂ → remove-from-free' x e == []
-    fv-lemma-rff SConst = refl
-    fv-lemma-rff (SAsc (ASubsume x₁ x₂)) = fv-lemma-rff x₁
-    fv-lemma-rff (SAsc (ALam x₂ x₃ x₁)) = {!!}
-    fv-lemma-rff (SVar x₂) = {!!}
-    fv-lemma-rff (SAp x₁ x₂ x₃ (ASubsume x₄ x₅)) = {!!} -- fv-lemma-rff-ap (fv-lemma-rff x₄) (fv-lemma-rff x₂)
-    fv-lemma-rff (SAp x₁ x₂ x₃ (ALam x₅ x₆ x₄)) = {!!}
-    fv-lemma-rff SEHole = refl
-    fv-lemma-rff (SNEHole x₁ x₂) = fv-lemma-rff x₂
-    fv-lemma-rff (SLam x₂ x₁) = {!!}
+    rff-lemma-syn : ∀{x e τ₁ τ₂} → (■ (x , τ₁)) ⊢ e => τ₂ → remove-from-free' x e == []
+    rff-lemma-syn SConst = refl
+    rff-lemma-syn (SAsc x) = rff-lemma-ana x
+    rff-lemma-syn {x} (SVar {x = x'} _) with natEQ x x'
+    rff-lemma-syn {x} (SVar {x = x'} _)    | Inl refl   = refl
+    rff-lemma-syn {x} (SVar {x = x'} ())   | Inr f
+    rff-lemma-syn (SAp {e1 = e₁} {e2 = e₂} x₁ x₂ x₃ x₄) = rff-lemma-ap e₁ e₂ (rff-lemma-syn x₂) (rff-lemma-ana x₄)
+    rff-lemma-syn SEHole = refl
+    rff-lemma-syn (SNEHole x₁ x₂) = rff-lemma-syn x₂
+    rff-lemma-syn (SLam x₂ x₁) = {!!}
+
+    fv-lemma-ap : (e₁ e₂ : hexp) → free-vars e₁ == [] → free-vars e₂ == [] → (free-vars e₁ ++ free-vars e₂) == []
+    fv-lemma-ap e₁ e₂ x x₁ with free-vars e₁ | free-vars e₂
+    fv-lemma-ap e₁ e₂ x x₁    | []           | []           = refl
+    fv-lemma-ap e₁ e₂ () x₁   | _ :: _       | []
+    fv-lemma-ap e₁ e₂ x ()    | _            | _ :: _
 
     fv-lemma-ana : ∀{e τ} → ∅ ⊢ e <= τ → free-vars e == []
     fv-lemma-ana {c} _ = refl
     fv-lemma-ana {e ·: τ} (ASubsume (SAsc x) x₁) = fv-lemma-ana x
     fv-lemma-ana {X x} (ASubsume (SVar ()) x₂)
     fv-lemma-ana {·λ x e} (ASubsume () x₂)
-    fv-lemma-ana {·λ x e} (ALam x₁ x₂ x₃) = {!!}
-    fv-lemma-ana {·λ x [ τ ] e} (ASubsume (SLam x₁ x₃) x₂) = fv-lemma-rff x₃
+    fv-lemma-ana {·λ x e} (ALam x₁ x₂ x₃) = rff-lemma-ana x₃
+    fv-lemma-ana {·λ x [ τ ] e} (ASubsume (SLam x₁ x₃) x₂) = rff-lemma-syn x₃
     fv-lemma-ana {⦇⦈[ u ]} _ = refl
     fv-lemma-ana {⦇⌜ e ⌟⦈[ u ]} (ASubsume (SNEHole x x₂) x₁) = fv-lemma-ana (ASubsume x₂ TCHole2)
-    fv-lemma-ana {e₁ ∘ e₂} (ASubsume (SAp x x₂ x₃ x₄) x₁) = {!!} -- (fv-lemma x₄) (fv-lemma)
+    fv-lemma-ana {e₁ ∘ e₂} (ASubsume (SAp x x₂ x₃ x₄) x₁) = fv-lemma-ap e₁ e₂ (fv-lemma-syn x₂) (fv-lemma-ana x₄)
+
+    fv-lemma-syn : ∀{e τ} → ∅ ⊢ e => τ → free-vars e == []
+    fv-lemma-syn SConst = refl
+    fv-lemma-syn (SAsc x) = fv-lemma-ana x
+    fv-lemma-syn (SVar ())
+    fv-lemma-syn {e₁ ∘ e₂} (SAp x x₁ x₂ x₃) = fv-lemma-ap e₁ e₂ (fv-lemma-syn x₁) (fv-lemma-ana x₃)
+    fv-lemma-syn SEHole = refl
+    fv-lemma-syn (SNEHole x x₁) = fv-lemma-syn x₁
+    fv-lemma-syn (SLam x₁ x) = rff-lemma-syn x
 
   palette-context-independence : ∀{Φ Γ ρ dm psplice esplice τsplice efun expansion-type} →
                                  Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> efun ∘ esplice ⇒ expansion-type →
