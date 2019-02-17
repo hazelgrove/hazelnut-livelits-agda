@@ -14,6 +14,9 @@ module lemmas-complete where
   lem-ind-comp (DCCast comp x x₁) (ICastArr x₂ ind) = lem-ind-comp comp ind
   lem-ind-comp (DCCast comp x x₁) (ICastGroundHole x₂ ind) = lem-ind-comp comp ind
   lem-ind-comp (DCCast comp x x₁) (ICastHoleGround x₂ ind x₃) = lem-ind-comp comp ind
+  lem-ind-comp (DCFst d) = λ ()
+  lem-ind-comp (DCSnd d) = λ ()
+  lem-ind-comp (DCPair d d₁) = λ ()
 
   -- complete types that are consistent are equal
   complete-consistency : ∀{τ1 τ2} → τ1 ~ τ2 → τ1 tcomplete → τ2 tcomplete → τ1 == τ2
@@ -24,6 +27,8 @@ module lemmas-complete where
   complete-consistency (TCArr consis consis₁) (TCArr comp1 comp2) (TCArr comp3 comp4)
    with complete-consistency consis comp1 comp3 | complete-consistency consis₁ comp2 comp4
   ... | refl | refl = refl
+  complete-consistency TCRefl (TCProd tc' tc'') = λ _ → refl
+  complete-consistency (TCProd tc tc₁) (TCProd tc' tc'') (TCProd x x₁) = {!!}
 
   -- a well typed complete term is assigned a complete type
   complete-ta : ∀{Γ Δ d τ} → (Γ gcomplete) →

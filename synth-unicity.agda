@@ -24,3 +24,9 @@ module synth-unicity where
   synthunicity SConst SConst = refl
   synthunicity (SLam _ D1) (SLam _ D2) with synthunicity D1 D2
   synthunicity (SLam x₁ D1) (SLam x₂ D2) | refl = refl
+  synthunicity (SFst D1) (SFst D2) with synthunicity D1 D2
+  synthunicity (SFst D1) (SFst D2) | refl = refl
+  synthunicity (SSnd D1) (SSnd D2) with synthunicity D1 D2
+  synthunicity (SSnd D1) (SSnd D2) | refl = refl
+  synthunicity (SPair x x₁) (SPair x₂ x₃) with synthunicity x x₂ | synthunicity x₁ x₃
+  synthunicity (SPair x x₁) (SPair x₂ x₃) | refl | refl = refl

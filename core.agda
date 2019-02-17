@@ -12,6 +12,7 @@ module core where
 
   -- arrow type constructors bind very tightly
   infixr 25  _==>_
+  infixr 25  _⊗_
 
   -- middle layer expressions
   data hexp : Set where
@@ -90,6 +91,10 @@ module core where
                τ1 ~ τ1' →
                τ2 ~ τ2' →
                τ1 ==> τ2 ~ τ1' ==> τ2'
+    TCProd  : {τ1 τ2 τ1' τ2' : htyp} →
+               τ1 ~ τ1' →
+               τ2 ~ τ2' →
+               (τ1 ⊗ τ2) ~ (τ1' ⊗ τ2')
 
   -- type inconsistency
   data _~̸_ : (τ1 τ2 : htyp) → Set where
@@ -101,6 +106,18 @@ module core where
     ICArr2 : {τ1 τ2 τ3 τ4 : htyp} →
                τ2 ~̸ τ4 →
                τ1 ==> τ2 ~̸ τ3 ==> τ4
+    ICBaseProd1 : {τ1 τ2 : htyp} → b ~̸ τ1 ⊗ τ2
+    ICBaseProd2 : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ~̸ b
+    ICProdArr1 : {τ1 τ2 τ3 τ4 : htyp} →
+                τ1 ==> τ2 ~̸ τ3 ⊗ τ4
+    ICProdArr2 : {τ1 τ2 τ3 τ4 : htyp} →
+                τ1 ⊗ τ2 ~̸ τ3 ==> τ4
+    ICProd1 : {τ1 τ2 τ3 τ4 : htyp} →
+               τ1 ~̸ τ3 →
+               τ1 ⊗ τ2 ~̸ τ3 ⊗ τ4
+    ICProd2 : {τ1 τ2 τ3 τ4 : htyp} →
+               τ2 ~̸ τ4 →
+               τ1 ⊗ τ2 ~̸ τ3 ⊗ τ4
 
   --- matching for arrows
   data _▸arr_ : htyp → htyp → Set where
@@ -177,6 +194,16 @@ module core where
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
                  Γ ⊢ ·λ x [ τ1 ] e => τ1 ==> τ2
+      SFst    : ∀{ e τ1 τ2 Γ} →
+                Γ ⊢ e => τ1 ⊗ τ2 →
+                Γ ⊢ fst e => τ1
+      SSnd    : ∀{ e τ1 τ2 Γ} →
+                Γ ⊢ e => τ1 ⊗ τ2 →
+                Γ ⊢ snd e => τ2
+      SPair   : ∀{ e1 e2 τ1 τ2 Γ} →
+                Γ ⊢ e1 => τ1 →
+                Γ ⊢ e2 => τ2 →
+                Γ ⊢ ⟨ e1 , e2 ⟩ => τ1 ⊗ τ2
 
     -- analysis
     data _⊢_<=_ : (Γ : htyp ctx) (e : hexp) (τ : htyp) → Set where
@@ -194,6 +221,7 @@ module core where
   data _tcomplete : htyp → Set where
     TCBase : b tcomplete
     TCArr : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ==> τ2) tcomplete
+    TCProd : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ⊗ τ2) tcomplete
 
   -- those external expressions without holes
   data _ecomplete : hexp → Set where
@@ -203,6 +231,9 @@ module core where
     ECLam1 : ∀{x e} → e ecomplete → (·λ x e) ecomplete
     ECLam2 : ∀{x e τ} → e ecomplete → τ tcomplete → (·λ x [ τ ] e) ecomplete
     ECAp : ∀{e1 e2} → e1 ecomplete → e2 ecomplete → (e1 ∘ e2) ecomplete
+    ECFst : ∀{e} → e ecomplete → (fst e) ecomplete
+    ECSnd : ∀{e} → e ecomplete → (snd e) ecomplete
+    ECPair : ∀{e1 e2} → e1 ecomplete → e2 ecomplete → ⟨ e1 , e2 ⟩ ecomplete
 
   -- those internal expressions without holes
   data _dcomplete : ihexp → Set where
@@ -211,6 +242,10 @@ module core where
     DCLam : ∀{x τ d} → d dcomplete → τ tcomplete → (·λ x [ τ ] d) dcomplete
     DCAp : ∀{d1 d2} → d1 dcomplete → d2 dcomplete → (d1 ∘ d2) dcomplete
     DCCast : ∀{d τ1 τ2} → d dcomplete → τ1 tcomplete → τ2 tcomplete → (d ⟨ τ1 ⇒ τ2 ⟩) dcomplete
+    DCFst : ∀{d} → d dcomplete → (fst d) dcomplete
+    DCSnd : ∀{d} → d dcomplete → (snd d) dcomplete
+    DCPair : ∀{d1 d2} → d1 dcomplete → d2 dcomplete → ⟨ d1 , d2 ⟩ dcomplete
+
 
   -- contexts that only produce complete types
   _gcomplete : tctx → Set
@@ -340,9 +375,9 @@ module core where
   [ d / y ] (d1 ∘ d2) = ([ d / y ] d1) ∘ ([ d / y ] d2)
   [ d / y ] (d' ⟨ τ1 ⇒ τ2 ⟩ ) = ([ d / y ] d') ⟨ τ1 ⇒ τ2 ⟩
   [ d / y ] (d' ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ ) = ([ d / y ] d') ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩
-  [ d / y ] ⟨ d1 , d2 ⟩ = ?
-  [ d / y ] (fst d1) = ?
-  [ d / y ] (snd d1) = ?
+  [ d / y ] ⟨ d1 , d2 ⟩ = ⟨ [ d / y ] d1 , [ d / y ] d2 ⟩
+  [ d / y ] (fst d') = fst ([ d / y ] d')
+  [ d / y ] (snd d') = snd ([ d / y ] d')
 
   -- applying an environment to an expression
   apply-env : env → ihexp → ihexp
