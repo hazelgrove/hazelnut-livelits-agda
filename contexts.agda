@@ -205,25 +205,6 @@ module contexts where
                                        (n , a) ∈ (Γ ,, (n , a))
   ctx-top Γ n a apt = x∈∪r Γ (■ (n , a)) n a (x∈■ n a) (lem-apart-sing-disj apt)
 
-  -- if a union of a singleton and a ctx produces no result, the argument
-  -- index must be apart from the ctx and disequal to the index of the
-  -- singleton
-  lem-union-none : {A : Set} {Γ : A ctx} {a : A} {x x' : Nat}
-                      → (Γ ∪ ■ (x , a)) x' == None
-                      → (x ≠ x') × (x' # Γ)
-  lem-union-none {A} {Γ} {a} {x} {x'} emp with ctxindirect Γ x'
-  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inl (π1 , π2) with Γ x'
-  lem-union-none emp | Inl (π1 , π2) | Some x = abort (somenotnone emp)
-  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inl (π1 , π2) | None with natEQ x x'
-  lem-union-none emp | Inl (π1 , π2) | None | Inl x₁ = abort (somenotnone (! π2))
-  lem-union-none emp | Inl (π1 , π2) | None | Inr x₁ = x₁ , refl
-  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inr y with Γ x'
-  lem-union-none emp | Inr y | Some x = abort (somenotnone emp)
-  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inr y | None with natEQ x x'
-  lem-union-none emp | Inr y | None | Inl refl = abort (somenotnone emp)
-  lem-union-none emp | Inr y | None | Inr x₁ = x₁ , refl
-
-
   --- lemmas building up to a proof of associativity of ∪
   ctxignore1 : {A : Set} (x : Nat) (C1 C2 : A ctx) → x # C1 → (C1 ∪ C2) x == C2 x
   ctxignore1 x C1 C2 apt with ctxindirect C1 x
@@ -273,6 +254,33 @@ module contexts where
   ctxcollapse3 C1 C2 C3 x apt | None with C2 x
   ctxcollapse3 C1 C2 C3 x apt | None | Some x₁ = abort (somenotnone apt)
   ctxcollapse3 C1 C2 C3 x apt | None | None = refl
+
+  -- if a union of a singleton and a ctx produces no result, the argument
+  -- index must be apart from the ctx and disequal to the index of the
+  -- singleton
+  lem-union-none : {A : Set} {Γ : A ctx} {a : A} {x x' : Nat}
+                      → (Γ ∪ ■ (x , a)) x' == None
+                      → (x ≠ x') × (x' # Γ)
+  lem-union-none {A} {Γ} {a} {x} {x'} emp with ctxindirect Γ x'
+  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inl (π1 , π2) with Γ x'
+  lem-union-none emp | Inl (π1 , π2) | Some x = abort (somenotnone emp)
+  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inl (π1 , π2) | None with natEQ x x'
+  lem-union-none emp | Inl (π1 , π2) | None | Inl x₁ = abort (somenotnone (! π2))
+  lem-union-none emp | Inl (π1 , π2) | None | Inr x₁ = x₁ , refl
+  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inr y with Γ x'
+  lem-union-none emp | Inr y | Some x = abort (somenotnone emp)
+  lem-union-none {A} {Γ} {a} {x} {x'} emp | Inr y | None with natEQ x x'
+  lem-union-none emp | Inr y | None | Inl refl = abort (somenotnone emp)
+  lem-union-none emp | Inr y | None | Inr x₁ = x₁ , refl
+
+  -- converse of lem-union-none
+  lem-none-union : {A : Set} {Γ : A ctx} {a : A} {x x' : Nat}
+                      → (x ≠ x')
+                      → (x' # Γ)
+                      → (Γ ∪ ■ (x , a)) x' == None
+  lem-none-union {A} {Γ} {a} {x} {x'} h₁ h₂ with ctxindirect (■ (x , a)) x'
+  lem-none-union {A} {Γ} {a} {x} {x'} h₁ h₂    | Inl (a' , h)               = abort (somenotnone (!( lem-neq-union-eq (flip h₁) (tr (λ y → y == Some a') refl h))))
+  lem-none-union {A} {Γ} {a} {x} {x'} h₁ h₂    | Inr h                      = (ctxignore1 x' Γ (■ (x , a)) h₂) · h
 
   ∪assoc : {A : Set} (C1 C2 C3 : A ctx) → (C2 ## C3) → (C1 ∪ C2) ∪ C3 == C1 ∪ (C2 ∪ C3)
   ∪assoc C1 C2 C3 (d1 , d2) = funext guts

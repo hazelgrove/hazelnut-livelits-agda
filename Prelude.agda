@@ -12,10 +12,6 @@ module Prelude where
   data ⊤ : Set where
     <> : ⊤
 
-  data bool : Set where
-    true : bool
-    false : bool
-
   -- sums
   data _+_ (A B : Set) : Set where
     Inl : A → A + B
@@ -100,29 +96,3 @@ module Prelude where
   _≃_ : Set → Set → Set
   _≃_ A B = Σ[ f ∈ (A → B) ] Σ[ g ∈ (B → A) ]
              (((a : A) → g (f a) == a) × (((b : B) → f (g b) == b)))
-
-  data List (A : Set) : Set where
-    [] : List A
-    _::_ : (x : A) (xs : List A) → List A
-
-  _++_ : {A : Set} → List A → List A → List A
-  [] ++ l₂ = l₂
-  (h :: l₁) ++ l₂ = h :: (l₁ ++ l₂)
-
-  l++[]==l : {A : Set} (l : List A) → l ++ [] == l
-  l++[]==l [] = refl
-  l++[]==l (x :: xs) with l++[]==l xs
-  l++[]==l (x :: xs) | p-xs = ap1 (λ x' → x :: x') p-xs
-
-  filter : {A : Set} → (f : A → bool) → List A → List A
-  filter f [] = []
-  filter f (h :: l)
-    with f h   | filter f l
-  ...  | true  | l'         = h :: l'
-  ...  | false | l'         = l'
-
-  filter-append-comm : {A : Set} (f : A → bool) (l₁ l₂ : List A) → filter f l₁ ++ filter f l₂ == filter f (l₁ ++ l₂)
-  filter-append-comm f [] _ = refl
-  filter-append-comm f (x₁ :: xs₁) l₂ with f x₁
-  filter-append-comm f (x₁ :: xs₁) l₂    | true  = ap1 (λ y → x₁ :: y) (filter-append-comm f xs₁ l₂)
-  filter-append-comm f (x₁ :: xs₁) l₂    | false = filter-append-comm f xs₁ l₂

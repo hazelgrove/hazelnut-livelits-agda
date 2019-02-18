@@ -1,5 +1,6 @@
 open import Nat
 open import Prelude
+open import List
 open import contexts
 
 module core where
@@ -561,14 +562,8 @@ module core where
       UBFailedCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
 
   mutual
-    natneqb' : (m n : Nat) → bool
-    natneqb' m n
-      with natEQ m n
-    ...  | Inl _ = false
-    ...  | Inr _ = true
-
     remove-from-free' : Nat → hexp → List Nat
-    remove-from-free' x e = filter (natneqb' x) (free-vars e)
+    remove-from-free' x e = remove-all natEQ (free-vars e) x
 
     free-vars : (e : hexp) → List Nat
     free-vars c = []
