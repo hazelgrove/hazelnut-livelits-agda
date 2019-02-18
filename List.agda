@@ -17,6 +17,22 @@ module List where
   ∅∈l→l==[] {l = []} h = refl
   ∅∈l→l==[] {l = a' :: as} h = abort (h a' InH)
 
+  a∉a'::as→a∉as : {A : Set} →
+                    {as : List A} →
+                    {a a' : A} →
+                    (==dec : (a₁ a₂ : A) → (a₁ == a₂) + ((a₁ == a₂) → ⊥)) →
+                    (a in-List (a' :: as) → ⊥) →
+                    a in-List as →
+                    ⊥
+  a∉a'::as→a∉as _ h h' = h (InT h')
+
+  not-in-append-comm : {A : Set} {x : A} {l₁ l₂ : List A} → ((a₁ a₂ : A) → (a₁ == a₂) + ((a₁ == a₂) → ⊥)) → (x in-List l₁ → ⊥) → (x in-List l₂ → ⊥) → x in-List (l₁ ++ l₂) → ⊥
+  not-in-append-comm {x = x} {[]} {l₂} ==dec h₁ h₂ h₃ = h₂ h₃
+  not-in-append-comm {x = x} {a₁ :: as₁} {l₂} ==dec h₁ h₂ h₃   with  ==dec a₁ x
+  not-in-append-comm {x = x} {a₁ :: as₁} {l₂} ==dec h₁ h₂ h₃       | Inl h      = h₁ (tr (λ y → y in-List (a₁ :: as₁)) h InH)
+  not-in-append-comm {x = .a₁} {a₁ :: as₁} {l₂} ==dec h₁ h₂ InH    | Inr h      = abort (h refl)
+  not-in-append-comm {x = x} {a₁ :: as₁} {l₂} ==dec h₁ h₂ (InT h₃) | Inr h      = not-in-append-comm ==dec (a∉a'::as→a∉as ==dec h₁) h₂ h₃
+
   remove-all : {A : Set} → ((a₁ a₂ : A) → (a₁ == a₂) + ((a₁ == a₂) → ⊥)) → List A → A → List A
   remove-all ==dec [] a = []
   remove-all ==dec (a' :: as) a
@@ -46,15 +62,6 @@ module List where
   remove-all-not-in ==dec (a' :: as) .a' InH   | Inr a≠a'   = a≠a' refl
   remove-all-not-in ==dec (a' :: as) a (InT h) | Inr a≠a'   = remove-all-not-in ==dec as a h
 
-  a∉a'::as→a∉as : {A : Set} →
-                    {as : List A} →
-                    {a a' : A} →
-                    (==dec : (a₁ a₂ : A) → (a₁ == a₂) + ((a₁ == a₂) → ⊥)) →
-                    (a in-List (a' :: as) → ⊥) →
-                    a in-List as →
-                    ⊥
-  a∉a'::as→a∉as _ h h' = h (InT h')
-
   a∉l→a∉remove-all-l-a' : {A : Set} →
                             {l : List A} →
                             {a a' : A} →
@@ -65,6 +72,6 @@ module List where
   a∉l→a∉remove-all-l-a' {l = []} {a} _ h₁ h₂ = h₁ h₂
   a∉l→a∉remove-all-l-a' {l = lh :: lt} {a} {a'} ==dec h₁ h₂   with  ==dec a lh | ==dec a' lh
   a∉l→a∉remove-all-l-a' {l = lh :: lt} {a} {a'} ==dec h₁ h₂       | Inl a==lh  | _            = h₁ (tr (λ y → a in-List (y :: lt) ) a==lh InH)
-  a∉l→a∉remove-all-l-a' {_} {lh :: lt} {a} {a'} ==dec h₁ h₂       | Inr _      | Inl _        = a∉l→a∉remove-all-l-a' {a' = a'} ==dec (a∉a'::as→a∉as ==dec h₁) h₂
+  a∉l→a∉remove-all-l-a' {_} {lh :: lt} {a} {a'} ==dec h₁ h₂       | Inr _      | Inl _        = a∉l→a∉remove-all-l-a' ==dec (a∉a'::as→a∉as ==dec h₁) h₂
   a∉l→a∉remove-all-l-a' {_} {lh :: lt} {.lh} {a'} ==dec h₁ InH    | Inr a≠lh   | Inr _        = a≠lh refl
-  a∉l→a∉remove-all-l-a' {_} {lh :: lt} {a} {a'} ==dec h₁ (InT h₂) | Inr _      | Inr _        = a∉l→a∉remove-all-l-a' {a' = a'} ==dec (a∉a'::as→a∉as ==dec h₁) h₂
+  a∉l→a∉remove-all-l-a' {_} {lh :: lt} {a} {a'} ==dec h₁ (InT h₂) | Inr _      | Inr _        = a∉l→a∉remove-all-l-a' ==dec (a∉a'::as→a∉as ==dec h₁) h₂

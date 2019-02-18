@@ -48,7 +48,7 @@ module palette-reasoning-principles where
 
   -- TODO assign betters name and move to a better place
   fv-lemma-ap : (x : Nat) (e₁ e₂ : hexp) → (x in-List free-vars e₁ → ⊥) → (x in-List free-vars e₂ → ⊥) → x in-List (free-vars e₁ ++ free-vars e₂) → ⊥
-  fv-lemma-ap = {!!}
+  fv-lemma-ap x e₁ e₂ h₁ h₂ h₃ = not-in-append-comm natEQ h₁ h₂ h₃
 
   -- TODO assign betters name and move to a better place
   mutual
