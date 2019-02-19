@@ -7,9 +7,15 @@ open import typed-palette-elaboration
 
 -- If an `ap-pal` expression successfully expands, the following must hold:
 module palette-reasoning-principles where
+  -- The expanded expression has a specific form, which is useful for characterizing the remaining reasoning principles
+  palette-expanded-form : ∀{Φ Γ ρ dm τsplice psplice eresult expansion-type} →
+                          Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> eresult ⇒ expansion-type →
+                          Σ[ eexpanded ∈ hexp ] Σ[ esplice ∈ hexp ] (eresult == (eexpanded ·: τsplice ==> expansion-type) ∘ esplice)
+  palette-expanded-form (SPEApPal {eexpanded = eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) = eexpanded , esplice , refl
+
   -- The expanded expression synthesizes the expansion type specified in the palette definition
   palette-expansion-typing : ∀{Φ Γ ρ dm psplice esplice τsplice eexpanded expansion-type} →
-                             Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> expansion-type) ∘ esplice) ⇒ expansion-type →
+                             Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> (eexpanded ·: τsplice ==> expansion-type) ∘ esplice ⇒ expansion-type →
                              Σ[ π ∈ paldef ] (Φ ρ == Some π × paldef.expansion-type π == expansion-type)
   palette-expansion-typing (SPEApPal {π = record { expand = expand ; model-type = model-type ; expansion-type = expansion-type }} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
                              record
@@ -37,14 +43,6 @@ module palette-reasoning-principles where
                           Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
   palette-splice-typing (SPEApPal {π = record { expand = expand ; model-type = model-type ; expansion-type = expansion-type }} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
                           x₆ , typed-palette-elaboration-ana x₆
-
-  -- TODO - we should discuss how to characterize this both formally and in english
-  palette-capture-avoidance : ∀{Φ Γ ρ dm psplice τsplice eresult expansion-type} →
-                              Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> eresult ⇒ expansion-type →
-                              Σ[ efun ∈ hexp ] Σ[ esplice ∈ hexp ] (eresult == efun ∘ esplice)
-  palette-capture-avoidance {τsplice = τsplice}
-                            (SPEApPal {π = record { expand = expand ; model-type = model-type ; expansion-type = expansion-type }} {eexpanded = eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
-                              (eexpanded ·: τsplice ==> expansion-type) , esplice , refl
 
   -- TODO assign betters name and move to a better place
   fv-lemma-ap : (x : Nat) (e₁ e₂ : hexp) → (x in-List free-vars e₁ → ⊥) → (x in-List free-vars e₂ → ⊥) → x in-List (free-vars e₁ ++ free-vars e₂) → ⊥
@@ -84,9 +82,9 @@ module palette-reasoning-principles where
     fv-lemma-syn {Γ} {x} {⦇⌜ e' ⌟⦈[ u ]} h₁ (SNEHole _ h₂) h₃ = fv-lemma-syn h₁ h₂ h₃
     fv-lemma-syn {Γ} {x} {e₁ ∘ e₂} h₁ (SAp _ h₂ _ h₃) h₄ = fv-lemma-ap x e₁ e₂ (fv-lemma-syn h₁ h₂) (fv-lemma-ana h₁ h₃) h₄
 
-  -- The function component of the expansion has no free variables, guaranteeing that it does not rely on any bindings in the application site context
-  palette-context-independence : ∀{Φ Γ ρ dm psplice esplice τsplice efun expansion-type} →
-                                 Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> efun ∘ esplice ⇒ expansion-type →
-                                 free-vars efun == []
+  -- The function component of the expanded form has no free variables, guaranteeing that it does not rely on any bindings in the application site context
+  palette-context-independence : ∀{Φ Γ ρ dm psplice esplice τsplice eexpanded expansion-type} →
+                                 Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> expansion-type) ∘ esplice) ⇒ expansion-type →
+                                 free-vars (eexpanded ·: τsplice ==> expansion-type) == []
   palette-context-independence (SPEApPal {π = record { expand = expand ; model-type = model-type ; expansion-type = expansion-type }} {eexpanded = eexpanded} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
                                  ∅∈l→l==[] (λ x → fv-lemma-ana refl x₇)
