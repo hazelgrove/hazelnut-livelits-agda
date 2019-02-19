@@ -45,10 +45,6 @@ module palette-reasoning-principles where
                           x₆ , typed-palette-elaboration-ana x₆
 
   -- TODO assign betters name and move to a better place
-  fv-lemma-ap : (x : Nat) (e₁ e₂ : hexp) → (x in-List free-vars e₁ → ⊥) → (x in-List free-vars e₂ → ⊥) → x in-List (free-vars e₁ ++ free-vars e₂) → ⊥
-  fv-lemma-ap x e₁ e₂ h₁ h₂ h₃ = not-in-append-comm natEQ h₁ h₂ h₃
-
-  -- TODO assign betters name and move to a better place
   mutual
     rff-lemma-ana : ∀{Γ x x' e τ₁ τ₂} → x # Γ → (Γ ,, (x' , τ₁)) ⊢ e <= τ₂ → x in-List remove-from-free' x' e → ⊥
     rff-lemma-ana {Γ} {x} {x'} {e} h₁ h₂ h₃ with   natEQ x x'
@@ -69,7 +65,7 @@ module palette-reasoning-principles where
     fv-lemma-ana {Γ} {x} {·λ x' [ τ ] e'} hx (ASubsume (SLam hx' h₂) _) h₃ = rff-lemma-syn {Γ} hx h₂ h₃
     fv-lemma-ana {Γ} {x} {⦇⦈[ u ]} h₁ h₂ ()
     fv-lemma-ana {Γ} {x} {⦇⌜ e' ⌟⦈[ u ]} h₁ (ASubsume (SNEHole _ h₂) _) h₃ = fv-lemma-syn h₁ h₂ h₃
-    fv-lemma-ana {Γ} {x} {e₁ ∘ e₂} h₁ (ASubsume (SAp _ h₂ _ h₃) _) h₄ = fv-lemma-ap x e₁ e₂ (fv-lemma-syn h₁ h₂) (fv-lemma-ana h₁ h₃) h₄
+    fv-lemma-ana {Γ} {x} {e₁ ∘ e₂} h₁ (ASubsume (SAp _ h₂ _ h₃) _) h₄ = not-in-append-comm natEQ (fv-lemma-syn h₁ h₂) (fv-lemma-ana h₁ h₃) h₄
 
     fv-lemma-syn : ∀{Γ x e τ} → x # Γ → Γ ⊢ e => τ → x in-List (free-vars e) → ⊥
     fv-lemma-syn {Γ} {x} {c} h₁ h₂ ()
@@ -80,7 +76,7 @@ module palette-reasoning-principles where
     fv-lemma-syn {Γ} {x} {·λ x' [ τ ] e'} hx (SLam hx' h₂) h₃ = rff-lemma-syn {Γ} hx h₂ h₃
     fv-lemma-syn {Γ} {x} {⦇⦈[ u ]} h₁ h₂ ()
     fv-lemma-syn {Γ} {x} {⦇⌜ e' ⌟⦈[ u ]} h₁ (SNEHole _ h₂) h₃ = fv-lemma-syn h₁ h₂ h₃
-    fv-lemma-syn {Γ} {x} {e₁ ∘ e₂} h₁ (SAp _ h₂ _ h₃) h₄ = fv-lemma-ap x e₁ e₂ (fv-lemma-syn h₁ h₂) (fv-lemma-ana h₁ h₃) h₄
+    fv-lemma-syn {Γ} {x} {e₁ ∘ e₂} h₁ (SAp _ h₂ _ h₃) h₄ = not-in-append-comm natEQ (fv-lemma-syn h₁ h₂) (fv-lemma-ana h₁ h₃) h₄
 
   -- The function component of the expanded form has no free variables, guaranteeing that it does not rely on any bindings in the application site context
   palette-context-independence : ∀{Φ Γ ρ dm psplice esplice τsplice eexpanded expansion-type} →
