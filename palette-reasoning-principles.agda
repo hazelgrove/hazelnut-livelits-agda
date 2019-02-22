@@ -41,21 +41,40 @@ module palette-reasoning-principles where
     fv-lemma-syn {Γ} {x} {⦇⌜ e' ⌟⦈[ u ]} h₁ (SNEHole _ h₂) h₃ = fv-lemma-syn h₁ h₂ h₃
     fv-lemma-syn {Γ} {x} {e₁ ∘ e₂} h₁ (SAp _ h₂ _ h₃) h₄ = not-in-append-comm natEQ (fv-lemma-syn h₁ h₂) (fv-lemma-ana h₁ h₃) h₄
 
+
+  record reasoning-principles (Φ : paldef ctx)
+                              (Γ : tctx)
+                              (ρ : Nat)
+                              (dm : ihexp)
+                              (τsplice : htyp)
+                              (psplice : pexp)
+                              (eresult : hexp)
+                              (τresult : htyp) : Set where
+    field
+      π   : paldef
+      πwf : Φ ρ == Some π --todo better name
+      eexpanded : hexp
+      esplice : hexp
+
+      expanded-applicaiton-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
+      expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)
+      responsibility            : Σ[ denc ∈ ihexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded)
+      splice-typing             : Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
+      context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
+
   -- All reasoning principles packaged into a single theorem
   all : ∀{Φ Γ ρ dm τsplice psplice eresult τresult} →
-        Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> eresult ⇒ τresult →            -- If an `ap-pal` expression successfully expands, the following must hold
-        Σ[ π ∈ paldef ] ((Φ ρ == Some π) ×
-        Σ[ eexpanded ∈ hexp ] Σ[ esplice ∈ hexp ] (
-        (eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice) ×                -- Expanded Application Form
-        ((Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)) ×        -- Expansion Typing
-        (Σ[ denc ∈ ihexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded)) × -- Responsibility
-        (Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice) ×         -- Splice Typing
-        free-vars (eexpanded ·: τsplice ==> τresult) == []))                       -- Context Independence
+        Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> eresult ⇒ τresult →
+        reasoning-principles Φ Γ ρ dm τsplice psplice eresult τresult
   all h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
-        π , x₂ ,
-        eexpanded , esplice ,
-        refl ,
-        (typed-palette-elaboration-synth h , refl) ,
-        (denc , x₄ , x₅) ,
-        (x₆ , typed-palette-elaboration-ana x₆) ,
-        ∅∈l→l==[] (λ x → fv-lemma-ana refl x₇)
+       record
+         { π = π
+         ; πwf = x₂
+         ; eexpanded = eexpanded
+         ; esplice = esplice
+         ; expanded-applicaiton-form = refl
+         ; expansion-typing = typed-palette-elaboration-synth h , refl
+         ; responsibility = denc , x₄ , x₅
+         ; splice-typing = x₆ , typed-palette-elaboration-ana x₆
+         ; context-independence = ∅∈l→l==[] (λ x → fv-lemma-ana refl x₇)
+         }
