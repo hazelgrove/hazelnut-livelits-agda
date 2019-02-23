@@ -52,7 +52,7 @@ module palette-reasoning-principles where
                               (τresult : htyp) : Set where
     field
       π   : paldef
-      πwf : Φ ρ == Some π --todo better name
+      domain : dom Φ ρ
       eexpanded : hexp
       esplice : hexp
 
@@ -68,13 +68,13 @@ module palette-reasoning-principles where
         reasoning-principles Φ Γ ρ dm τsplice psplice eresult τresult
   all h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
        record
-         { π = π
-         ; πwf = x₂
-         ; eexpanded = eexpanded
-         ; esplice = esplice
+         { π                         = π
+         ; domain                    = _ , x₂
+         ; eexpanded                 = eexpanded
+         ; esplice                   = esplice
          ; expanded-applicaiton-form = refl
-         ; expansion-typing = typed-palette-elaboration-synth h , refl
-         ; responsibility = denc , x₄ , x₅
-         ; splice-typing = x₆ , typed-palette-elaboration-ana x₆
-         ; context-independence = ∅∈l→l==[] (λ x → fv-lemma-ana refl x₇)
+         ; expansion-typing          = typed-palette-elaboration-synth h , refl
+         ; responsibility            = denc , x₄ , x₅
+         ; splice-typing             = x₆ , typed-palette-elaboration-ana x₆
+         ; context-independence      = ∅∈l→l==[] (λ x → fv-lemma-ana refl x₇)
          }
