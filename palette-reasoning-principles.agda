@@ -23,15 +23,14 @@ module palette-reasoning-principles where
 
       expanded-applicaiton-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
       expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)
-      responsibility            : Σ[ denc ∈ ihexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded)
+      responsibility            : Σ[ denc ∈ ihexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
       splice-typing             : Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 
-  -- All reasoning principles packaged into a single theorem
-  all : ∀{Φ Γ ρ dm τsplice psplice eresult τresult} →
+  palette-reasoning-principles : ∀{Φ Γ ρ dm τsplice psplice eresult τresult} →
         Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> eresult ⇒ τresult →
         reasoning-principles Φ Γ ρ dm τsplice psplice eresult τresult
-  all h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
+  palette-reasoning-principles h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
        record
          { π                         = π
          ; domain                    = _ , x₂
