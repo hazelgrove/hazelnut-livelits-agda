@@ -55,3 +55,4 @@ open import continuity
 
 open import typed-palette-elaboration
 open import palette-reasoning-principles
+open import lemmas-freevars
