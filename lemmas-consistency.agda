@@ -57,3 +57,11 @@ module lemmas-consistency where
   ~apart (ICProd1 h) (TCProd h₁ h₂) = ~apart h h₁
   ~apart (ICProd2 h) TCRefl = ~apart h TCRefl
   ~apart (ICProd2 h) (TCProd h₁ h₂) = ~apart h h₂
+
+  ~apart-converse : (τ1 τ2 : htyp) → (τ1 ~ τ2 → ⊥) → τ1 ~̸ τ2
+  ~apart-converse τ1 τ2 ne with ~dec τ1 τ2
+  ~apart-converse τ1 τ2 ne    | Inl h      = abort (ne h)
+  ~apart-converse τ1 τ2 ne    | Inr h      = h
+
+  ~decPair : (τ1 τ2 τ3 τ4 : htyp) → ((τ1 ⊗ τ2) ~ (τ3 ⊗ τ4) → ⊥) → (τ1 ~ τ3 → ⊥) + (τ2 ~ τ4 → ⊥)
+  ~decPair τ1 τ2 τ3 τ4 inc = {!!}
