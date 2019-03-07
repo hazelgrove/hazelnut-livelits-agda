@@ -21,7 +21,7 @@ module palette-reasoning-principles where
       eexpanded : hexp
       esplice : hexp
 
-      expanded-applicaiton-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
+      expanded-application-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
       expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)
       responsibility            : Σ[ denc ∈ ihexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
       splice-typing             : Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
@@ -36,7 +36,7 @@ module palette-reasoning-principles where
          ; domain                    = _ , x₂
          ; eexpanded                 = eexpanded
          ; esplice                   = esplice
-         ; expanded-applicaiton-form = refl
+         ; expanded-application-form = refl
          ; expansion-typing          = typed-palette-elaboration-synth h , refl
          ; responsibility            = denc , x₄ , x₅
          ; splice-typing             = x₆ , typed-palette-elaboration-ana x₆
