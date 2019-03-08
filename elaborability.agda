@@ -29,9 +29,13 @@ module elaborability where
     ... | d' , Δ' , wt' = _ , _ , ESLam x₁ wt'
     elaborability-synth (SFst wt x)
       with elaborability-synth wt
-    elaborability-synth (SFst wt x) | π3 , π4 , π5 = π3 , π4 , {!!}
-    elaborability-synth (SSnd wt x) = {!!} , {!!}
-    elaborability-synth (SPair x wt wt₁) = {!!}
+    ... | d' , Δ' , wt' = _ , _ , ESFst wt' x
+    elaborability-synth (SSnd wt x)
+      with elaborability-synth wt
+    ... | d' , Δ' , wt' = _ , _ , ESSnd wt' x
+    elaborability-synth (SPair dis wt1 wt2)
+      with elaborability-synth wt1 | elaborability-synth wt2
+    ... | _ , _ , D1 | _ , _ , D2 = _ , _ , ESPair dis (elab-synth-disjoint dis D1 D2) D1 D2
 
     elaborability-ana : {Γ : tctx} {e : hexp} {τ : htyp} →
                          Γ ⊢ e <= τ →

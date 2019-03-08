@@ -22,6 +22,10 @@ module disjointness where
     elab-new-disjoint-synth (HNAp hn hn₁) (ESAp x x₁ x₂ x₃ x₄ x₅) =
                                             disjoint-parts (elab-new-disjoint-ana hn x₄)
                                                   (elab-new-disjoint-ana hn₁ x₅)
+    elab-new-disjoint-synth (HNLam1 hn) ()
+    elab-new-disjoint-synth (HNFst hn) (ESFst h x) = elab-new-disjoint-synth hn h
+    elab-new-disjoint-synth (HNSnd hn) (ESSnd h x) = elab-new-disjoint-synth hn h
+    elab-new-disjoint-synth (HNPair hn hn₁) (ESPair x x₁ h h₁) = disjoint-parts (elab-new-disjoint-synth hn h) (elab-new-disjoint-synth hn₁ h₁)
 
     elab-new-disjoint-ana : ∀ { e u τ d Δ Γ Γ' τ' τ2} →
                               hole-name-new e u →
@@ -50,6 +54,11 @@ module disjointness where
     elab-disjoint-new-synth (ESNEHole {Δ = Δ} x ex) disj = HNNEHole (singles-notequal (disjoint-union2 {Γ1 = Δ} disj))
                                                                       (elab-disjoint-new-synth ex (disjoint-union1 disj))
     elab-disjoint-new-synth (ESAsc x) disj = HNAsc (elab-disjoint-new-ana x disj)
+    elab-disjoint-new-synth (ESFst h x) disj = HNFst (elab-disjoint-new-synth h disj)
+    elab-disjoint-new-synth (ESSnd h x) disj = HNSnd (elab-disjoint-new-synth h disj)
+    elab-disjoint-new-synth (ESPair {Δ1 = Δ1} x x₁ h h₁) disj
+      with elab-disjoint-new-synth h (disjoint-union1 disj) | elab-disjoint-new-synth h₁ (disjoint-union2 {Γ1 = Δ1} disj)
+    ... | ih1 | ih2 = HNPair ih1 ih2
 
     elab-disjoint-new-ana : ∀{ e τ d Δ u Γ Γ' τ2 τ'} →
                                 Γ ⊢ e ⇐ τ ~> d :: τ2 ⊣ Δ →
@@ -162,16 +171,16 @@ module disjointness where
                                                                        (holes-delta-synth h exp)
                                                                        (dom-single u)
     holes-delta-synth (HAp h h₁) (ESAp x x₁ x₂ x₃ x₄ x₅) = dom-union (holes-disjoint-disjoint h h₁ x) (holes-delta-ana h x₄) (holes-delta-ana h₁ x₅)
+    holes-delta-synth (HLam1 h) ()
+    holes-delta-synth (HFst h) (ESFst h' x) = holes-delta-synth h h'
+    holes-delta-synth (HSnd h) (ESSnd h' x) = holes-delta-synth h h'
+    holes-delta-synth (HPair h h₁) (ESPair x x₁ h' h'') = dom-union (holes-disjoint-disjoint h h₁ x) (holes-delta-synth h h') (holes-delta-synth h₁ h'')
 
-  -- this is the main result of this file:
+  -- these are the main result of this file:
   --
-  -- if you elaborate two hole-disjoint expressions analytically, the Δs
-  -- produced are disjoint.
+  -- if you elaborate two hole-disjoint expressions, the Δs produced are disjoint.
   --
-  -- note that this is likely true for synthetic expansions in much the
-  -- same way, but we only prove half of the usual pair here because that's
-  -- all we need to establish expansion generality and elaborability. the
-  -- proof technique here is explcitly *not* structurally inductive on the
+  -- the proof technique here is explcitly *not* structurally inductive on the
   -- expansion judgement, because that approach relies on weakening of
   -- expansion, which is false because of the substitution contexts. giving
   -- expansion weakning would take away unicity, so we avoid the whole
@@ -186,3 +195,14 @@ module disjointness where
   ... | (_ , he1) | (_ , he2) = dom-eq-disj (holes-disjoint-disjoint he1 he2 hd)
                                             (holes-delta-ana he1 ana1)
                                             (holes-delta-ana he2 ana2)
+
+  elab-synth-disjoint : ∀{ e1 e2 τ1 τ2 e1' e2' Γ Δ1 Δ2 } →
+            holes-disjoint e1 e2 →
+            Γ ⊢ e1 ⇒ τ1 ~> e1' ⊣ Δ1 →
+            Γ ⊢ e2 ⇒ τ2 ~> e2' ⊣ Δ2 →
+            Δ1 ## Δ2
+  elab-synth-disjoint {e1} {e2} hd syn1 syn2
+    with find-holes e1 | find-holes e2
+  ... | (_ , he1) | (_ , he2) = dom-eq-disj (holes-disjoint-disjoint he1 he2 hd)
+                                            (holes-delta-synth he1 syn1)
+                                            (holes-delta-synth he2 syn2)

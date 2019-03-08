@@ -311,6 +311,20 @@ module core where
       ESAsc : ∀ {Γ e τ d τ' Δ} →
                  Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                  Γ ⊢ (e ·: τ) ⇒ τ ~> d ⟨ τ' ⇒ τ ⟩ ⊣ Δ
+      ESFst  : ∀{Γ e τ d τ1 τ2 Δ} →
+                 Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
+                 τ ▸prod τ1 ⊗ τ2 →
+                 Γ ⊢ fst e ⇒ τ1 ~> fst d ⊣ Δ
+      ESSnd  : ∀{Γ e τ d τ1 τ2 Δ} →
+                 Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
+                 τ ▸prod τ1 ⊗ τ2 →
+                 Γ ⊢ snd e ⇒ τ2 ~> snd d ⊣ Δ
+      ESPair : ∀{Γ e1 τ1 d1 Δ1 e2 τ2 d2 Δ2} →
+                 holes-disjoint e1 e2 →
+                 Δ1 ## Δ2 →
+                 Γ ⊢ e1 ⇒ τ1 ~> d1 ⊣ Δ1 →
+                 Γ ⊢ e2 ⇒ τ2 ~> d2 ⊣ Δ2 →
+                 Γ ⊢ ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2 ~> ⟨ d1 , d2 ⟩ ⊣ (Δ1 ∪ Δ2)
 
     -- analysis
     data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : hexp) (τ : htyp) (d : ihexp) (τ' : htyp) (Δ : hctx) → Set where
