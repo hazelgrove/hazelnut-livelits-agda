@@ -67,6 +67,9 @@ module weakening where
     ... | Inr qq = SLam (apart-parts Γ Γ' x x₁ qq)
                              (tr (λ qq → qq ⊢ e => τ2) (lem-reassoc {Γ = Γ} qq)
                                                        (weaken-synth-∪ (freshΓ-lam2 frsh) wt))
+    weaken-synth-∪ frsh (SFst wt x) = SFst (weaken-synth-∪ (freshΓ-fst frsh) wt) x
+    weaken-synth-∪ frsh (SSnd wt x) = SSnd (weaken-synth-∪ (freshΓ-snd frsh) wt) x
+    weaken-synth-∪ frsh (SPair hd wt wt₁) = SPair hd (weaken-synth-∪ (freshΓ-pair1 frsh) wt) (weaken-synth-∪ (freshΓ-pair2 frsh) wt₁)
 
     weaken-ana-∪ : ∀{e τ Γ Γ'} → freshΓ Γ' e →  Γ ⊢ e <= τ → (Γ ∪ Γ') ⊢ e <= τ
     weaken-ana-∪ frsh (ASubsume x x₁) = ASubsume (weaken-synth-∪ frsh x) x₁

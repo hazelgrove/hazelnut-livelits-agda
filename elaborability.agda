@@ -27,6 +27,11 @@ module elaborability where
     elaborability-synth (SLam x₁ wt)
       with elaborability-synth wt
     ... | d' , Δ' , wt' = _ , _ , ESLam x₁ wt'
+    elaborability-synth (SFst wt x)
+      with elaborability-synth wt
+    elaborability-synth (SFst wt x) | π3 , π4 , π5 = π3 , π4 , {!!}
+    elaborability-synth (SSnd wt x) = {!!} , {!!}
+    elaborability-synth (SPair x wt wt₁) = {!!}
 
     elaborability-ana : {Γ : tctx} {e : hexp} {τ : htyp} →
                          Γ ⊢ e <= τ →
@@ -45,6 +50,9 @@ module elaborability where
     elaborability-ana {e = ⦇⦈[ x ]} (ASubsume _ _ )                   | _ , _ , _  = _ , _ , _ , EAEHole
     elaborability-ana {Γ} {⦇⌜ e ⌟⦈[ x ]} (ASubsume (SNEHole new wt) x₂) | _ , _ , ESNEHole x₁ D' with elaborability-synth wt
     ... | w , y , z =  _ , _ , _ , EANEHole (elab-new-disjoint-synth new z) z
+    elaborability-ana {Γ} {⟨ e , e₁ ⟩} (ASubsume _ h) | _ , _ , D' = _ , _ , _ , EASubsume (λ u ()) (λ e' u ()) D' h
+    elaborability-ana {Γ} {fst e} (ASubsume _ h) | _ , _ , D' = _ , _ , _ , EASubsume (λ u ()) (λ e' u ()) D' h
+    elaborability-ana {Γ} {snd e} (ASubsume _ h) | _ , _ , D' = _ , _ , _ , EASubsume (λ u ()) (λ e' u ()) D' h
     -- the lambda cases
     elaborability-ana (ALam x₁ m wt)
       with elaborability-ana wt
