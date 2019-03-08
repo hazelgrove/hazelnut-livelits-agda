@@ -221,6 +221,7 @@ module core where
                 τ ▸prod τ1 ⊗ τ2 →
                 Γ ⊢ snd e => τ2
       SPair   : ∀{ e1 e2 τ1 τ2 Γ} →
+                holes-disjoint e1 e2 →
                 Γ ⊢ e1 => τ1 →
                 Γ ⊢ e2 => τ2 →
                 Γ ⊢ ⟨ e1 , e2 ⟩ => τ1 ⊗ τ2
