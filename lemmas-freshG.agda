@@ -36,6 +36,22 @@ module lemmas-freshG where
   lem-fresh-lam2 : ∀{x τ e} → freshh x (·λ x [ τ ] e) → ⊥
   lem-fresh-lam2 (FRHLam2 x₁ f) = x₁ refl
 
+  freshΓ-pair1 : {A : Set} → {Γ : A ctx} → ∀{e1 e2} → freshΓ Γ ⟨ e1 , e2 ⟩ → freshΓ Γ e1
+  freshΓ-pair1 fr x y with fr x y
+  freshΓ-pair1 fr x y | FRHPair qq qq₁ = qq
+
+  freshΓ-pair2 : {A : Set} → {Γ : A ctx} → ∀{e1 e2} → freshΓ Γ ⟨ e1 , e2 ⟩ → freshΓ Γ e2
+  freshΓ-pair2 fr x y with fr x y
+  freshΓ-pair2 fr x y | FRHPair qq qq₁ = qq₁
+
+  freshΓ-fst : {A : Set} → {Γ : A ctx} → ∀{e} → freshΓ Γ (fst e) → freshΓ Γ e
+  freshΓ-fst fr x x₁ with fr x x₁
+  freshΓ-fst fr x x₁ | FRHFst qq = qq
+
+  freshΓ-snd : {A : Set} → {Γ : A ctx} → ∀{e} → freshΓ Γ (snd e) → freshΓ Γ e
+  freshΓ-snd fr x x₁ with fr x x₁
+  freshΓ-snd fr x x₁ | FRHSnd qq = qq
+
   fresh-freshΓ : {A : Set} {τ : A} → ∀{x e} → freshh x e → freshΓ (■ (x , τ)) e
   fresh-freshΓ fr x y with lem-dom-eq y
   fresh-freshΓ fr x y | refl = fr

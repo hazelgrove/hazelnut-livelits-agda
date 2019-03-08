@@ -586,6 +586,9 @@ module core where
       FAp     : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x (d1 ∘ d2)
       FCast   : ∀{x d τ1 τ2} → fresh x d → fresh x (d ⟨ τ1 ⇒ τ2 ⟩)
       FFailedCast : ∀{x d τ1 τ2} → fresh x d → fresh x (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+      FFst  : ∀{x d} → fresh x d → fresh x (fst d)
+      FSnd  : ∀{x d} → fresh x d → fresh x (snd d)
+      FPair : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x ⟨ d1 , d2 ⟩
 
   -- ... for external expressions
   data freshh : Nat → hexp → Set where
@@ -597,6 +600,9 @@ module core where
     FRHEHole : ∀{x u} → freshh x (⦇⦈[ u ])
     FRHNEHole : ∀{x u e} → freshh x e → freshh x (⦇⌜ e ⌟⦈[ u ])
     FRHAp : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x (e1 ∘ e2)
+    FRHFst  : ∀{x e} → freshh x e → freshh x (fst e)
+    FRHSnd  : ∀{x e} → freshh x e → freshh x (snd e)
+    FRHPair : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x ⟨ e1 , e2 ⟩
 
   -- with respect to all bindings in a context
   freshΓ : {A : Set} → (Γ : A ctx) → (e : hexp) → Set
