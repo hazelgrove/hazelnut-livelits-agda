@@ -29,6 +29,17 @@ module elaboration-unicity where
     elaboration-unicity-synth (ESAsc x) (ESAsc x₁)
       with elaboration-unicity-ana x x₁
     ... | refl , refl , refl = refl , refl , refl
+    elaboration-unicity-synth (ESFst e1 h1) (ESFst e2 h2)
+      with elaboration-unicity-synth e1 e2
+    ... | refl , refl , refl with match-unicity-prod h1 h2
+    ... | refl = refl , refl , refl
+    elaboration-unicity-synth (ESSnd e1 h1) (ESSnd e2 h2)
+      with elaboration-unicity-synth e1 e2
+    ... | refl , refl , refl with match-unicity-prod h1 h2
+    ... | refl = refl , refl , refl
+    elaboration-unicity-synth (ESPair x x₁ e1 e2) (ESPair x₂ x₃ e3 e4)
+      with elaboration-unicity-synth e1 e3 | elaboration-unicity-synth e2 e4
+    ... | refl , refl , refl | refl , refl , refl = refl , refl , refl
 
     elaboration-unicity-ana : {Γ : tctx} {e : hexp} {τ τ1 τ2 : htyp} {d1 d2 : ihexp} {Δ1 Δ2 : hctx} →
                           Γ ⊢ e ⇐ τ ~> d1 :: τ1 ⊣ Δ1  →
