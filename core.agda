@@ -161,6 +161,16 @@ module core where
            hole-name-new e1 u →
            hole-name-new e2 u →
            hole-name-new (e1 ∘ e2) u
+    HNFst  : ∀{ u e } →
+           hole-name-new e u →
+           hole-name-new (fst e) u
+    HNSnd  : ∀{ u e } →
+           hole-name-new e u →
+           hole-name-new (snd e) u
+    HNPair : ∀{ u e1 e2 } →
+           hole-name-new e1 u →
+           hole-name-new e2 u →
+           hole-name-new ⟨ e1 , e2 ⟩ u
 
   -- two terms that do not share any hole names
   data holes-disjoint : (e1 : hexp) → (e2 : hexp) → Set where
@@ -172,6 +182,9 @@ module core where
     HDHole : ∀{u e2} → hole-name-new e2 u → holes-disjoint (⦇⦈[ u ]) e2
     HDNEHole : ∀{u e1 e2} → hole-name-new e2 u → holes-disjoint e1 e2 → holes-disjoint (⦇⌜ e1 ⌟⦈[ u ]) e2
     HDAp :  ∀{e1 e2 e3} → holes-disjoint e1 e3 → holes-disjoint e2 e3 → holes-disjoint (e1 ∘ e2) e3
+    HDFst  : ∀{e1 e2} → holes-disjoint e1 e2 → holes-disjoint (fst e1) e2
+    HDSnd  : ∀{e1 e2} → holes-disjoint e1 e2 → holes-disjoint (snd e1) e2
+    HDPair : ∀{e1 e2 e3} → holes-disjoint e1 e3 → holes-disjoint e2 e3 → holes-disjoint ⟨ e1 , e2 ⟩ e3
 
   -- bidirectional type checking judgements for hexp
   mutual
