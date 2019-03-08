@@ -124,6 +124,11 @@ module core where
     MAHole : ⦇⦈ ▸arr ⦇⦈ ==> ⦇⦈
     MAArr  : {τ1 τ2 : htyp} → τ1 ==> τ2 ▸arr τ1 ==> τ2
 
+  -- matching for products
+  data _▸prod_ : htyp → htyp → Set where
+    MAHole : ⦇⦈ ▸prod ⦇⦈ ⊗ ⦇⦈
+    MAArr  : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
+
   -- the type of hole contexts, i.e. Δs in the judgements
   hctx : Set
   hctx = (htyp ctx × htyp) ctx
@@ -194,11 +199,13 @@ module core where
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
                  Γ ⊢ ·λ x [ τ1 ] e => τ1 ==> τ2
-      SFst    : ∀{ e τ1 τ2 Γ} →
-                Γ ⊢ e => τ1 ⊗ τ2 →
+      SFst    : ∀{ e τ τ1 τ2 Γ} →
+                Γ ⊢ e => τ →
+                τ ▸prod τ1 ⊗ τ2 →
                 Γ ⊢ fst e => τ1
-      SSnd    : ∀{ e τ1 τ2 Γ} →
-                Γ ⊢ e => τ1 ⊗ τ2 →
+      SSnd    : ∀{ e τ τ1 τ2 Γ} →
+                Γ ⊢ e => τ →
+                τ ▸prod τ1 ⊗ τ2 →
                 Γ ⊢ snd e => τ2
       SPair   : ∀{ e1 e2 τ1 τ2 Γ} →
                 Γ ⊢ e1 => τ1 →
