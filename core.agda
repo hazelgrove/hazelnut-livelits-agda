@@ -126,8 +126,8 @@ module core where
 
   -- matching for products
   data _▸prod_ : htyp → htyp → Set where
-    MAHole : ⦇⦈ ▸prod ⦇⦈ ⊗ ⦇⦈
-    MAArr  : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
+    MPHole : ⦇⦈ ▸prod ⦇⦈ ⊗ ⦇⦈
+    MPProd  : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
 
   -- the type of hole contexts, i.e. Δs in the judgements
   hctx : Set
