@@ -64,4 +64,6 @@ module lemmas-consistency where
   ~apart-converse τ1 τ2 ne    | Inr h      = h
 
   ~decPair : (τ1 τ2 τ3 τ4 : htyp) → ((τ1 ⊗ τ2) ~ (τ3 ⊗ τ4) → ⊥) → (τ1 ~ τ3 → ⊥) + (τ2 ~ τ4 → ⊥)
-  ~decPair τ1 τ2 τ3 τ4 inc = {!!}
+  ~decPair τ1 τ2 τ3 τ4 inc with ~apart-converse (τ1 ⊗ τ2) (τ3 ⊗ τ4) inc
+  ~decPair τ1 τ2 τ3 τ4 inc    | ICProd1 h                                = Inl (~apart h)
+  ~decPair τ1 τ2 τ3 τ4 inc    | ICProd2 h                                = Inr (~apart h)
