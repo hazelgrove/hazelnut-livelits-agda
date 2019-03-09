@@ -23,8 +23,8 @@ module disjointness where
                                             disjoint-parts (elab-new-disjoint-ana hn x₄)
                                                   (elab-new-disjoint-ana hn₁ x₅)
     elab-new-disjoint-synth (HNLam1 hn) ()
-    elab-new-disjoint-synth (HNFst hn) (ESFst h x) = elab-new-disjoint-synth hn h
-    elab-new-disjoint-synth (HNSnd hn) (ESSnd h x) = elab-new-disjoint-synth hn h
+    elab-new-disjoint-synth (HNFst hn) (ESFst x x₁ x₂) = elab-new-disjoint-ana hn x₂
+    elab-new-disjoint-synth (HNSnd hn) (ESSnd x x₁ x₂) = elab-new-disjoint-ana hn x₂
     elab-new-disjoint-synth (HNPair hn hn₁) (ESPair x x₁ h h₁) = disjoint-parts (elab-new-disjoint-synth hn h) (elab-new-disjoint-synth hn₁ h₁)
 
     elab-new-disjoint-ana : ∀ { e u τ d Δ Γ Γ' τ' τ2} →
@@ -54,8 +54,8 @@ module disjointness where
     elab-disjoint-new-synth (ESNEHole {Δ = Δ} x ex) disj = HNNEHole (singles-notequal (disjoint-union2 {Γ1 = Δ} disj))
                                                                       (elab-disjoint-new-synth ex (disjoint-union1 disj))
     elab-disjoint-new-synth (ESAsc x) disj = HNAsc (elab-disjoint-new-ana x disj)
-    elab-disjoint-new-synth (ESFst h x) disj = HNFst (elab-disjoint-new-synth h disj)
-    elab-disjoint-new-synth (ESSnd h x) disj = HNSnd (elab-disjoint-new-synth h disj)
+    elab-disjoint-new-synth (ESFst x x₁ x₂) disj = HNFst (elab-disjoint-new-ana x₂ disj)
+    elab-disjoint-new-synth (ESSnd x x₁ x₂) disj = HNSnd (elab-disjoint-new-ana x₂ disj)
     elab-disjoint-new-synth (ESPair {Δ1 = Δ1} x x₁ h h₁) disj
       with elab-disjoint-new-synth h (disjoint-union1 disj) | elab-disjoint-new-synth h₁ (disjoint-union2 {Γ1 = Δ1} disj)
     ... | ih1 | ih2 = HNPair ih1 ih2
@@ -172,8 +172,8 @@ module disjointness where
                                                                        (dom-single u)
     holes-delta-synth (HAp h h₁) (ESAp x x₁ x₂ x₃ x₄ x₅) = dom-union (holes-disjoint-disjoint h h₁ x) (holes-delta-ana h x₄) (holes-delta-ana h₁ x₅)
     holes-delta-synth (HLam1 h) ()
-    holes-delta-synth (HFst h) (ESFst h' x) = holes-delta-synth h h'
-    holes-delta-synth (HSnd h) (ESSnd h' x) = holes-delta-synth h h'
+    holes-delta-synth (HFst h) (ESFst x x₁ x₂) = holes-delta-ana h x₂
+    holes-delta-synth (HSnd h) (ESSnd x x₁ x₂) = holes-delta-ana h x₂
     holes-delta-synth (HPair h h₁) (ESPair x x₁ h' h'') = dom-union (holes-disjoint-disjoint h h₁ x) (holes-delta-synth h h') (holes-delta-synth h₁ h'')
 
   -- these are the main result of this file:

@@ -311,14 +311,16 @@ module core where
       ESAsc : ∀ {Γ e τ d τ' Δ} →
                  Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                  Γ ⊢ (e ·: τ) ⇒ τ ~> d ⟨ τ' ⇒ τ ⟩ ⊣ Δ
-      ESFst  : ∀{Γ e τ d τ1 τ2 Δ} →
-                 Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
+      ESFst  : ∀{Γ e τ τ' d τ1 τ2 Δ} →
+                 Γ ⊢ e => τ →
                  τ ▸prod τ1 ⊗ τ2 →
-                 Γ ⊢ fst e ⇒ τ1 ~> fst d ⊣ Δ
-      ESSnd  : ∀{Γ e τ d τ1 τ2 Δ} →
-                 Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
+                 Γ ⊢ e ⇐ τ1 ⊗ τ2 ~> d :: τ' ⊣ Δ →
+                 Γ ⊢ fst e ⇒ τ1 ~> fst (d ⟨ τ' ⇒ τ1 ⊗ τ2 ⟩) ⊣ Δ
+      ESSnd  : ∀{Γ e τ τ' d τ1 τ2 Δ} →
+                 Γ ⊢ e => τ →
                  τ ▸prod τ1 ⊗ τ2 →
-                 Γ ⊢ snd e ⇒ τ2 ~> snd d ⊣ Δ
+                 Γ ⊢ e ⇐ τ1 ⊗ τ2 ~> d :: τ' ⊣ Δ →
+                 Γ ⊢ snd e ⇒ τ2 ~> snd (d ⟨ τ' ⇒ τ1 ⊗ τ2 ⟩) ⊣ Δ
       ESPair : ∀{Γ e1 τ1 d1 Δ1 e2 τ2 d2 Δ2} →
                  holes-disjoint e1 e2 →
                  Δ1 ## Δ2 →
