@@ -13,6 +13,8 @@ module lemmas-progress-checks where
   boxedval-not-trans (BVHoleCast GHole bv) (ITGround (MGArr x)) = x refl
   boxedval-not-trans (BVHoleCast x a) (ITExpand ())
   boxedval-not-trans (BVHoleCast x x₁) (ITCastFail x₂ () x₄)
+  boxedval-not-trans (BVHoleCast GBase bv) (ITGround ())
+  boxedval-not-trans (BVHoleCast GProd bv) (ITGround (MGProd x)) = x refl
 
   -- indets don't have an instruction transition
   indet-not-trans : ∀{d d'} → d indet → d →> d' → ⊥
@@ -32,6 +34,10 @@ module lemmas-progress-checks where
   indet-not-trans (ICastGroundHole x x₁) (ITCastFail x₂ () x₄)
   indet-not-trans (ICastHoleGround x x₁ x₂) (ITCastFail x₃ x₄ x₅) = x _ _ refl
   indet-not-trans (IFailedCast x x₁ x₂ x₃) ()
+  indet-not-trans (ICastGroundHole GBase ind) (ITGround ())
+  indet-not-trans (ICastGroundHole GProd ind) (ITGround (MGProd x)) = x refl
+  indet-not-trans (ICastHoleGround x ind GBase) (ITExpand ())
+  indet-not-trans (ICastHoleGround x ind GProd) (ITExpand (MGProd x₁)) = x₁ refl
 
   -- finals don't have an instruction transition
   final-not-trans : ∀{d d'} → d final → d →> d' → ⊥

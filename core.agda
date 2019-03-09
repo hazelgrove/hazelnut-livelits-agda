@@ -350,6 +350,7 @@ module core where
   data _ground : (τ : htyp) → Set where
     GBase : b ground
     GHole : ⦇⦈ ==> ⦇⦈ ground
+    GProd : ⦇⦈ ⊗ ⦇⦈ ground
 
   mutual
     -- substitution typing
@@ -532,6 +533,9 @@ module core where
     MGArr : ∀{τ1 τ2} →
             (τ1 ==> τ2) ≠ (⦇⦈ ==> ⦇⦈) →
             (τ1 ==> τ2) ▸gnd (⦇⦈ ==> ⦇⦈)
+    MGProd : ∀{τ1 τ2} →
+            (τ1 ⊗ τ2) ≠ (⦇⦈ ⊗ ⦇⦈) →
+            (τ1 ⊗ τ2) ▸gnd (⦇⦈ ⊗ ⦇⦈)
 
   -- instruction transition judgement
   data _→>_ : (d d' : ihexp) → Set where

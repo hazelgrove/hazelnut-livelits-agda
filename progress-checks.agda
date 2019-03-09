@@ -38,6 +38,7 @@ module progress-checks where
   boxedval-not-step (BVHoleCast x bv) (_ , Step (FHCast x₁) x₂ (FHCast x₃)) = boxedval-not-step bv (_ , Step x₁ x₂ x₃)
   boxedval-not-step (BVHoleCast x x₁) (_ , Step FHOuter (ITExpand ()) FHOuter)
   boxedval-not-step (BVHoleCast x x₁) (_ , Step FHOuter (ITCastFail x₂ () x₄) FHOuter)
+  boxedval-not-step (BVHoleCast GProd bv) (_ , Step FHOuter (ITGround (MGProd x₁)) FHOuter) = x₁ refl
 
   mutual
     -- indeterminates don't step
@@ -65,6 +66,10 @@ module progress-checks where
     indet-not-step (ICastHoleGround x x₁ x₂) (_ , Step FHOuter (ITCastFail x₃ x₄ x₅) FHOuter) = x _ _ refl
     indet-not-step (IFailedCast x x₁ x₂ x₃) (d' , Step FHOuter () FHOuter)
     indet-not-step (IFailedCast x x₁ x₂ x₃) (_ , Step (FHFailedCast x₄) x₅ (FHFailedCast x₆)) = final-not-step x (_ , Step x₄ x₅ x₆)
+    indet-not-step (ICastGroundHole GBase ind) (_ , Step FHOuter (ITGround ()) FHOuter)
+    indet-not-step (ICastGroundHole GProd ind) (_ , Step FHOuter (ITGround (MGProd x)) FHOuter) = x refl
+    indet-not-step (ICastHoleGround x ind GBase) (_ , Step FHOuter (ITExpand ()) FHOuter)
+    indet-not-step (ICastHoleGround x ind GProd) (_ , Step FHOuter (ITExpand (MGProd x₁)) FHOuter) = x₁ refl
 
     -- final expressions don't step
     final-not-step : ∀{d} → d final → Σ[ d' ∈ ihexp ] (d ↦ d') → ⊥
