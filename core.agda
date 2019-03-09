@@ -439,6 +439,7 @@ module core where
   data _val : (d : ihexp) → Set where
     VConst : c val
     VLam   : ∀{x τ d} → (·λ x [ τ ] d) val
+    VPair  : ∀{d1 d2} → d1 val → d2 val → ⟨ d1 , d2 ⟩ val
 
   -- boxed values
   data _boxedval : (d : ihexp) → Set where
@@ -447,6 +448,10 @@ module core where
                 τ1 ==> τ2 ≠ τ3 ==> τ4 →
                 d boxedval →
                 d ⟨ (τ1 ==> τ2) ⇒ (τ3 ==> τ4) ⟩ boxedval
+    BVProdCast : ∀{ d τ1 τ2 τ3 τ4 } →
+                τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
+                d boxedval →
+                d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ boxedval
     BVHoleCast : ∀{ τ d } → τ ground → d boxedval → d ⟨ τ ⇒ ⦇⦈ ⟩ boxedval
 
   mutual
@@ -459,10 +464,30 @@ module core where
                        d1 indet →
                        d2 final →
                        (d1 ∘ d2) indet
+      IFst   : ∀{d} →
+               d indet →
+               (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
+               (fst d) indet
+      ISnd   : ∀{d} →
+               d indet →
+               (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
+               (snd d) indet
+      IPair1 : ∀{d1 d2} →
+               d1 indet →
+               d2 final →
+               ⟨ d1 , d2 ⟩ indet
+      IPair2 : ∀{d1 d2} →
+               d1 final →
+               d2 indet →
+               ⟨ d1 , d2 ⟩ indet
       ICastArr : ∀{d τ1 τ2 τ3 τ4} →
                  τ1 ==> τ2 ≠ τ3 ==> τ4 →
                  d indet →
                  d ⟨ (τ1 ==> τ2) ⇒ (τ3 ==> τ4) ⟩ indet
+      ICastProd : ∀{d τ1 τ2 τ3 τ4} →
+                 τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
+                 d indet →
+                 d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ indet
       ICastGroundHole : ∀{ τ d } →
                         τ ground →
                         d indet →
@@ -493,6 +518,10 @@ module core where
     _∘₁_ : ectx → ihexp → ectx
     _∘₂_ : ihexp → ectx → ectx
     ⦇⌜_⌟⦈⟨_⟩ : ectx → (Nat × env ) → ectx
+    fst·_ : ectx → ectx
+    snd·_ : ectx → ectx
+    ⟨_,_⟩₁ : ectx → ihexp → ectx
+    ⟨_,_⟩₂ : ihexp → ectx → ectx
     _⟨_⇒_⟩ : ectx → htyp → htyp → ectx
     _⟨_⇒⦇⦈⇏_⟩ : ectx → htyp → htyp → ectx
 
@@ -516,6 +545,17 @@ module core where
     ECNEHole : ∀{ε u σ} →
                ε evalctx →
                ⦇⌜ ε ⌟⦈⟨ u , σ ⟩ evalctx
+    ECFst   : ∀{ε} →
+              (fst· ε) evalctx
+    ECSnd   : ∀{ε} →
+              (snd· ε) evalctx
+    ECPair1 : ∀{d ε} →
+              ε evalctx →
+              ⟨ ε , d ⟩₁ evalctx
+    ECPair2 : ∀{d ε} →
+              -- d final → -- red brackets
+              ε evalctx →
+              ⟨ d , ε ⟩₂ evalctx
     ECCast : ∀{ ε τ1 τ2} →
              ε evalctx →
              (ε ⟨ τ1 ⇒ τ2 ⟩) evalctx
@@ -536,6 +576,18 @@ module core where
     FHNEHole : ∀{ d d' ε u σ} →
               d == ε ⟦ d' ⟧ →
               ⦇⌜ d ⌟⦈⟨ (u , σ ) ⟩ ==  ⦇⌜ ε ⌟⦈⟨ (u , σ ) ⟩ ⟦ d' ⟧
+    FHFst   : ∀{d d' ε} →
+              d == ε ⟦ d' ⟧ →
+              fst d == (fst· ε) ⟦ d' ⟧
+    FHSnd   : ∀{d d' ε} →
+              d == ε ⟦ d' ⟧ →
+              snd d == (snd· ε) ⟦ d' ⟧
+    FHPair1 : ∀{d1 d1' d2 ε} →
+              d1 == ε ⟦ d1' ⟧ →
+              ⟨ d1 , d2 ⟩ == ⟨ ε , d2 ⟩₁ ⟦ d1' ⟧
+    FHPair2 : ∀{d1 d2 d2' ε} →
+              d2 == ε ⟦ d2' ⟧ →
+              ⟨ d1 , d2 ⟩ == ⟨ d1 , ε ⟩₂ ⟦ d2' ⟧
     FHCast : ∀{ d d' ε τ1 τ2 } →
             d == ε ⟦ d' ⟧ →
             d ⟨ τ1 ⇒ τ2 ⟩ == ε ⟨ τ1 ⇒ τ2 ⟩ ⟦ d' ⟧
@@ -557,6 +609,14 @@ module core where
     ITLam : ∀{ x τ d1 d2 } →
             -- d2 final → -- red brackets
             ((·λ x [ τ ] d1) ∘ d2) →> ([ d2 / x ] d1)
+    ITFst : ∀{d1 d2} →
+            -- d1 final → -- red brackets
+            -- d2 final → -- red brackets
+            fst ⟨ d1 , d2 ⟩ →> d1
+    ITSnd : ∀{d1 d2} →
+            -- d1 final → -- red brackets
+            -- d2 final → -- red brackets
+            snd ⟨ d1 , d2 ⟩ →> d2
     ITCastID : ∀{d τ } →
                -- d final → -- red brackets
                (d ⟨ τ ⇒ τ ⟩) →> d
