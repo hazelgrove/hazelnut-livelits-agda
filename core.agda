@@ -282,6 +282,9 @@ module core where
     CINEHole : ∀{d u} → cast-id d → cast-id (⦇⌜ d ⌟⦈⟨ u ⟩)
     CIAp     : ∀{d1 d2} → cast-id d1 → cast-id d2 → cast-id (d1 ∘ d2)
     CICast   : ∀{d τ} → cast-id d → cast-id (d ⟨ τ ⇒ τ ⟩)
+    CIFst    : ∀{d} → cast-id d → cast-id (fst d)
+    CISnd    : ∀{d} → cast-id d → cast-id (snd d)
+    CIPair   : ∀{d1 d2} → cast-id d1 → cast-id d2 → cast-id ⟨ d1 , d2 ⟩
 
   -- expansion
   mutual
@@ -396,6 +399,16 @@ module core where
              τ2 ground →
              τ1 ≠ τ2 →
              Δ , Γ ⊢ d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ :: τ2
+      TAFst : ∀{Δ Γ d τ1 τ2} →
+             Δ , Γ ⊢ d :: τ1 ⊗ τ2 →
+             Δ , Γ ⊢ fst d :: τ1
+      TASnd : ∀{Δ Γ d τ1 τ2} →
+             Δ , Γ ⊢ d :: τ1 ⊗ τ2 →
+             Δ , Γ ⊢ snd d :: τ2
+      TAPair : ∀{Δ Γ d1 d2 τ1 τ2} →
+             Δ , Γ ⊢ d1 :: τ1 →
+             Δ , Γ ⊢ d2 :: τ2 →
+             Δ , Γ ⊢ ⟨ d1 , d2 ⟩ :: τ1 ⊗ τ2
 
   -- substitution
   [_/_]_ : ihexp → Nat → ihexp → ihexp
@@ -655,7 +668,9 @@ module core where
             unbound-in x (d1 ∘ d2)
       UBCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒ τ2 ⟩)
       UBFailedCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
-
+      UBFst  : ∀{x d} → unbound-in x d → unbound-in x (fst d)
+      UBSnd  : ∀{x d} → unbound-in x d → unbound-in x (snd d)
+      UBPair : ∀{x d1 d2} → unbound-in x d1 → unbound-in x d2 → unbound-in x ⟨ d1 , d2 ⟩
 
   mutual
     data binders-disjoint-σ : env → ihexp → Set where
@@ -681,6 +696,12 @@ module core where
                           → binders-disjoint (d1 ∘ d2) d3
       BDCast : ∀{d1 d2 τ1 τ2} → binders-disjoint d1 d2 → binders-disjoint (d1 ⟨ τ1 ⇒ τ2 ⟩) d2
       BDFailedCast : ∀{d1 d2 τ1 τ2} → binders-disjoint d1 d2 → binders-disjoint (d1 ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) d2
+      BDFst  : ∀{d1 d2} → binders-disjoint d1 d2 → binders-disjoint (fst d1) d2
+      BDSnd  : ∀{d1 d2} → binders-disjoint d1 d2 → binders-disjoint (snd d1) d2
+      BDPair : ∀{d1 d2 d3} →
+               binders-disjoint d1 d3 →
+               binders-disjoint d2 d3 →
+               binders-disjoint ⟨ d1 , d2 ⟩ d3
 
   mutual
   -- each term has to be binders unique, and they have to be pairwise
@@ -712,6 +733,17 @@ module core where
                            → binders-unique (d ⟨ τ1 ⇒ τ2 ⟩)
       BUFailedCast : ∀{d τ1 τ2} → binders-unique d
                                  → binders-unique (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+      BUFst  : ∀{d} →
+               binders-unique d →
+               binders-unique (fst d)
+      BUSnd  : ∀{d} →
+               binders-unique d →
+               binders-unique (snd d)
+      BUPair : ∀{d1 d2} →
+               binders-unique d1 →
+               binders-unique d2 →
+               binders-disjoint d1 d2 →
+               binders-unique ⟨ d1 , d2 ⟩
 
   _⇓_ : ihexp → ihexp → Set
   d1 ⇓ d2 = (d1 ↦* d2 × d2 final)
