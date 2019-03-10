@@ -15,6 +15,8 @@ module canonical-value-forms where
   canonical-value-forms-b (TANEHole x wt x₁) ()
   canonical-value-forms-b (TACast wt x) ()
   canonical-value-forms-b (TAFailedCast wt x x₁ x₂) ()
+  canonical-value-forms-b (TAFst wt) ()
+  canonical-value-forms-b (TASnd wt) ()
 
   canonical-value-forms-arr : ∀{Δ d τ1 τ2} →
                               Δ , ∅ ⊢ d :: (τ1 ==> τ2) →
@@ -29,6 +31,25 @@ module canonical-value-forms where
   canonical-value-forms-arr (TANEHole x wt x₁) ()
   canonical-value-forms-arr (TACast wt x) ()
   canonical-value-forms-arr (TAFailedCast x x₁ x₂ x₃) ()
+  canonical-value-forms-arr (TAFst wt) ()
+  canonical-value-forms-arr (TASnd wt) ()
+
+  canonical-value-forms-prod : ∀{Δ d τ1 τ2} →
+                               Δ , ∅ ⊢ d :: (τ1 ⊗ τ2) →
+                               d val →
+                               Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
+                                 ((d == ⟨ d1 , d2 ⟩ ) ×
+                                  (Δ , ∅ ⊢ d1 :: τ1) ×
+                                  (Δ , ∅ ⊢ d2 :: τ2))
+  canonical-value-forms-prod (TAVar x₁) ()
+  canonical-value-forms-prod (TAAp wt wt₁) ()
+  canonical-value-forms-prod (TAEHole x x₁) ()
+  canonical-value-forms-prod (TANEHole x wt x₁) ()
+  canonical-value-forms-prod (TACast wt x) ()
+  canonical-value-forms-prod (TAFailedCast wt x x₁ x₂) ()
+  canonical-value-forms-prod (TAFst wt) ()
+  canonical-value-forms-prod (TASnd wt) ()
+  canonical-value-forms-prod (TAPair wt wt₁) (VPair dv dv₁) = _ , _ , refl , wt , wt₁
 
   -- this argues (somewhat informally, because you still have to inspect
   -- the types of the theorems above and manually verify this property)
@@ -40,15 +61,19 @@ module canonical-value-forms where
                                    d val →
                                    τ ≠ b →
                                    ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ==> τ2)) →
+                                   ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ⊗ τ2)) →
                                    ⊥
-  canonical-value-forms-coverage1 TAConst VConst = λ z _ → z refl
+  canonical-value-forms-coverage1 TAConst VConst = λ z _ _ → z refl
   canonical-value-forms-coverage1 (TAVar x₁) ()
-  canonical-value-forms-coverage1 (TALam _ wt) VLam = λ _ z → z _ _ refl
+  canonical-value-forms-coverage1 (TALam _ wt) VLam = λ _ z _ → z _ _ refl
   canonical-value-forms-coverage1 (TAAp wt wt₁) ()
   canonical-value-forms-coverage1 (TAEHole x x₁) ()
   canonical-value-forms-coverage1 (TANEHole x wt x₁) ()
   canonical-value-forms-coverage1 (TACast wt x) ()
   canonical-value-forms-coverage1 (TAFailedCast wt x x₁ x₂) ()
+  canonical-value-forms-coverage1 (TAFst wt) ()
+  canonical-value-forms-coverage1 (TASnd wt) ()
+  canonical-value-forms-coverage1 (TAPair wt wt₁) (VPair dv dv₁) ne h = λ z → z _ _ refl
 
   canonical-value-forms-coverage2 : ∀{Δ d} →
                                    Δ , ∅ ⊢ d :: ⦇⦈ →
@@ -60,3 +85,5 @@ module canonical-value-forms where
   canonical-value-forms-coverage2 (TANEHole x wt x₁) ()
   canonical-value-forms-coverage2 (TACast wt x) ()
   canonical-value-forms-coverage2 (TAFailedCast wt x x₁ x₂) ()
+  canonical-value-forms-coverage2 (TAFst wt) ()
+  canonical-value-forms-coverage2 (TASnd wt) ()
