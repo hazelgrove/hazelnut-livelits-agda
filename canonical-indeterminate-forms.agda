@@ -111,7 +111,7 @@ module canonical-indeterminate-forms where
          ((τ3 τ4 τ3' τ4' : htyp) (d1' : ihexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
         → cif-arr Δ d τ1 τ2
-    CIFBFst : ∀{Δ d τ1 τ2} →
+    CIFAFst : ∀{Δ d τ1 τ2} →
       Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
         ((d == fst d') ×
          (Δ , ∅ ⊢ d' :: (τ1 ==> τ2) ⊗ τ') ×
@@ -119,7 +119,7 @@ module canonical-indeterminate-forms where
          (∀{d1 d2} → d' ≠ ⟨ d1 , d2 ⟩)
         )
         → cif-arr Δ d τ1 τ2
-    CIFBSnd : ∀{Δ d τ1 τ2} →
+    CIFASnd : ∀{Δ d τ1 τ2} →
       Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
         ((d == snd d') ×
          (Δ , ∅ ⊢ d' :: τ' ⊗ (τ1 ==> τ2)) ×
@@ -168,8 +168,8 @@ module canonical-indeterminate-forms where
   canonical-indeterminate-forms-arr (TACast wt x) (ICastArr x₁ ind) = CIFACast (_ , _ , _ , _ , _ , refl , wt , ind , x₁)
   canonical-indeterminate-forms-arr (TACast wt TCHole2) (ICastHoleGround x₁ ind GHole) = CIFACastHole (_ , refl , refl , refl , wt , ind , x₁)
   canonical-indeterminate-forms-arr (TAFailedCast x x₁ GHole x₃) (IFailedCast x₄ x₅ GHole x₇) = CIFAFailedCast (_ , _ , refl , refl , refl , x , x₅ , x₇)
-  canonical-indeterminate-forms-arr (TAFst wt) (IFst ind x) = CIFBFst (_ , _ , refl , wt , ind , x)
-  canonical-indeterminate-forms-arr (TASnd wt) (ISnd ind x) = CIFBSnd (_ , _ , refl , wt , ind , x)
+  canonical-indeterminate-forms-arr (TAFst wt) (IFst ind x) = CIFAFst (_ , _ , refl , wt , ind , x)
+  canonical-indeterminate-forms-arr (TASnd wt) (ISnd ind x) = CIFASnd (_ , _ , refl , wt , ind , x)
 
   -- this type gives somewhat nicer syntax for the output of the canonical
   -- forms lemma for indeterminates at hole type
@@ -200,7 +200,7 @@ module canonical-indeterminate-forms where
          ((τ3 τ4 τ3' τ4' : htyp) (d1' : ihexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
       → cif-hole Δ d
-    CIFBFst : ∀{Δ d} →
+    CIFHFst : ∀{Δ d} →
       Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
        ((d == fst d') ×
         (Δ , ∅ ⊢ d' :: ⦇⦈ ⊗ τ') ×
@@ -208,7 +208,7 @@ module canonical-indeterminate-forms where
         (∀{d1 d2} → d' ≠ ⟨ d1 , d2 ⟩)
        )
       → cif-hole Δ d
-    CIFBSnd : ∀{Δ d} →
+    CIFHSnd : ∀{Δ d} →
       Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
        ((d == snd d') ×
         (Δ , ∅ ⊢ d' :: τ' ⊗ ⦇⦈) ×
@@ -236,8 +236,8 @@ module canonical-indeterminate-forms where
   canonical-indeterminate-forms-hole (TACast wt x) (ICastGroundHole x₁ ind) = CIFHCast (_ , _ , refl , wt , x₁ , ind)
   canonical-indeterminate-forms-hole (TACast wt x) (ICastHoleGround x₁ ind ())
   canonical-indeterminate-forms-hole (TAFailedCast x x₁ () x₃) (IFailedCast x₄ x₅ x₆ x₇)
-  canonical-indeterminate-forms-hole (TAFst wt) (IFst ind x) = CIFBFst (_ , _ , refl , wt , ind , x)
-  canonical-indeterminate-forms-hole (TASnd wt) (ISnd ind x) = CIFBSnd (_ , _ , refl , wt , ind , x)
+  canonical-indeterminate-forms-hole (TAFst wt) (IFst ind x) = CIFHFst (_ , _ , refl , wt , ind , x)
+  canonical-indeterminate-forms-hole (TASnd wt) (ISnd ind x) = CIFHSnd (_ , _ , refl , wt , ind , x)
 
   -- this type gives somewhat nicer syntax for the output of the canonical
   -- forms lemma for indeterminates at product type
@@ -268,7 +268,7 @@ module canonical-indeterminate-forms where
          ((τ3 τ4 τ3' τ4' : htyp) (d1' : ihexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
         → cif-prod Δ d τ1 τ2
-    CIFBFst : ∀{Δ d τ1 τ2} →
+    CIFPFst : ∀{Δ d τ1 τ2} →
       Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
         ((d == fst d') ×
          (Δ , ∅ ⊢ d' :: (τ1 ⊗ τ2) ⊗ τ') ×
@@ -276,7 +276,7 @@ module canonical-indeterminate-forms where
          (∀{d1 d2} → d' ≠ ⟨ d1 , d2 ⟩)
         )
         → cif-prod Δ d τ1 τ2
-    CIFBSnd : ∀{Δ d τ1 τ2} →
+    CIFPSnd : ∀{Δ d τ1 τ2} →
       Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
         ((d == snd d') ×
          (Δ , ∅ ⊢ d' :: τ' ⊗ (τ1 ⊗ τ2)) ×
@@ -284,7 +284,7 @@ module canonical-indeterminate-forms where
          (∀{d1 d2} → d' ≠ ⟨ d1 , d2 ⟩)
         )
         → cif-prod Δ d τ1 τ2
-    CIFBPair1 : ∀{Δ d τ1 τ2} →
+    CIFPPair1 : ∀{Δ d τ1 τ2} →
       Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
         ((d == ⟨ d1 , d2 ⟩) ×
          (Δ , ∅ ⊢ d1 :: τ1) ×
@@ -293,7 +293,7 @@ module canonical-indeterminate-forms where
          d2 final
         )
         → cif-prod Δ d τ1 τ2
-    CIFBPair2 : ∀{Δ d τ1 τ2} →
+    CIFPPair2 : ∀{Δ d τ1 τ2} →
       Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
         ((d == ⟨ d1 , d2 ⟩) ×
          (Δ , ∅ ⊢ d1 :: τ1) ×
@@ -342,10 +342,10 @@ module canonical-indeterminate-forms where
   canonical-indeterminate-forms-prod (TACast wt x) (ICastProd x₁ ind) = CIFPCast (_ , _ , _ , _ , _ , refl , wt , ind , x₁)
   canonical-indeterminate-forms-prod (TACast wt TCHole2) (ICastHoleGround x₁ ind GProd) = CIFPCastHole (_ , refl , refl , refl , wt , ind , x₁)
   canonical-indeterminate-forms-prod (TAFailedCast wt x GProd x₂) (IFailedCast x₃ x₄ x₅ x₆) = CIFPFailedCast (_ , _ , refl , refl , refl , wt , x₄ , x₆)
-  canonical-indeterminate-forms-prod (TAFst wt) (IFst ind x) = CIFBFst (_ , _ , refl , wt , ind , x)
-  canonical-indeterminate-forms-prod (TASnd wt) (ISnd ind x) = CIFBSnd (_ , _ , refl , wt , ind , x)
-  canonical-indeterminate-forms-prod (TAPair wt wt₁) (IPair1 ind x) = CIFBPair1 (_ , _ , refl , wt , wt₁ , ind , x)
-  canonical-indeterminate-forms-prod (TAPair wt wt₁) (IPair2 x ind) = CIFBPair2 (_ , _ , refl , wt , wt₁ , x , ind)
+  canonical-indeterminate-forms-prod (TAFst wt) (IFst ind x) = CIFPFst (_ , _ , refl , wt , ind , x)
+  canonical-indeterminate-forms-prod (TASnd wt) (ISnd ind x) = CIFPSnd (_ , _ , refl , wt , ind , x)
+  canonical-indeterminate-forms-prod (TAPair wt wt₁) (IPair1 ind x) = CIFPPair1 (_ , _ , refl , wt , wt₁ , ind , x)
+  canonical-indeterminate-forms-prod (TAPair wt wt₁) (IPair2 x ind) = CIFPPair2 (_ , _ , refl , wt , wt₁ , x , ind)
 
   canonical-indeterminate-forms-coverage : ∀{Δ d τ} →
                                            Δ , ∅ ⊢ d :: τ →
