@@ -78,10 +78,10 @@ module progress-checks where
     indet-not-step (ICastGroundHole GProd ind) (_ , Step FHOuter (ITGround (MGProd x)) FHOuter) = x refl
     indet-not-step (ICastHoleGround x ind GBase) (_ , Step FHOuter (ITExpand ()) FHOuter)
     indet-not-step (ICastHoleGround x ind GProd) (_ , Step FHOuter (ITExpand (MGProd x₁)) FHOuter) = x₁ refl
-    indet-not-step (IFst ind x) (_ , Step FHOuter ITFst fh2) = x refl
-    indet-not-step (IFst ind x) (_ , Step (FHFst fh1) it (FHFst fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
-    indet-not-step (ISnd ind x) (_ , Step FHOuter ITSnd fh2) = x refl
-    indet-not-step (ISnd ind x) (_ , Step (FHSnd fh1) it (FHSnd fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (IFst ind x _) (_ , Step FHOuter ITFst fh2) = x refl
+    indet-not-step (IFst ind x _) (_ , Step (FHFst fh1) it (FHFst fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (ISnd ind x _) (_ , Step FHOuter ITSnd fh2) = x refl
+    indet-not-step (ISnd ind x _) (_ , Step (FHSnd fh1) it (FHSnd fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
     indet-not-step (IPair1 ind x) (_ , Step FHOuter () fh2)
     indet-not-step (IPair1 ind x) (_ , Step (FHPair1 fh1) it (FHPair1 fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
     indet-not-step (IPair1 ind x) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = final-not-step x (_ , Step fh1 it fh2)
@@ -90,6 +90,8 @@ module progress-checks where
     indet-not-step (IPair2 x ind) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
     indet-not-step (ICastProd x ind) (_ , Step FHOuter ITCastID FHOuter) = x refl
     indet-not-step (ICastProd x ind) (_ , Step (FHCast fh1) it (FHCast fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (IFst (ICastProd x₂ ind) x x₁) (_ , Step FHOuter it FHOuter) = x₁ refl
+    indet-not-step (ISnd (ICastProd x₂ ind) x x₁) (_ , Step FHOuter it FHOuter) = x₁ refl
 
     -- final expressions don't step
     final-not-step : ∀{d} → d final → Σ[ d' ∈ ihexp ] (d ↦ d') → ⊥
