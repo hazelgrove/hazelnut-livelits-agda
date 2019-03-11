@@ -2,6 +2,7 @@ open import Nat
 open import Prelude
 open import core
 open import contexts
+open import lemmas-complete
 open import preservation
 
 module complete-preservation where
@@ -20,6 +21,9 @@ module complete-preservation where
   cp-subst (DCLam dc1 x₃) dc2 | Inr x₂ = DCLam (cp-subst dc1 dc2) x₃
   cp-subst (DCAp dc1 dc2) dc3 = DCAp (cp-subst dc1 dc3) (cp-subst dc2 dc3)
   cp-subst (DCCast dc1 x₁ x₂) dc2 = DCCast (cp-subst dc1 dc2) x₁ x₂
+  cp-subst (DCFst dc1) dc2 = DCFst (cp-subst dc1 dc2)
+  cp-subst (DCSnd dc1) dc2 = DCSnd (cp-subst dc1 dc2)
+  cp-subst (DCPair dc1 dc3) dc2 = DCPair (cp-subst dc1 dc2) (cp-subst dc3 dc2)
 
   -- this just lets me pull the particular x out of a derivation; it's not
   -- bound in any of the constructors explicitly since it's only in the
@@ -56,6 +60,15 @@ module complete-preservation where
   cp-rhs (DCCast dc () x₁) (TACast wt x₂) (Step FHOuter (ITExpand x₃) FHOuter)
   cp-rhs (DCCast dc x x₁) (TACast wt x₂) (Step (FHCast x₃) x₄ (FHCast x₅)) = DCCast (cp-rhs dc wt (Step x₃ x₄ x₅)) x x₁
   cp-rhs () (TAFailedCast wt x x₁ x₂) stp
+  cp-rhs (DCCast dc tc tc') (TACast wt _) (Step FHOuter (ITPairCast x₃) FHOuter) =
+    DCPair (DCCast (lem-comp-pair1 dc) (lem-comp-prod1 tc) (lem-comp-prod1 tc')) (DCCast (lem-comp-pair2 dc) (lem-comp-prod2 tc) (lem-comp-prod2 tc'))
+  cp-rhs (DCFst dc) (TAFst wt) (Step FHOuter ITFst FHOuter) = lem-comp-pair1 dc
+  cp-rhs (DCFst dc) (TAFst wt) (Step (FHFst x) x₁ (FHFst x₂)) = DCFst (cp-rhs dc wt (Step x x₁ x₂))
+  cp-rhs (DCSnd dc) (TASnd wt) (Step FHOuter ITSnd FHOuter) = lem-comp-pair2 dc
+  cp-rhs (DCSnd dc) (TASnd wt) (Step (FHSnd x) x₁ (FHSnd x₂)) = DCSnd (cp-rhs dc wt (Step x x₁ x₂))
+  cp-rhs (DCPair dc dc₁) (TAPair wt wt₁) (Step FHOuter () FHOuter)
+  cp-rhs (DCPair dc dc₁) (TAPair wt wt₁) (Step (FHPair1 x) x₁ (FHPair1 x₂)) = DCPair (cp-rhs dc wt (Step x x₁ x₂)) dc₁
+  cp-rhs (DCPair dc dc₁) (TAPair wt wt₁) (Step (FHPair2 x) x₁ (FHPair2 x₂)) = DCPair dc (cp-rhs dc₁ wt₁ (Step x x₁ x₂))
 
   -- this is the main result of this file.
   complete-preservation : ∀{d τ d' Δ} →
