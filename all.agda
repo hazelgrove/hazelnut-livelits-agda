@@ -53,6 +53,8 @@ open import weakening
 open import binders-disjoint-checks
 open import continuity
 
+open import lemmas-palettes
+open import palettes-checks
 open import typed-palette-elaboration
 open import lemmas-freevars
 open import palette-reasoning-principles

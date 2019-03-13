@@ -663,90 +663,81 @@ module core where
 -- paldefs are π
 
   -- function-like palette context well-formedness
-  data _palctx : (Φ : palctx-entry ctx) → Set where
-    PhiWFEmpty     : ∅ palctx
-    PhiWFInductive : ∀{Φ ρ π} →
-                         Φ palctx →
-                         ρ # Φ →
-                         ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
-                         (Φ ,, (ρ , FPalDef π)) palctx
-    PhiWFMac       : ∀{Φ ρ π} →
-                         Φ palctx →
-                         ρ # Φ →
-                         (Φ ,, (ρ , MPalDef π)) palctx
+  mutual
+    palctx = Σ[ Φ' ∈ palctx-entry ctx ] (Φ' palctx')
 
-  -- constructor injectivity - why isn't this automatic?
-  fpaldef-inj : ∀{π1 π2} → FPalDef π1 == FPalDef π2 → π1 == π2
-  fpaldef-inj refl = refl
+    data _palctx' : (Φ' : palctx-entry ctx) → Set where
+      PhiWFEmpty     : ∅ palctx'
+      PhiWFInductive : ∀{ρ π} →
+                           (Φ : palctx) →
+                           ρ # π1 Φ →
+                           ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
+                           (π1 Φ ,, (ρ , FPalDef π)) palctx'
+      PhiWFMac       : ∀{ρ π} →
+                           (Φ : palctx) →
+                           ρ # π1 Φ →
+                           (π1 Φ ,, (ρ , MPalDef π)) palctx'
 
-  -- constructor exclusivity - why isn't this automatic?
-  paldef-mnotf : ∀{π1 π2} → MPalDef π1 ≠ FPalDef π2
-  paldef-mnotf ()
+  _₁ : (Φ : palctx) → palctx-entry ctx
+  _₁ = π1
 
-  -- in a well-formed palette context, the `expand` of all definitions analyzes against the proper type
-  palctx-well-typed : ∀{Φ ρ π} →
-                         Φ palctx →
-                         (ρ , FPalDef π) ∈ Φ →
-                         ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π
-  palctx-well-typed PhiWFEmpty ()
-  palctx-well-typed {ρ = ρ} {π} (PhiWFInductive {Φ} {ρ'} {π'} h h# h₂) h₁ with natEQ ρ ρ'
-  palctx-well-typed {ρ = ρ} {π} (PhiWFInductive {Φ} {ρ'} {π'} h h# h₂) h₁ | Inl eq =
-    tr
-      (λ y → ∅ ⊢ fpaldef.expand y <= fpaldef.model-type y ==> fpaldef.splice-type y ==> fpaldef.expansion-type y)
-      (fpaldef-inj (someinj (! (ctx-top Φ ρ' (FPalDef π') h#) · (tr (λ y' → ((Φ ∪ (■ (ρ' , FPalDef π'))) y') == Some (FPalDef π)) eq h₁))))
-      h₂
-  palctx-well-typed {ρ = ρ} {π} (PhiWFInductive {Φ} {ρ'} {π'} h h# h₂) h₁ | Inr neq = palctx-well-typed h (lem-neq-union-eq {Γ = Φ} neq h₁)
-  palctx-well-typed {ρ = ρ} {π} (PhiWFMac {Φ} {ρ'} {π'} h h#) h₁ with natEQ ρ ρ'
-  palctx-well-typed {ρ = ρ} {π} (PhiWFMac {Φ} {ρ'} {π'} h h#) h₁ | Inl eq =
-    abort (paldef-mnotf (someinj (! (ctx-top Φ ρ' (MPalDef π') h#) · (tr (λ y' → ((Φ ∪ (■ (ρ' , MPalDef π'))) y') == Some (FPalDef π)) eq h₁))))
-  palctx-well-typed {ρ = ρ} {π} (PhiWFMac {Φ} {ρ'} {π'} h h#) h₁ | Inr neq = palctx-well-typed h (lem-neq-union-eq {Γ = Φ} neq h₁)
+  infixr 25 _₁
+
+  _,,_::_⦅given_⦆ : (Φ : palctx) →
+                 (ρ : Nat) →
+                 paldef →
+                 ρ # (Φ)₁ →
+                 palctx
+  Φ ,, ρ :: π ⦅given #h ⦆ = ((Φ)₁ ,, (ρ , MPalDef π) , PhiWFMac Φ #h)
+
+  _,,_::_⦅given_and_⦆ : (Φ : palctx) →
+                   (ρ : Nat) →
+                   (π : fpaldef) →
+                   ρ # (Φ)₁ →
+                   ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
+                   palctx
+  Φ ,, ρ :: π ⦅given #h and eh ⦆ = ((Φ)₁ ,, (ρ , FPalDef π) , PhiWFInductive Φ #h eh)
 
   -- palette expansion -- todo, should this be called elaboration?
   mutual
-    data _,_⊢_~~>_⇒_ : (Φ : palctx-entry ctx) →
+    data _,_⊢_~~>_⇒_ : (Φ : palctx) →
                        (Γ : tctx) →
                        (P : pexp) →
                        (e : hexp) →
                        (τ : htyp) →
                        Set
       where
-        SPEConst : ∀{Φ Γ} → Φ palctx → Φ , Γ ⊢ c ~~> c ⇒ b
+        SPEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c ⇒ b
         SPEAsc   : ∀{Φ Γ p e τ} →
-                           Φ palctx →
                            Φ , Γ ⊢ p ~~> e ⇐ τ →
                            Φ , Γ ⊢ (p ·: τ) ~~> e ·: τ ⇒ τ
         SPEVar   : ∀{Φ Γ x τ} →
-                           Φ palctx →
                            (x , τ) ∈ Γ →
                            Φ , Γ ⊢ (X x) ~~> (X x) ⇒ τ
         SPELam   : ∀{Φ Γ x e τ1 τ2} {p : pexp} →
-                           Φ palctx →
                            x # Γ →
                            Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇒ τ2 →
                            Φ , Γ ⊢ (·λ_[_]_ x τ1 p) ~~> (·λ x [ τ1 ] e) ⇒ (τ1 ==> τ2)
         SPEAp    : ∀{Φ Γ p1 p2 τ1 τ2 τ e1 e2} →
-                           Φ palctx →
                            Φ , Γ ⊢ p1 ~~> e1 ⇒ τ1 →
                            τ1 ▸arr τ2 ==> τ →
                            Φ , Γ ⊢ p2 ~~> e2 ⇐ τ2 →
                            holes-disjoint e1 e2 →
                            Φ , Γ ⊢ p1 ∘ p2 ~~> e1 ∘ e2 ⇒ τ
-        SPEHole  : ∀{Φ Γ u} → Φ palctx → Φ , Γ ⊢ ⦇⦈[ u ] ~~> ⦇⦈[ u ] ⇒ ⦇⦈
+        SPEHole  : ∀{Φ Γ u} → Φ , Γ ⊢ ⦇⦈[ u ] ~~> ⦇⦈[ u ] ⇒ ⦇⦈
         SPNEHole : ∀{Φ Γ p e τ u} →
-                           Φ palctx →
                            hole-name-new e u →
                            Φ , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈
         SPELetPal : ∀{Φ Γ π ρ p e τ} →
-                           Φ palctx →
+                           (#h : ρ # (Φ)₁) →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
-                           (Φ ,, (ρ , MPalDef π)) , Γ ⊢ p ~~> e ⇒ τ →
+                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
         SPEApPal  : ∀{Φ Γ ρ dm π denc eexpanded τsplice psplice esplice} →
-                         Φ palctx →
                          holes-disjoint eexpanded esplice →
                          freshΓ Γ eexpanded →
-                         (ρ , MPalDef π) ∈ Φ  →
+                         (ρ , MPalDef π) ∈ (Φ)₁ →
                          ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
                          ((paldef.expand π) ∘ dm) ⇓ denc →
                          denc ↑ eexpanded →
@@ -754,25 +745,24 @@ module core where
                          ∅ ⊢ eexpanded <= τsplice ==> (paldef.expansion-type π) →
                          Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> paldef.expansion-type π) ∘ esplice) ⇒ paldef.expansion-type π
         SPELetFPal : ∀{Φ Γ π ρ p e τ} →
-                         Φ palctx →
-                         ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
-                         (Φ ,, (ρ , FPalDef π)) , Γ ⊢ p ~~> e ⇒ τ →
+                         (#h : ρ # (Φ)₁) →
+                         (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
+                         (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ p ~~> e ⇒ τ →
                          Φ , Γ ⊢ let-fpal ρ be π ·in p ~~> e ⇒ τ
         SPEApFPal : ∀{Φ Γ π ρ emodel psplice esplice} →
-                         Φ palctx →
                          holes-disjoint (fpaldef.expand π) emodel →
                          holes-disjoint (fpaldef.expand π) esplice →
                          holes-disjoint emodel esplice →
                          freshΓ Γ (fpaldef.expand π) →
                          freshΓ Γ emodel →
-                         (ρ , FPalDef π) ∈ Φ  →
+                         (ρ , FPalDef π) ∈ (Φ)₁ →
                          Φ , Γ ⊢ psplice ~~> esplice ⇐ fpaldef.splice-type π →
                          ∅ ⊢ emodel <= fpaldef.model-type π →
                          Φ , Γ ⊢ ap-fpal ρ emodel psplice ~~>
                                  (((fpaldef.expand π ·: fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) ∘ emodel) ∘ esplice) ⇒
                                  fpaldef.expansion-type π
 
-    data _,_⊢_~~>_⇐_ : (Φ : palctx-entry ctx) →
+    data _,_⊢_~~>_⇐_ : (Φ : palctx) →
                        (Γ : tctx) →
                        (P : pexp) →
                        (e : hexp) →
@@ -780,23 +770,21 @@ module core where
                        Set
       where
         APELam     : ∀{Φ Γ x e τ τ1 τ2} {p : pexp} →
-                           Φ palctx →
                            x # Γ →
                            τ ▸arr τ1 ==> τ2 →
                            Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇐ τ2 →
                            Φ , Γ ⊢ (·λ x p) ~~> (·λ x e) ⇐ τ
         APESubsume : ∀{Φ Γ p e τ τ'} →
-                           Φ palctx →
                            Φ , Γ ⊢ p ~~> e ⇒ τ' →
                            τ ~ τ' →
                            Φ , Γ ⊢ p ~~> e ⇐ τ
         APELetPal  : ∀{Φ Γ π ρ p e τ} →
-                           Φ palctx →
+                           (#h : ρ # (Φ)₁) →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
-                           (Φ ,, (ρ , MPalDef π)) , Γ ⊢ p ~~> e ⇐ τ →
+                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ p ~~> e ⇐ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇐ τ
         APELetFPal : ∀{Φ Γ π ρ p e τ} →
-                           Φ palctx →
-                           ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
-                           (Φ ,, (ρ , FPalDef π)) , Γ ⊢ p ~~> e ⇐ τ →
+                           (#h : ρ # (Φ)₁) →
+                           (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
+                           (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ p ~~> e ⇐ τ →
                            Φ , Γ ⊢ let-fpal ρ be π ·in p ~~> e ⇐ τ
