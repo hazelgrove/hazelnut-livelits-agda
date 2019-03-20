@@ -3,8 +3,6 @@ open import Prelude
 open import core
 open import contexts
 
-open import lemmas-palettes
-
 module palettes-checks where
   -- in a well-formed palette context, the `expand` of all definitions analyzes against the proper type
   palctx-well-typed : ∀{ρ π} →
