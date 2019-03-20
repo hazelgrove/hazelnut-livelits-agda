@@ -1,5 +1,6 @@
 open import Nat
 open import Prelude
+open import List
 
 open import contexts
 open import core
@@ -53,7 +54,6 @@ open import weakening
 open import binders-disjoint-checks
 open import continuity
 
-open import lemmas-palettes
 open import palettes-checks
 open import typed-palette-elaboration
 open import lemmas-freevars
