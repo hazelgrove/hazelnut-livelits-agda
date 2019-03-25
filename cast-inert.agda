@@ -25,9 +25,6 @@ module cast-inert where
     with complete-consistency x₂ x x₁
   ... | refl = CICast (cast-inert dc wt)
   cast-inert () (TAFailedCast wt x x₁ x₂)
-  cast-inert (DCFst dc) (TAFst wt) = CIFst (cast-inert dc wt)
-  cast-inert (DCSnd dc) (TASnd wt) = CISnd (cast-inert dc wt)
-  cast-inert (DCPair dc dc₁) (TAPair wt wt₁) = CIPair (cast-inert dc wt) (cast-inert dc₁ wt₁)
 
   -- in a well typed complete internal expression, every cast is the
   -- identity cast.
