@@ -25,22 +25,3 @@ module ground-decidable where
   ground-decidable ((τ ==> τ₂) ==> τ₁ ⊗ τ₃) = Inr (λ ())
   ground-decidable (τ ⊗ τ₁ ==> τ₂) = Inr (λ ())
   ground-decidable (τ ⊗ τ₁ ⊗ τ₂) = Inr (λ ())
-
-  -- TODO this is not used anywhere but is almost equivalent to lemmas-ground.notground
-  ground-arr-lem :
-                   (τ : htyp) →
-                   ((τ ground) → ⊥) →
-                   (τ ≠  ⦇⦈) →
-                   Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ]
-                     (((τ == (τ1 ==> τ2)) × ((τ1 ==> τ2) ≠ (⦇⦈ ==> ⦇⦈))) +
-                      ((τ == (τ1 ⊗ τ2))  × ((τ1 ⊗ τ2)   ≠ (⦇⦈ ⊗ ⦇⦈))))
-  ground-arr-lem b ng nh = abort (ng GBase)
-  ground-arr-lem ⦇⦈ ng nh = abort (nh refl)
-  ground-arr-lem (τ1 ==> τ2) ng nh = τ1 , τ2 , Inl (refl , λ x → ng (lem' x))
-    where
-      lem' : ∀{τ1 τ2} → τ1 ==> τ2 == ⦇⦈ ==> ⦇⦈ → (τ1 ==> τ2) ground
-      lem' refl = GHole
-  ground-arr-lem (τ1 ⊗ τ2) ng nh = τ1 , τ2 , Inr (refl , (λ x → ng (lem' x)))
-    where
-      lem' : ∀{τ1 τ2} → τ1 ⊗ τ2 == ⦇⦈ ⊗ ⦇⦈ → (τ1 ⊗ τ2) ground
-      lem' refl = GProd

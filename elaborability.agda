@@ -52,13 +52,13 @@ module elaborability where
     elaborability-ana {e = ·λ x e} (ASubsume D x₁)               | _ , _ , D' = _ , _ , _ , EASubsume (λ _ ()) (λ _ _ ()) D' x₁
     elaborability-ana {e = ·λ x [ x₁ ] e} (ASubsume D x₂)        | _ , _ , D' = _ , _ , _ , EASubsume (λ _ ()) (λ _ _ ()) D' x₂
     elaborability-ana {e = e1 ∘ e2} (ASubsume D x₁)              | _ , _ , D' = _ , _ , _ , EASubsume (λ _ ()) (λ _ _ ()) D' x₁
+    elaborability-ana {Γ} {⟨ e , e₁ ⟩} (ASubsume _ h)            | _ , _ , D' = _ , _ , _ , EASubsume (λ _ ()) (λ _ _ ()) D' h
+    elaborability-ana {Γ} {fst e} (ASubsume _ h)                 | _ , _ , D' = _ , _ , _ , EASubsume (λ _ ()) (λ _ _ ()) D' h
+    elaborability-ana {Γ} {snd e} (ASubsume _ h)                 | _ , _ , D' = _ , _ , _ , EASubsume (λ _ ()) (λ _ _ ()) D' h
     -- the two holes are special-cased
     elaborability-ana {e = ⦇⦈[ x ]} (ASubsume _ _ )                   | _ , _ , _  = _ , _ , _ , EAEHole
     elaborability-ana {Γ} {⦇⌜ e ⌟⦈[ x ]} (ASubsume (SNEHole new wt) x₂) | _ , _ , ESNEHole x₁ D' with elaborability-synth wt
     ... | w , y , z =  _ , _ , _ , EANEHole (elab-new-disjoint-synth new z) z
-    elaborability-ana {Γ} {⟨ e , e₁ ⟩} (ASubsume _ h) | _ , _ , D' = _ , _ , _ , EASubsume (λ u ()) (λ e' u ()) D' h
-    elaborability-ana {Γ} {fst e} (ASubsume _ h) | _ , _ , D' = _ , _ , _ , EASubsume (λ u ()) (λ e' u ()) D' h
-    elaborability-ana {Γ} {snd e} (ASubsume _ h) | _ , _ , D' = _ , _ , _ , EASubsume (λ u ()) (λ e' u ()) D' h
     -- the lambda cases
     elaborability-ana (ALam x₁ m wt)
       with elaborability-ana wt
