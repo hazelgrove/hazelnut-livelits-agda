@@ -444,6 +444,7 @@ module core where
   -- boxed values
   data _boxedval : (d : ihexp) → Set where
     BVVal : ∀{d} → d val → d boxedval
+    BVPair : ∀{d1 d2} → d1 boxedval → d2 boxedval → ⟨ d1 , d2 ⟩ boxedval
     BVArrCast : ∀{ d τ1 τ2 τ3 τ4 } →
                 τ1 ==> τ2 ≠ τ3 ==> τ4 →
                 d boxedval →
