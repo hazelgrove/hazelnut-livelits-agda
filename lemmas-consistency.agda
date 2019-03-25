@@ -67,3 +67,11 @@ module lemmas-consistency where
   ~decPair τ1 τ2 τ3 τ4 inc with ~apart-converse (τ1 ⊗ τ2) (τ3 ⊗ τ4) inc
   ~decPair τ1 τ2 τ3 τ4 inc    | ICProd1 h                                = Inl (~apart h)
   ~decPair τ1 τ2 τ3 τ4 inc    | ICProd2 h                                = Inr (~apart h)
+
+  ~prod1 : ∀{τ1 τ2 τ3 τ4} → (τ1 ⊗ τ2) ~ (τ3 ⊗ τ4) → τ1 ~ τ3
+  ~prod1 TCRefl = TCRefl
+  ~prod1 (TCProd h1 h2) = h1
+
+  ~prod2 : ∀{τ1 τ2 τ3 τ4} → (τ1 ⊗ τ2) ~ (τ3 ⊗ τ4) → τ2 ~ τ4
+  ~prod2 TCRefl = TCRefl
+  ~prod2 (TCProd h1 h2) = h2

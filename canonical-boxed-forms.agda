@@ -85,6 +85,7 @@ module canonical-boxed-forms where
   canonical-boxed-forms-prod (TAFst wt) (BVVal ())
   canonical-boxed-forms-prod (TASnd wt) (BVVal ())
   canonical-boxed-forms-prod (TAPair wt wt₁) (BVVal x) = CBFPair (_ , _ , refl , wt , wt₁)
+  canonical-boxed-forms-prod (TAPair wt wt₁) (BVPair bv bv₁) = CBFPair (_ , _ , refl , wt , wt₁)
 
   canonical-boxed-forms-coverage : ∀{Δ d τ} →
                                    Δ , ∅ ⊢ d :: τ →
@@ -108,3 +109,4 @@ module canonical-boxed-forms where
   canonical-boxed-forms-coverage (TAFst wt) (BVVal ()) nb na nh
   canonical-boxed-forms-coverage (TASnd wt) (BVVal ()) nb na nh
   canonical-boxed-forms-coverage (TAPair wt wt₁) (BVVal x) nb na nh = λ z → z _ _ refl
+  canonical-boxed-forms-coverage (TAPair wt wt₁) (BVPair bv bv₁) nb na nh = λ z → z _ _ refl

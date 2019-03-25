@@ -17,6 +17,7 @@ module lemmas-progress-checks where
   boxedval-not-trans (BVHoleCast GProd bv) (ITGround (MGProd x)) = x refl
   boxedval-not-trans (BVProdCast x bv) ITCastID = x refl
   boxedval-not-trans (BVVal (VPair x x₁)) ()
+  boxedval-not-trans (BVPair bv bv₁) ()
 
   -- indets don't have an instruction transition
   indet-not-trans : ∀{d d'} → d indet → d →> d' → ⊥
@@ -90,6 +91,8 @@ module lemmas-progress-checks where
   final-sub-final (FIndet (IPair1 x₁ x₂)) (FHPair2 eps) = final-sub-final x₂ eps
   final-sub-final (FIndet (IPair2 x₁ x₂)) (FHPair2 eps) = final-sub-final (FIndet x₂) eps
   final-sub-final (FIndet (ICastProd x₁ x₂)) (FHCast eps) = final-sub-final (FIndet x₂) eps
+  final-sub-final (FBoxedVal (BVPair x₁ x₂)) (FHPair1 eps) = final-sub-final (FBoxedVal x₁) eps
+  final-sub-final (FBoxedVal (BVPair x₁ x₂)) (FHPair2 eps) = final-sub-final (FBoxedVal x₂) eps
 
   final-sub-not-trans : ∀{d d' d'' ε} →  d final → d == ε ⟦ d' ⟧ → d' →> d'' → ⊥
   final-sub-not-trans f sub step = final-not-trans (final-sub-final f sub) step

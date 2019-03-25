@@ -28,6 +28,8 @@ module progress-checks where
   boxedval-not-indet (BVVal (VPair x x₂)) (IPair1 ind x₁) = boxedval-not-indet (BVVal x) ind
   boxedval-not-indet (BVVal (VPair x x₂)) (IPair2 x₁ ind) = boxedval-not-indet (BVVal x₂) ind
   boxedval-not-indet (BVProdCast x bv) (ICastProd x₁ ind) = boxedval-not-indet bv ind
+  boxedval-not-indet (BVPair bv bv₁) (IPair1 ind x) = boxedval-not-indet bv ind
+  boxedval-not-indet (BVPair bv bv₁) (IPair2 x ind) = boxedval-not-indet bv₁ ind
 
   -- boxed values don't step
   boxedval-not-step : ∀{d} → d boxedval → (Σ[ d' ∈ ihexp ] (d ↦ d')) → ⊥
@@ -47,6 +49,9 @@ module progress-checks where
   boxedval-not-step (BVVal (VPair x x₁)) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = boxedval-not-step (BVVal x₁) (_ , Step fh1 it fh2)
   boxedval-not-step (BVProdCast x bv) (_ , Step FHOuter ITCastID FHOuter) = x refl
   boxedval-not-step (BVProdCast x bv) (_ , Step (FHCast fh1) it (FHCast fh2)) = boxedval-not-step bv (_ , Step fh1 it fh2)
+  boxedval-not-step (BVPair bv bv₁) (_ , Step FHOuter () FHOuter)
+  boxedval-not-step (BVPair bv bv₁) (_ , Step (FHPair1 fh1) it (FHPair1 fh2)) = boxedval-not-step bv (_ , Step fh1 it fh2)
+  boxedval-not-step (BVPair bv bv₁) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = boxedval-not-step bv₁ (_ , Step fh1 it fh2)
 
   mutual
     -- indeterminates don't step
