@@ -60,11 +60,11 @@ module complete-preservation where
   cp-rhs (DCCast dc () x₁) (TACast wt x₂) (Step FHOuter (ITExpand x₃) FHOuter)
   cp-rhs (DCCast dc x x₁) (TACast wt x₂) (Step (FHCast x₃) x₄ (FHCast x₅)) = DCCast (cp-rhs dc wt (Step x₃ x₄ x₅)) x x₁
   cp-rhs () (TAFailedCast wt x x₁ x₂) stp
-  cp-rhs (DCCast dc tc tc') (TACast wt _) (Step FHOuter (ITPairCast x₃) FHOuter) =
-    DCPair (DCCast (lem-comp-pair1 dc) (lem-comp-prod1 tc) (lem-comp-prod1 tc')) (DCCast (lem-comp-pair2 dc) (lem-comp-prod2 tc) (lem-comp-prod2 tc'))
   cp-rhs (DCFst dc) (TAFst wt) (Step FHOuter ITFst FHOuter) = lem-comp-pair1 dc
+  cp-rhs (DCFst (DCCast dc x₁ x₂)) (TAFst (TACast wt x)) (Step FHOuter ITFstCast FHOuter) = DCCast (DCFst dc) (lem-comp-prod1 x₁) (lem-comp-prod1 x₂)
   cp-rhs (DCFst dc) (TAFst wt) (Step (FHFst x) x₁ (FHFst x₂)) = DCFst (cp-rhs dc wt (Step x x₁ x₂))
   cp-rhs (DCSnd dc) (TASnd wt) (Step FHOuter ITSnd FHOuter) = lem-comp-pair2 dc
+  cp-rhs (DCSnd (DCCast dc x₁ x₂)) (TASnd (TACast wt x)) (Step FHOuter ITSndCast FHOuter) = DCCast (DCSnd dc) (lem-comp-prod2 x₁) (lem-comp-prod2 x₂)
   cp-rhs (DCSnd dc) (TASnd wt) (Step (FHSnd x) x₁ (FHSnd x₂)) = DCSnd (cp-rhs dc wt (Step x x₁ x₂))
   cp-rhs (DCPair dc dc₁) (TAPair wt wt₁) (Step FHOuter () FHOuter)
   cp-rhs (DCPair dc dc₁) (TAPair wt wt₁) (Step (FHPair1 x) x₁ (FHPair1 x₂)) = DCPair (cp-rhs dc wt (Step x x₁ x₂)) dc₁

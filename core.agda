@@ -449,6 +449,10 @@ module core where
                 τ1 ==> τ2 ≠ τ3 ==> τ4 →
                 d boxedval →
                 d ⟨ (τ1 ==> τ2) ⇒ (τ3 ==> τ4) ⟩ boxedval
+    BVProdCast : ∀{ d τ1 τ2 τ3 τ4 } →
+                τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
+                d boxedval →
+                d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ boxedval
     BVHoleCast : ∀{ τ d } → τ ground → d boxedval → d ⟨ τ ⇒ ⦇⦈ ⟩ boxedval
 
   mutual
@@ -464,10 +468,12 @@ module core where
       IFst   : ∀{d} →
                d indet →
                (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
+               (∀{d' τ1 τ2 τ3 τ4} → d ≠ (d' ⟨ τ1 ⊗ τ2 ⇒ τ3 ⊗ τ4 ⟩)) →
                (fst d) indet
       ISnd   : ∀{d} →
                d indet →
                (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
+               (∀{d' τ1 τ2 τ3 τ4} → d ≠ (d' ⟨ τ1 ⊗ τ2 ⇒ τ3 ⊗ τ4 ⟩)) →
                (snd d) indet
       IPair1 : ∀{d1 d2} →
                d1 indet →
@@ -484,7 +490,6 @@ module core where
       ICastProd : ∀{d τ1 τ2 τ3 τ4} →
                  τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
                  d indet →
-                 (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
                  d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ indet
       ICastGroundHole : ∀{ τ d } →
                         τ ground →
@@ -632,11 +637,12 @@ module core where
                -- d1 final → -- red brackets
                -- d2 final → -- red brackets
                ((d1 ⟨ (τ1 ==> τ2) ⇒ (τ1' ==> τ2')⟩) ∘ d2) →> ((d1 ∘ (d2 ⟨ τ1' ⇒ τ1 ⟩)) ⟨ τ2 ⇒ τ2' ⟩)
-    ITPairCast : ∀{d1 d2 τ1 τ2 τ1' τ2'} →
-               -- d1 final → -- red brackets
-               -- d2 final → -- red brackets
-               τ1 ⊗ τ2 ≠ τ1' ⊗ τ2' →
-               (⟨ d1 , d2 ⟩ ⟨ τ1 ⊗ τ2 ⇒ τ1' ⊗ τ2' ⟩) →> ⟨ d1 ⟨ τ1 ⇒ τ1' ⟩ , d2 ⟨ τ2 ⇒ τ2' ⟩ ⟩
+    ITFstCast : ∀{d τ1 τ2 τ1' τ2' } →
+               -- d final → -- red brackets
+               fst (d ⟨ τ1 ⊗ τ2 ⇒ τ1' ⊗ τ2' ⟩) →> ((fst d) ⟨ τ1 ⇒ τ1' ⟩)
+    ITSndCast : ∀{d τ1 τ2 τ1' τ2' } →
+               -- d final → -- red brackets
+               snd (d ⟨ τ1 ⊗ τ2 ⇒ τ1' ⊗ τ2' ⟩) →> ((snd d) ⟨ τ2 ⇒ τ2' ⟩)
     ITGround : ∀{ d τ τ'} →
                -- d final → -- red brackets
                τ ▸gnd τ' →

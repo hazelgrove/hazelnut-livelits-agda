@@ -33,21 +33,19 @@ module complete-elaboration where
     complete-elaboration-synth gc (ECAsc x ec) (ESAsc x₁)
       with complete-elaboration-ana gc ec x x₁
     ... | ih1 , _ , ih2 = DCCast ih1 (comp-ana gc x₁ ih1) x , x , ih2
-    complete-elaboration-synth gc (ECFst ec) (ESFst x MPHole x₂)
+    complete-elaboration-synth gc (ECFst ec) (ESFst x x₁ x₂)
       with comp-synth gc ec x
-    ... | ()
-    complete-elaboration-synth gc (ECFst ec) (ESFst x MPProd x₂)
+    complete-elaboration-synth gc (ECFst ec) (ESFst x () x₂)     | TCBase
+    complete-elaboration-synth gc (ECFst ec) (ESFst x () x₂)     | TCArr _ _
+    complete-elaboration-synth gc (ECFst ec) (ESFst x MPProd x₂) | tc with complete-elaboration-ana gc ec tc x₂
+    complete-elaboration-synth gc (ECFst ec) (ESFst x MPProd x₂) | tc | ih1 , ih2 , ih3 = DCFst (DCCast ih1 ih2 tc) , lem-comp-prod1 tc , ih3
+    complete-elaboration-synth gc (ECSnd ec) (ESSnd x x₁ x₂)
       with comp-synth gc ec x
-    ... | tc with complete-elaboration-ana gc ec tc x₂
-    ... | ih1 , ih2 , ih3 = DCFst (DCCast ih1 ih2 tc) , lem-comp-prod1 tc , ih3
-    complete-elaboration-synth gc (ECSnd ec) (ESSnd x MPHole x₂)
-      with comp-synth gc ec x
-    ... | ()
-    complete-elaboration-synth gc (ECSnd ec) (ESSnd x MPProd x₂)
-      with comp-synth gc ec x
-    ... | tc with complete-elaboration-ana gc ec tc x₂
-    ... | ih1 , ih2 , ih3 = DCSnd (DCCast ih1 ih2 tc) , lem-comp-prod2 tc , ih3
-    complete-elaboration-synth gc (ECPair ec1 ec2) (ESPair x _ es1 es2)
+    complete-elaboration-synth gc (ECSnd ec) (ESSnd x () x₂)     | TCBase
+    complete-elaboration-synth gc (ECSnd ec) (ESSnd x () x₂)     | TCArr _ _
+    complete-elaboration-synth gc (ECSnd ec) (ESSnd x MPProd x₂) | tc with complete-elaboration-ana gc ec tc x₂
+    complete-elaboration-synth gc (ECSnd ec) (ESSnd x MPProd x₂) | tc | ih1 , ih2 , ih3 = DCSnd (DCCast ih1 ih2 tc) , lem-comp-prod2 tc , ih3
+    complete-elaboration-synth gc (ECPair ec1 ec2) (ESPair _ _ es1 es2)
       with complete-elaboration-synth gc ec1 es1 | complete-elaboration-synth gc ec2 es2
     ... | dc1 , tc1 , refl | dc2 , tc2 , refl = DCPair dc1 dc2 , TCProd tc1 tc2 , refl
 

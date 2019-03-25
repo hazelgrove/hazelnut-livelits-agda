@@ -51,8 +51,8 @@ module progress where
   progress (TAAp wt1 wt2) | I x | I y | CIFAAp (_ , _ , _ , _ , _ , refl , _)        = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
   progress (TAAp wt1 wt2) | I x | I y | CIFACastHole (_ , refl , refl , refl , _ )   = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
   progress (TAAp wt1 wt2) | I x | I y | CIFAFailedCast (_ , _ , refl , _ )           = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
-  progress (TAAp wt1 wt2) | I x | I y | CIFAFst (_ , _ , refl , _ , _ , _)           = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
-  progress (TAAp wt1 wt2) | I x | I y | CIFASnd (_ , _ , refl , _ , _ , _)           = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
+  progress (TAAp wt1 wt2) | I x | I y | CIFAFst (_ , _ , refl , _)                   = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
+  progress (TAAp wt1 wt2) | I x | I y | CIFASnd (_ , _ , refl , _)                   = I (IAp (λ _ _ _ _ _ ()) x (FIndet y))
     -- similar if the left is indetermiante but the right is a boxed val
   progress (TAAp wt1 wt2) | I x | BV x₁
     with canonical-indeterminate-forms-arr wt1 x
@@ -62,8 +62,8 @@ module progress where
   progress (TAAp wt1 wt2) | I x | BV y | CIFAAp (_ , _ , _ , _ , _ , refl , _)        = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
   progress (TAAp wt1 wt2) | I x | BV y | CIFACastHole (_ , refl , refl , refl , _ )   = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
   progress (TAAp wt1 wt2) | I x | BV y | CIFAFailedCast (_ , _ , refl , _ )           = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
-  progress (TAAp wt1 wt2) | I x | BV y | CIFAFst (_ , _ , refl , _ , _ , _)           = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
-  progress (TAAp wt1 wt2) | I x | BV y | CIFASnd (_ , _ , refl , _ , _ , _)           = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
+  progress (TAAp wt1 wt2) | I x | BV y | CIFAFst (_ , _ , refl , _)                   = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
+  progress (TAAp wt1 wt2) | I x | BV y | CIFASnd (_ , _ , refl , _)                   = I (IAp (λ _ _ _ _ _ ()) x (FBoxedVal y))
     -- if the left is a boxed value, inspect the right
   progress (TAAp wt1 wt2) | BV v | S (_ , Step x y z) = S (_ , Step (FHAp2  x) y (FHAp2  z))
   progress (TAAp wt1 wt2) | BV v | I i
@@ -85,54 +85,58 @@ module progress where
   ... | I  x = I (INEHole (FIndet x))
   ... | BV x = I (INEHole (FBoxedVal x))
 
-    -- type products : Fst
+  -- Type products : fst
   progress (TAFst wt)
     with progress wt
-  progress (TAFst wt) | S (_ , Step fh1 it fh2) = S (fst _ , Step (FHFst fh1) it (FHFst fh2))
+  progress (TAFst wt) | S (_ , Step fh1 it fh2) = S (_ , Step (FHFst fh1) it (FHFst fh2))
   progress (TAFst wt) | I h
     with canonical-indeterminate-forms-prod wt h
-  progress (TAFst wt) | I h | CIFPEHole (_ , _ , _ , refl , _)          = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _) = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)     = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPFst (_ , _ , refl , _)                = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPSnd (_ , _ , refl , _)                = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPPair1 (_ , _ , refl , _)              = S (_ , Step FHOuter ITFst FHOuter)
-  progress (TAFst wt) | I h | CIFPPair2 (_ , _ , refl , _)              = S (_ , Step FHOuter ITFst FHOuter)
-  progress (TAFst wt) | I h | CIFPCastHole (_ , refl , refl , refl , _) = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPFailedCast (_ , _ , refl , refl , _)  = I (IFst h (λ {d1} {d2} ()))
-  progress (TAFst wt) | I h | CIFPCast (_ , _ , _ , _ , _ , refl , _)   = I (IFst h (λ {d1} {d2} ()))
+  progress (TAFst wt) | I h | CIFPEHole (_ , _ , _ , refl , _)             = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _)    = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)        = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPFst (_ , _ , refl , _)                   = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPSnd (_ , _ , refl , _)                   = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPPair1 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITFst FHOuter)
+  progress (TAFst wt) | I h | CIFPPair2 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITFst FHOuter)
+  progress (TAFst wt) | I h | CIFPCast (_ , _ , _ , _ , _ , refl , _ , _ ) = S (_ , Step FHOuter ITFstCast FHOuter)
+  progress (TAFst wt) | I h | CIFPCastHole (_ , refl , refl , refl , _ )   = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
   progress (TAFst wt) | BV h
     with canonical-boxed-forms-prod wt h
-  progress (TAFst wt) | BV h | _ , _ , refl , _ = S (_ , Step FHOuter ITFst FHOuter)
-    -- type products : Snd
+  progress (TAFst wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITFst FHOuter)
+  progress (TAFst wt) | BV h | CBFCastProd (_ , _ , _ , refl , _) = S (_ , Step FHOuter ITFstCast FHOuter)
+
+  -- Type products : snd
   progress (TASnd wt)
     with progress wt
-  progress (TASnd wt) | S (_ , Step fh1 it fh2) = S (snd _ , Step (FHSnd fh1) it (FHSnd fh2))
+  progress (TASnd wt) | S (_ , Step fh1 it fh2) = S (_ , Step (FHSnd fh1) it (FHSnd fh2))
   progress (TASnd wt) | I h
     with canonical-indeterminate-forms-prod wt h
-  progress (TASnd wt) | I h | CIFPEHole (_ , _ , _ , refl , _)          = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _) = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)     = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPFst (_ , _ , refl , _)                = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPSnd (_ , _ , refl , _)                = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPPair1 (_ , _ , refl , _)              = S (_ , Step FHOuter ITSnd FHOuter)
-  progress (TASnd wt) | I h | CIFPPair2 (_ , _ , refl , _)              = S (_ , Step FHOuter ITSnd FHOuter)
-  progress (TASnd wt) | I h | CIFPCastHole (_ , refl , refl , refl , _) = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPFailedCast (_ , _ , refl , refl , _)  = I (ISnd h (λ {d1} {d2} ()))
-  progress (TASnd wt) | I h | CIFPCast (_ , _ , _ , _ , _ , refl , _)   = I (ISnd h (λ {d1} {d2} ()))
+  progress (TASnd wt) | I h | CIFPEHole (_ , _ , _ , refl , _)             = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _)    = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)        = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPFst (_ , _ , refl , _)                   = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPSnd (_ , _ , refl , _)                   = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPPair1 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITSnd FHOuter)
+  progress (TASnd wt) | I h | CIFPPair2 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITSnd FHOuter)
+  progress (TASnd wt) | I h | CIFPCast (_ , _ , _ , _ , _ , refl , _ , _ ) = S (_ , Step FHOuter ITSndCast FHOuter)
+  progress (TASnd wt) | I h | CIFPCastHole (_ , refl , refl , refl , _ )   = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
   progress (TASnd wt) | BV h
     with canonical-boxed-forms-prod wt h
-  progress (TASnd wt) | BV h | _ , _ , refl , _ = S (_ , Step FHOuter ITSnd FHOuter)
-    -- type products : Pair
+  progress (TASnd wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITSnd FHOuter)
+  progress (TASnd wt) | BV h | CBFCastProd (_ , _ , _ , refl , _) = S (_ , Step FHOuter ITSndCast FHOuter)
+
+  -- Type products : pairs
   progress (TAPair wt1 wt2)
     with progress wt1 | progress wt2
-  progress (TAPair wt1 wt2) | S (_ , Step fh1 it fh2) | _ = S (⟨ _ , _ ⟩ , Step (FHPair1 fh1) it (FHPair1 fh2))
-  progress (TAPair wt1 wt2) | I x | S (_ , Step fh1 it fh2) = S (⟨ _ , _ ⟩ , Step (FHPair2 fh1) it (FHPair2 fh2))
-  progress (TAPair wt1 wt2) | I x | I x₁ = I (IPair1 x (FIndet x₁))
-  progress (TAPair wt1 wt2) | I x | BV x₁ = I (IPair1 x (FBoxedVal x₁))
-  progress (TAPair wt1 wt2) | BV x | S (_ , Step fh1 it fh2) = S (⟨ _ , _ ⟩ , Step (FHPair2 fh1) it (FHPair2 fh2))
-  progress (TAPair wt1 wt2) | BV x | I x₁ = I (IPair2 (FBoxedVal x) x₁)
-  progress (TAPair wt1 wt2) | BV bv1 | BV bv2 = BV (BVPair bv1 bv2)
+  progress (TAPair wt1 wt2) | S (_ , Step fh1 it fh2) | _    = S (_ , Step (FHPair1 fh1) it (FHPair1 fh2))
+  progress (TAPair wt1 wt2) | I x | S (_ , Step fh1 it fh2)  = S (_ , Step (FHPair2 fh1) it (FHPair2 fh2))
+  progress (TAPair wt1 wt2) | I x | I x₁                     = I (IPair1 x (FIndet x₁))
+  progress (TAPair wt1 wt2) | I x | BV x₁                    = I (IPair1 x (FBoxedVal x₁))
+  progress (TAPair wt1 wt2) | BV x | S (_ , Step fh1 it fh2) = S (_ , Step (FHPair2 fh1) it (FHPair2 fh2))
+  progress (TAPair wt1 wt2) | BV x | I x₁                    = I (IPair2 (FBoxedVal x) x₁)
+  progress (TAPair wt1 wt2) | BV x | BV x₁                   = BV (BVPair x x₁)
 
     -- casts
   progress (TACast wt con)
@@ -151,22 +155,22 @@ module progress where
     with ground-decidable (τ11 ==> τ12)
   progress (TACast wt TCHole1) | I x₁ | .⦇⦈ ==> .⦇⦈ | Inl GHole = I (ICastGroundHole GHole x₁)
   progress (TACast wt TCHole1) | I x₁ | τ11 ==> τ12 | Inr x =  S (_ , Step FHOuter (ITGround (MGArr (ground-arr-not-hole x))) FHOuter)
-  progress (TACast {τ1 = _} wt TCHole1) | I x | τ11 ⊗ τ12
+  progress (TACast wt TCHole1) | I x | τ11 ⊗ τ12
     with ground-decidable (τ11 ⊗ τ12)
-  progress (TACast {τ1 = _} wt TCHole1) | I x | .⦇⦈ ⊗ .⦇⦈ | Inl GProd = I (ICastGroundHole GProd x)
-  progress (TACast {τ1 = _} wt TCHole1) | I x | τ11 ⊗ τ12 | Inr x₁ = S (_ , Step FHOuter (ITGround (MGProd (ground-prod-not-hole x₁))) FHOuter)
+  progress (TACast wt TCHole1) | I x | τ11 ⊗ τ12 | Inl x₁ = I (ICastGroundHole x₁ x)
+  progress (TACast wt TCHole1) | I x | τ11 ⊗ τ12 | Inr x₁ = S (_ , Step FHOuter (ITGround (MGProd (ground-prod-not-hole x₁))) FHOuter)
     -- if second type is hole
   progress (TACast wt (TCHole2 {b})) | I x
     with canonical-indeterminate-forms-hole wt x
   progress (TACast wt (TCHole2 {b})) | I x | CIFHEHole (_ , _ , _ , refl , f)           = I (ICastHoleGround (λ _ _ ()) x GBase)
   progress (TACast wt (TCHole2 {b})) | I x | CIFHNEHole (_ , _ , _ , _ , _ , refl , _ ) = I (ICastHoleGround (λ _ _ ()) x GBase)
   progress (TACast wt (TCHole2 {b})) | I x | CIFHAp (_ , _ , _ , refl , _ )             = I (ICastHoleGround (λ _ _ ()) x GBase)
+  progress (TACast wt (TCHole2 {b})) | I x | CIFHFst (_ , _ , refl , _)                 = I (ICastHoleGround (λ _ _ ()) x GBase)
+  progress (TACast wt (TCHole2 {b})) | I x | CIFHSnd (_ , _ , refl , _)                 = I (ICastHoleGround (λ _ _ ()) x GBase)
   progress (TACast wt (TCHole2 {b})) | I x | CIFHCast (_ , τ , refl , _)
     with htype-dec τ b
   progress (TACast wt (TCHole2 {b})) | I x₁ | CIFHCast (_ , .b , refl , _ , grn , _) | Inl refl = S (_ , Step FHOuter (ITCastSucceed grn ) FHOuter)
-  progress (TACast wt (TCHole2 {b})) | I x₁ | CIFHCast (_ , _ , refl , π2 , grn , _) | Inr x    = S (_ , Step FHOuter (ITCastFail grn GBase x) FHOuter)
-  progress (TACast wt (TCHole2 {.b})) | I x | CIFHFst (_ , _ , refl , _ , ind , ne) = I (ICastHoleGround (λ d' τ' ()) x GBase)
-  progress (TACast wt (TCHole2 {.b})) | I x | CIFHSnd (_ , _ , refl , _ , ind , ne) = I (ICastHoleGround (λ d' τ' ()) x GBase)
+  progress (TACast wt (TCHole2 {b})) | I x₁ | CIFHCast (_ , _ , refl , π2 , grn , _)  | Inr x =    S (_ , Step FHOuter (ITCastFail grn GBase x) FHOuter)
   progress (TACast wt (TCHole2 {⦇⦈}))| I x = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCHole2 {τ11 ==> τ12})) | I x
     with ground-decidable (τ11 ==> τ12)
@@ -175,24 +179,24 @@ module progress where
   progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHEHole (_ , _ , _ , refl , _)          = I (ICastHoleGround (λ _ _ ()) x GHole)
   progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHNEHole (_ , _ , _ , _ , _ , refl , _) = I (ICastHoleGround (λ _ _ ()) x GHole)
   progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHAp (_ , _ , _ , refl , _ )            = I (ICastHoleGround (λ _ _ ()) x GHole)
-  progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHCast (_ , ._ , refl , _ , GBase , _)  = S (_ , Step FHOuter (ITCastFail GBase GHole (λ ())) FHOuter )
-  progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHCast (_ , ._ , refl , _ , GHole , _)  = S (_ , Step FHOuter (ITCastSucceed GHole) FHOuter)
   progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHFst (_ , _ , refl , _)                = I (ICastHoleGround (λ _ _ ()) x GHole)
   progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHSnd (_ , _ , refl , _)                = I (ICastHoleGround (λ _ _ ()) x GHole)
-  progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHCast (_ , _ , refl , _ , GProd , _)   = S (_ , Step FHOuter (ITCastFail GProd GHole (λ ())) FHOuter)
+  progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHCast (_ , _ , refl , _ , GBase , _)   = S (_ , Step FHOuter (ITCastFail GBase GHole (λ ())) FHOuter )
+  progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHCast (_ , _ , refl , _ , GHole , _)   = S (_ , Step FHOuter (ITCastSucceed GHole) FHOuter)
+  progress (TACast wt (TCHole2 {.⦇⦈ ==> .⦇⦈})) | I x | Inl GHole | CIFHCast (_ , _ , refl , _ , GProd , _)   = S (_ , Step FHOuter (ITCastFail GProd GHole (λ ())) FHOuter )
   progress (TACast wt (TCHole2 {τ11 ==> τ12})) | I x₁ | Inr x = S (_ , Step FHOuter (ITExpand (MGArr (ground-arr-not-hole x))) FHOuter)
-  progress (TACast wt (TCHole2 {τ11 ⊗ τ12})) | I x
+  progress (TACast wt (TCHole2 {τ11 ⊗ τ12}))   | I x
     with ground-decidable (τ11 ⊗ τ12)
   progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd
     with canonical-indeterminate-forms-hole wt x
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHEHole (_ , _ , _ , refl , _)          = I (ICastHoleGround (λ _ _ ()) x GProd)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHNEHole (_ , _ , _ , _ , _ , refl , _) = I (ICastHoleGround (λ _ _ ()) x GProd)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHAp (_ , _ , _ , refl , _ )            = I (ICastHoleGround (λ _ _ ()) x GProd)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHFst (_ , _ , refl , _)                = I (ICastHoleGround (λ _ _ ()) x GProd)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHSnd (_ , _ , refl , _)                = I (ICastHoleGround (λ _ _ ()) x GProd)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHCast (_ , _ , refl , _ , GBase , _)   = S (_ , Step FHOuter (ITCastFail GBase GProd (λ ())) FHOuter)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHCast (_ , _ , refl , _ , GHole , _)   = S (_ , Step FHOuter (ITCastFail GHole GProd λ ()) FHOuter)
-  progress (TACast wt (TCHole2 {.(⦇⦈ ⊗ ⦇⦈)})) | I x | Inl GProd | CIFHCast (_ , _ , refl , _ , GProd , _)   = S (_ , Step FHOuter (ITCastSucceed GProd) FHOuter)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHEHole (_ , _ , _ , refl , _)          = I (ICastHoleGround (λ _ _ ()) x GProd)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHNEHole (_ , _ , _ , _ , _ , refl , _) = I (ICastHoleGround (λ _ _ ()) x GProd)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHAp (_ , _ , _ , refl , _ )            = I (ICastHoleGround (λ _ _ ()) x GProd)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHFst (_ , _ , refl , _)                = I (ICastHoleGround (λ _ _ ()) x GProd)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHSnd (_ , _ , refl , _)                = I (ICastHoleGround (λ _ _ ()) x GProd)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHCast (_ , _ , refl , _ , GBase , _)   = S (_ , Step FHOuter (ITCastFail GBase GProd λ ()) FHOuter )
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHCast (_ , _ , refl , _ , GHole , _)   = S (_ , Step FHOuter (ITCastFail GHole GProd λ ()) FHOuter)
+  progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inl GProd | CIFHCast (_ , _ , refl , _ , GProd , _)   = S (_ , Step FHOuter (ITCastSucceed GProd) FHOuter )
   progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inr h = S (_ , Step FHOuter (ITExpand (MGProd (ground-prod-not-hole h))) FHOuter)
     -- if both are arrows
   progress (TACast wt (TCArr {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x
@@ -202,19 +206,8 @@ module progress where
     -- if both are products
   progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x
     with htype-dec (τ1 ⊗ τ2) (τ1' ⊗ τ2')
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne
-    with canonical-indeterminate-forms-prod wt x
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPEHole (_ , _ , _ , refl , _)          = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPNEHole (_ , _ , _ , _ , _ , refl , _) = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPAp (_ , _ , _ , _ , _ , refl , _)     = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPFst (_ , _ , refl , _)                = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPSnd (_ , _ , refl , _)                = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPPair1 (_ , _ , refl , _)              = S (_ , Step FHOuter (ITPairCast ne) FHOuter)
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPPair2 (_ , _ , refl , _)              = S (_ , Step FHOuter (ITPairCast ne) FHOuter)
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPCastHole (_ , refl , refl , refl , _) = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPFailedCast (_ , _ , refl , refl , _)  = I (ICastProd ne x λ ())
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x | Inr ne | CIFPCast (_ , _ , _ , _ , _ , refl , _)   = I (ICastProd ne x λ ())
+  progress (TACast wt (TCProd c1 c2)) | I x  | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
+  progress (TACast wt (TCProd c1 c2)) | I h1 | Inr h2   = I (ICastProd h2 h1)
     -- boxed value cases, inspect how the casts are realted by consistency
     -- step by ID if the casts are the same
   progress (TACast wt TCRefl)  | BV x = S (_ , Step FHOuter ITCastID FHOuter)
@@ -228,7 +221,10 @@ module progress where
     with (htype-dec  (τ1 ==> τ2) (⦇⦈ ==> ⦇⦈))
   progress (TACast wt (TCHole1 {.⦇⦈ ==> .⦇⦈})) | BV x₂ | Inr x₁ | Inl refl = BV (BVHoleCast GHole x₂)
   progress (TACast wt (TCHole1 {τ1 ==> τ2})) | BV x₂ | Inr x₁ | Inr x = S (_ , Step FHOuter (ITGround (MGArr x)) FHOuter)
-  progress (TACast wt (TCHole1 {τ3 ⊗ τ4})) | BV x₁ | Inr x = S (_ , Step FHOuter (ITGround (MGProd (ground-prod-not-hole x))) FHOuter)
+  progress (TACast wt (TCHole1 {τ1 ⊗ τ2})) | BV x₁ | Inr x
+    with (htype-dec  (τ1 ⊗ τ2) (⦇⦈ ⊗ ⦇⦈))
+  progress (TACast wt (TCHole1 {_ ⊗ _})) | BV x₁ | Inr x | Inl refl = BV (BVHoleCast GProd x₁)
+  progress (TACast wt (TCHole1 {_ ⊗ _})) | BV x₁ | Inr x | Inr h    = S (_ , Step FHOuter (ITGround (MGProd h)) FHOuter)
     -- if right is hole
   progress {τ = τ} (TACast wt TCHole2) | BV x
     with canonical-boxed-forms-hole wt x
@@ -241,21 +237,19 @@ module progress where
   progress (TACast wt TCHole2) | BV x₂ | _ , _ , refl , _ , _ | Inr x₁ | Inr x
     with notground x
   progress (TACast wt TCHole2) | BV x₃ | _ , _ , refl , _ , _ | Inr _ | Inr _ | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
-  progress (TACast wt TCHole2) | BV x₃ | _ , _ , refl , _ , _ | Inr _ | Inr x | Inr (Inl (_ , _ , refl)) =
-    S(_ , Step FHOuter (ITExpand (MGArr (ground-arr-not-hole x))) FHOuter)
-  progress (TACast wt TCHole2) | BV x₃ | _ , _ , refl , _ , _ | Inr _ | Inr x | Inr (Inr (_ , _ , refl)) =
-    S(_ , Step FHOuter (ITExpand (MGProd (ground-prod-not-hole x))) FHOuter )
+  progress (TACast wt TCHole2) | BV x₃ | _ , _ , refl , _ , _ | Inr _ | Inr h | Inr (Inl (_ , _ , refl)) =
+    S (_ , Step FHOuter (ITExpand (MGArr (ground-arr-not-hole h))) FHOuter)
+  progress (TACast wt TCHole2) | BV x₃ | _ , _ , refl , _ , _ | Inr _ | Inr h | Inr (Inr (_ , _ , refl)) =
+    S (_ , Step FHOuter (ITExpand (MGProd (ground-prod-not-hole h))) FHOuter)
     -- if both arrows
   progress (TACast wt (TCArr {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV x
     with htype-dec (τ1 ==> τ2) (τ1' ==> τ2')
   progress (TACast wt (TCArr c1 c2)) | BV x₁ | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCArr c1 c2)) | BV x₁ | Inr x = BV (BVArrCast x x₁)
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV bv
+  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV x
     with htype-dec (τ1 ⊗ τ2) (τ1' ⊗ τ2')
-  progress (TACast wt (TCProd {τ1} {τ2} {.τ1} {.τ2} c1 c2)) | BV bv | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV bv | Inr x
-    with canonical-boxed-forms-prod wt bv
-  progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV bv | Inr x | _ , _ , refl , _ = S (_ , Step FHOuter (ITPairCast x) FHOuter)
+  progress (TACast wt (TCProd c1 c2)) | BV x | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
+  progress (TACast wt (TCProd c1 c2)) | BV x | Inr x₁   = BV (BVProdCast x₁ x)
 
    -- failed casts
   progress (TAFailedCast wt y z w)
