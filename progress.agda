@@ -85,7 +85,7 @@ module progress where
   ... | I  x = I (INEHole (FIndet x))
   ... | BV x = I (INEHole (FBoxedVal x))
 
-  -- Type products : fst
+  -- products : fst
   progress (TAFst wt)
     with progress wt
   progress (TAFst wt) | S (_ , Step fh1 it fh2) = S (_ , Step (FHFst fh1) it (FHFst fh2))
@@ -106,7 +106,7 @@ module progress where
   progress (TAFst wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITFst FHOuter)
   progress (TAFst wt) | BV h | CBFCastProd (_ , _ , _ , refl , _) = S (_ , Step FHOuter ITFstCast FHOuter)
 
-  -- Type products : snd
+  -- products : snd
   progress (TASnd wt)
     with progress wt
   progress (TASnd wt) | S (_ , Step fh1 it fh2) = S (_ , Step (FHSnd fh1) it (FHSnd fh2))
@@ -127,7 +127,7 @@ module progress where
   progress (TASnd wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITSnd FHOuter)
   progress (TASnd wt) | BV h | CBFCastProd (_ , _ , _ , refl , _) = S (_ , Step FHOuter ITSndCast FHOuter)
 
-  -- Type products : pairs
+  -- products : pairs
   progress (TAPair wt1 wt2)
     with progress wt1 | progress wt2
   progress (TAPair wt1 wt2) | S (_ , Step fh1 it fh2) | _    = S (_ , Step (FHPair1 fh1) it (FHPair1 fh2))

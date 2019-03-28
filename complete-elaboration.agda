@@ -59,7 +59,7 @@ module complete-elaboration where
     complete-elaboration-ana gc (ECLam1 ec) (TCArr t1 t2)  (EALam x₁ MAArr exp)
       with complete-elaboration-ana (gcomp-extend gc t1 x₁) ec t2 exp
     ... | ih , ih3 , ih2 = DCLam ih t1 , TCArr t1 ih3 , ih2
-    complete-elaboration-ana gc ec tc (EASubsume x x₁ x₂ x₃) = complete-elaboration-synth gc ec x₂ --todo: why is this grey?
+    complete-elaboration-ana gc ec tc (EASubsume x x₁ x₂ x₃) = complete-elaboration-synth gc ec x₂
 
     -- this is just a convenience since it shows up a few times above
     comp-ana : ∀{Γ e τ d τ' Δ} →

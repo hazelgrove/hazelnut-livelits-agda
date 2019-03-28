@@ -2,6 +2,7 @@ open import Prelude
 open import core
 
 module ground-decidable where
+  -- every type is either ground or not
   ground-decidable : (τ : htyp) → (τ ground) + ((τ ground) → ⊥)
   ground-decidable b = Inl GBase
   ground-decidable ⦇⦈ = Inr (λ ())
