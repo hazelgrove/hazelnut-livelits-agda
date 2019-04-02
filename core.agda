@@ -861,6 +861,19 @@ module core where
                            hole-name-new e u →
                            Φ , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈
+        SPEFst   : ∀{Φ Γ p e τ τ1 τ2} →
+                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           τ ▸prod τ1 ⊗ τ2 →
+                           Φ , Γ ⊢ fst p ~~> fst e ⇒ τ1
+        SPESnd   : ∀{Φ Γ p e τ τ1 τ2} →
+                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           τ ▸prod τ1 ⊗ τ2 →
+                           Φ , Γ ⊢ snd p ~~> snd e ⇒ τ2
+        SPEPair  : ∀{Φ Γ p1 p2 τ1 τ2 e1 e2} →
+                           Φ , Γ ⊢ p1 ~~> e1 ⇒ τ1 →
+                           Φ , Γ ⊢ p2 ~~> e2 ⇒ τ2 →
+                           holes-disjoint e1 e2 →
+                           Φ , Γ ⊢ ⟨ p1 , p2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
         SPELetPal : ∀{Γ Φ π ρ p e τ} →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
                            (Φ ,, (ρ , π)) , Γ ⊢ p ~~> e ⇒ τ →
