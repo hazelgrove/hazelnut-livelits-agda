@@ -21,6 +21,9 @@ module typed-palette-elaboration where
     typed-palette-elaboration-synth (SPELetFPal _ _ D) = typed-palette-elaboration-synth D
     typed-palette-elaboration-synth {Φ} (SPEApFPal hd1 hd2 hd3 fr1 fr2 h h1 h2) =
       SAp (HDAp (HDAsc hd2) hd3) (SAp (HDAsc hd1) (SAsc (weaken-ana-closed fr1 (palctx-well-typed Φ h))) MAArr (weaken-ana-closed fr2 h2)) MAArr (typed-palette-elaboration-ana h1)
+    typed-palette-elaboration-synth (SPEFst h x) = SFst (typed-palette-elaboration-synth h) x
+    typed-palette-elaboration-synth (SPESnd h x) = SSnd (typed-palette-elaboration-synth h) x
+    typed-palette-elaboration-synth (SPEPair h h₁ x) = SPair x (typed-palette-elaboration-synth h) (typed-palette-elaboration-synth h₁)
 
     typed-palette-elaboration-ana : ∀{Φ Γ p e τ} →
                                   Φ , Γ ⊢ p ~~> e ⇐ τ →

@@ -37,6 +37,9 @@ module lemmas-subst-ta where
     binders-fresh (TANEHole x₁ wt x₂) (BUNEHole bu2 x) (UBNEHole x₃ ub) apt = FNEHole (binders-envfresh x₂ apt x₃ x) (binders-fresh wt bu2  ub apt)
     binders-fresh (TACast wt x₁) (BUCast bu2) (UBCast ub) apt = FCast (binders-fresh wt  bu2  ub apt)
     binders-fresh (TAFailedCast wt x x₁ x₂) (BUFailedCast bu2) (UBFailedCast ub) apt = FFailedCast (binders-fresh wt  bu2  ub apt)
+    binders-fresh (TAFst wt) (BUFst bu2) (UBFst ub) apt = FFst (binders-fresh wt bu2 ub apt)
+    binders-fresh (TASnd wt) (BUSnd bu2) (UBSnd ub) apt = FSnd (binders-fresh wt bu2 ub apt)
+    binders-fresh (TAPair wt wt₁) (BUPair bu2 bu3 x) (UBPair ub ub₁) apt = FPair (binders-fresh wt bu2 ub apt) (binders-fresh wt₁ bu3 ub₁ apt)
 
   -- the substition lemma for preservation
   lem-subst : ∀{Δ Γ x τ1 d1 τ d2 } →
@@ -62,3 +65,6 @@ module lemmas-subst-ta where
   lem-subst apt (BDNEHole x₁ bd) bu2 (TANEHole x₃ wt1 x₄) wt2 = TANEHole x₃ (lem-subst apt bd bu2 wt1 wt2) (STASubst x₄ wt2)
   lem-subst apt (BDCast bd) bu2 (TACast wt1 x₁) wt2 = TACast (lem-subst apt bd bu2 wt1 wt2) x₁
   lem-subst apt (BDFailedCast bd) bu2 (TAFailedCast wt1 x₁ x₂ x₃) wt2 = TAFailedCast (lem-subst apt bd bu2 wt1 wt2) x₁ x₂ x₃
+  lem-subst apt (BDFst bd) bu (TAFst wt1) wt2 = TAFst (lem-subst apt bd bu wt1 wt2)
+  lem-subst apt (BDSnd bd) bu (TASnd wt1) wt2 = TASnd (lem-subst apt bd bu wt1 wt2)
+  lem-subst apt (BDPair bd bd₁) bu (TAPair wt1 wt3) wt2 = TAPair (lem-subst apt bd bu wt1 wt2) (lem-subst apt bd₁ bu wt3 wt2)

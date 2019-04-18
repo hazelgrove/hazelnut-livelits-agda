@@ -27,6 +27,32 @@ module canonical-boxed-forms where
          (Δ , ∅ ⊢ d' :: τ1' ==> τ2')))
       → cbf-arr Δ d τ1 τ2
 
+  data cbf-prod : (Δ : hctx) (d : ihexp) (τ1 τ2 : htyp) → Set where
+    CBFPairVal : ∀{Δ d τ1 τ2} →
+              (Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
+               (d == ⟨ d1 , d2 ⟩ ×
+                Δ , ∅ ⊢ d1 :: τ1 ×
+                Δ , ∅ ⊢ d2 :: τ2 ×
+                d1 val ×
+                d2 val))
+              → cbf-prod Δ d τ1 τ2
+    CBFPairBV : ∀{Δ d τ1 τ2} →
+              (Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
+               (d == ⟨ d1 , d2 ⟩ ×
+                Δ , ∅ ⊢ d1 :: τ1 ×
+                Δ , ∅ ⊢ d2 :: τ2 ×
+                d1 boxedval ×
+                d2 boxedval  ))
+              → cbf-prod Δ d τ1 τ2
+    CBFCastProd : ∀{Δ d τ1 τ2} →
+                  (Σ[ d' ∈ ihexp ] Σ[ τ1' ∈ htyp ] Σ[ τ2' ∈ htyp ]
+                   (d == (d' ⟨ τ1' ⊗ τ2' ⇒ τ1 ⊗ τ2 ⟩) ×
+                   (τ1' ⊗ τ2' ≠ τ1 ⊗ τ2) ×
+                   (τ1' ⊗ τ2' ~ τ1 ⊗ τ2) ×
+                   (d' boxedval) ×
+                   (Δ , ∅ ⊢ d' :: τ1' ⊗ τ2')))
+                  → cbf-prod Δ d τ1 τ2
+
   canonical-boxed-forms-arr : ∀{Δ d τ1 τ2 } →
                             Δ , ∅ ⊢ d :: (τ1 ==> τ2)  →
                             d boxedval →
@@ -39,6 +65,8 @@ module canonical-boxed-forms where
   canonical-boxed-forms-arr (TACast wt x) (BVVal ())
   canonical-boxed-forms-arr (TACast wt x) (BVArrCast x₁ bv) = CBFCastArr (_ , _ , _ , refl , x₁ , wt)
   canonical-boxed-forms-arr (TAFailedCast x x₁ x₂ x₃) (BVVal ())
+  canonical-boxed-forms-arr (TAFst wt) (BVVal ())
+  canonical-boxed-forms-arr (TASnd wt) (BVVal ())
 
   canonical-boxed-forms-hole : ∀{Δ d} →
                                Δ , ∅ ⊢ d :: ⦇⦈ →
@@ -54,6 +82,24 @@ module canonical-boxed-forms where
   canonical-boxed-forms-hole (TACast wt x) (BVVal ())
   canonical-boxed-forms-hole (TACast wt x) (BVHoleCast x₁ bv) = _ , _ , refl , x₁ , wt
   canonical-boxed-forms-hole (TAFailedCast x x₁ x₂ x₃) (BVVal ())
+  canonical-boxed-forms-hole (TAFst wt) (BVVal ())
+  canonical-boxed-forms-hole (TASnd wt) (BVVal ())
+
+  canonical-boxed-forms-prod : ∀{Δ d τ1 τ2 } →
+                               Δ , ∅ ⊢ d :: (τ1 ⊗ τ2)  →
+                               d boxedval →
+                               cbf-prod Δ d τ1 τ2
+  canonical-boxed-forms-prod (TAVar x₁) (BVVal ())
+  canonical-boxed-forms-prod (TAAp wt wt₁) (BVVal ())
+  canonical-boxed-forms-prod (TAEHole x x₁) (BVVal ())
+  canonical-boxed-forms-prod (TANEHole x wt x₁) (BVVal ())
+  canonical-boxed-forms-prod (TACast wt x) (BVVal ())
+  canonical-boxed-forms-prod (TACast wt x) (BVProdCast x₁ bv) = CBFCastProd (_ , _ , _ , refl , x₁ , x , bv , wt)
+  canonical-boxed-forms-prod (TAFailedCast wt x x₁ x₂) (BVVal ())
+  canonical-boxed-forms-prod (TAFst wt) (BVVal ())
+  canonical-boxed-forms-prod (TASnd wt) (BVVal ())
+  canonical-boxed-forms-prod (TAPair wt wt₁) (BVVal (VPair x x₁)) = CBFPairVal (_ , _ , refl , wt , wt₁ , x , x₁)
+  canonical-boxed-forms-prod (TAPair wt wt₁) (BVPair bv bv₁) = CBFPairBV (_ , _ , refl , wt , wt₁ , bv , bv₁)
 
   canonical-boxed-forms-coverage : ∀{Δ d τ} →
                                    Δ , ∅ ⊢ d :: τ →
@@ -61,14 +107,20 @@ module canonical-boxed-forms where
                                    τ ≠ b →
                                    ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ==> τ2)) →
                                    τ ≠ ⦇⦈ →
+                                   ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ⊗ τ2)) →
                                    ⊥
-  canonical-boxed-forms-coverage TAConst (BVVal x) nb na nh = nb refl
+  canonical-boxed-forms-coverage TAConst (BVVal x) nb na nh = λ _ → nb refl
   canonical-boxed-forms-coverage (TAVar x₁) (BVVal ()) nb na nh
-  canonical-boxed-forms-coverage (TALam _ wt) (BVVal x₁) nb na nh = na _ _ refl
+  canonical-boxed-forms-coverage (TALam _ wt) (BVVal x₁) nb na nh = λ _ → na _ _ refl
   canonical-boxed-forms-coverage (TAAp wt wt₁) (BVVal ()) nb na nh
   canonical-boxed-forms-coverage (TAEHole x x₁) (BVVal ()) nb na nh
   canonical-boxed-forms-coverage (TANEHole x wt x₁) (BVVal ()) nb na nh
   canonical-boxed-forms-coverage (TACast wt x) (BVVal ()) nb na nh
-  canonical-boxed-forms-coverage (TACast wt x) (BVArrCast x₁ bv) nb na nh = na _ _ refl
-  canonical-boxed-forms-coverage (TACast wt x) (BVHoleCast x₁ bv) nb na nh = nh refl
+  canonical-boxed-forms-coverage (TACast wt x) (BVArrCast x₁ bv) nb na nh = λ _ → na _ _ refl
+  canonical-boxed-forms-coverage (TACast wt x) (BVHoleCast x₁ bv) nb na nh = λ _ → nh refl
   canonical-boxed-forms-coverage (TAFailedCast x x₁ x₂ x₃) (BVVal ())
+  canonical-boxed-forms-coverage (TACast wt x) (BVProdCast x₁ bv) nb na nh = λ z → z _ _ refl
+  canonical-boxed-forms-coverage (TAFst wt) (BVVal ()) nb na nh
+  canonical-boxed-forms-coverage (TASnd wt) (BVVal ()) nb na nh
+  canonical-boxed-forms-coverage (TAPair wt wt₁) (BVVal x) nb na nh = λ z → z _ _ refl
+  canonical-boxed-forms-coverage (TAPair wt wt₁) (BVPair bv bv₁) nb na nh = λ z → z _ _ refl

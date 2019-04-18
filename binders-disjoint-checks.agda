@@ -21,6 +21,9 @@ module binders-disjoint-checks where
     lem-bd-lam (BDAp bd bd₁) = BDAp (lem-bd-lam bd) (lem-bd-lam bd₁)
     lem-bd-lam (BDCast bd) = BDCast (lem-bd-lam bd)
     lem-bd-lam (BDFailedCast bd) = BDFailedCast (lem-bd-lam bd)
+    lem-bd-lam (BDFst bd) = BDFst (lem-bd-lam bd)
+    lem-bd-lam (BDSnd bd) = BDSnd (lem-bd-lam bd)
+    lem-bd-lam (BDPair bd bd₁) = BDPair (lem-bd-lam bd) (lem-bd-lam bd₁)
 
   mutual
     lem-bdσ-hole : ∀{d u σ σ'} → binders-disjoint-σ σ ⦇⌜ d ⌟⦈⟨ u , σ' ⟩ → binders-disjoint-σ σ d
@@ -36,6 +39,9 @@ module binders-disjoint-checks where
     lem-bd-hole (BDAp bd bd₁) = BDAp (lem-bd-hole bd) (lem-bd-hole bd₁)
     lem-bd-hole (BDCast bd) = BDCast (lem-bd-hole bd)
     lem-bd-hole (BDFailedCast bd) = BDFailedCast (lem-bd-hole bd)
+    lem-bd-hole (BDFst bd) = BDFst (lem-bd-hole bd)
+    lem-bd-hole (BDSnd bd) = BDSnd (lem-bd-hole bd)
+    lem-bd-hole (BDPair bd bd₁) = BDPair (lem-bd-hole bd) (lem-bd-hole bd₁)
 
   mutual
     lem-bdσ-cast : ∀{σ d τ1 τ2} → binders-disjoint-σ σ (d ⟨ τ1 ⇒ τ2 ⟩) → binders-disjoint-σ σ d
@@ -51,6 +57,9 @@ module binders-disjoint-checks where
     lem-bd-cast (BDAp bd bd₁) = BDAp (lem-bd-cast bd) (lem-bd-cast bd₁)
     lem-bd-cast (BDCast bd) = BDCast (lem-bd-cast bd)
     lem-bd-cast (BDFailedCast bd) = BDFailedCast (lem-bd-cast bd)
+    lem-bd-cast (BDFst bd) = BDFst (lem-bd-cast bd)
+    lem-bd-cast (BDSnd bd) = BDSnd (lem-bd-cast bd)
+    lem-bd-cast (BDPair bd bd₁) = BDPair (lem-bd-cast bd) (lem-bd-cast bd₁)
 
   mutual
     lem-bdσ-failedcast : ∀{σ d τ1 τ2} → binders-disjoint-σ σ (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) → binders-disjoint-σ σ d
@@ -66,6 +75,9 @@ module binders-disjoint-checks where
     lem-bd-failedcast (BDAp bd bd₁) = BDAp (lem-bd-failedcast bd) (lem-bd-failedcast bd₁)
     lem-bd-failedcast (BDCast bd) = BDCast (lem-bd-failedcast bd)
     lem-bd-failedcast (BDFailedCast bd) = BDFailedCast (lem-bd-failedcast bd)
+    lem-bd-failedcast (BDFst bd) = BDFst (lem-bd-failedcast bd)
+    lem-bd-failedcast (BDSnd bd) = BDSnd (lem-bd-failedcast bd)
+    lem-bd-failedcast (BDPair bd bd₁) = BDPair (lem-bd-failedcast bd) (lem-bd-failedcast bd₁)
 
   mutual
     lem-bdσ-into-cast : ∀{σ d τ1 τ2} → binders-disjoint-σ σ d → binders-disjoint-σ σ (d ⟨ τ1 ⇒ τ2 ⟩)
@@ -81,3 +93,6 @@ module binders-disjoint-checks where
     lem-bd-into-cast (BDAp bd bd₁) = BDAp (lem-bd-into-cast bd) (lem-bd-into-cast bd₁)
     lem-bd-into-cast (BDCast bd) = BDCast (lem-bd-into-cast bd)
     lem-bd-into-cast (BDFailedCast bd) = BDFailedCast (lem-bd-into-cast bd)
+    lem-bd-into-cast (BDFst bd) = BDFst (lem-bd-into-cast bd)
+    lem-bd-into-cast (BDSnd bd) = BDSnd (lem-bd-into-cast bd)
+    lem-bd-into-cast (BDPair bd bd₁) = BDPair (lem-bd-into-cast bd) (lem-bd-into-cast bd₁)

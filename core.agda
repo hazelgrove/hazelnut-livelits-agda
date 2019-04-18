@@ -9,9 +9,11 @@ module core where
     b     : htyp
     ⦇⦈    : htyp
     _==>_ : htyp → htyp → htyp
+    _⊗_   : htyp → htyp → htyp
 
   -- arrow type constructors bind very tightly
   infixr 25  _==>_
+  infixr 25  _⊗_
 
   -- middle layer expressions
   data hexp : Set where
@@ -23,6 +25,9 @@ module core where
     ⦇⦈[_]   : Nat → hexp
     ⦇⌜_⌟⦈[_]  : hexp → Nat → hexp
     _∘_     : hexp → hexp → hexp
+    ⟨_,_⟩   : hexp → hexp → hexp
+    fst     : hexp → hexp
+    snd     : hexp → hexp
 
   -- todo : rename everything.
 
@@ -46,6 +51,10 @@ module core where
       _∘_       : ihexp → ihexp → ihexp
       _⟨_⇒_⟩    : ihexp → htyp → htyp → ihexp
       _⟨_⇒⦇⦈⇏_⟩ : ihexp → htyp → htyp → ihexp
+      ⟨_,_⟩   : ihexp → ihexp → ihexp
+      fst     : ihexp → ihexp
+      snd     : ihexp → ihexp
+
 
   -- convenient notation for chaining together two agreeable casts
   _⟨_⇒_⇒_⟩ : ihexp → htyp → htyp → htyp → ihexp
@@ -78,6 +87,9 @@ module core where
     ⦇⦈[_]   : Nat → pexp
     ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
     _∘_     : pexp → pexp → pexp
+    ⟨_,_⟩   : pexp → pexp → pexp
+    fst     : pexp → pexp
+    snd     : pexp → pexp
     -- new forms below
     -- macro-like palettes
     let-pal_be_·in_ : Nat → paldef → pexp → pexp
@@ -95,6 +107,10 @@ module core where
                τ1 ~ τ1' →
                τ2 ~ τ2' →
                τ1 ==> τ2 ~ τ1' ==> τ2'
+    TCProd  : {τ1 τ2 τ1' τ2' : htyp} →
+               τ1 ~ τ1' →
+               τ2 ~ τ2' →
+               (τ1 ⊗ τ2) ~ (τ1' ⊗ τ2')
 
   -- type inconsistency
   data _~̸_ : (τ1 τ2 : htyp) → Set where
@@ -106,11 +122,28 @@ module core where
     ICArr2 : {τ1 τ2 τ3 τ4 : htyp} →
                τ2 ~̸ τ4 →
                τ1 ==> τ2 ~̸ τ3 ==> τ4
+    ICBaseProd1 : {τ1 τ2 : htyp} → b ~̸ τ1 ⊗ τ2
+    ICBaseProd2 : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ~̸ b
+    ICProdArr1 : {τ1 τ2 τ3 τ4 : htyp} →
+                τ1 ==> τ2 ~̸ τ3 ⊗ τ4
+    ICProdArr2 : {τ1 τ2 τ3 τ4 : htyp} →
+                τ1 ⊗ τ2 ~̸ τ3 ==> τ4
+    ICProd1 : {τ1 τ2 τ3 τ4 : htyp} →
+               τ1 ~̸ τ3 →
+               τ1 ⊗ τ2 ~̸ τ3 ⊗ τ4
+    ICProd2 : {τ1 τ2 τ3 τ4 : htyp} →
+               τ2 ~̸ τ4 →
+               τ1 ⊗ τ2 ~̸ τ3 ⊗ τ4
 
   --- matching for arrows
   data _▸arr_ : htyp → htyp → Set where
     MAHole : ⦇⦈ ▸arr ⦇⦈ ==> ⦇⦈
     MAArr  : {τ1 τ2 : htyp} → τ1 ==> τ2 ▸arr τ1 ==> τ2
+
+  -- matching for products
+  data _▸prod_ : htyp → htyp → Set where
+    MPHole : ⦇⦈ ▸prod ⦇⦈ ⊗ ⦇⦈
+    MPProd  : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
 
   -- the type of hole contexts, i.e. Δs in the judgements
   hctx : Set
@@ -144,6 +177,16 @@ module core where
            hole-name-new e1 u →
            hole-name-new e2 u →
            hole-name-new (e1 ∘ e2) u
+    HNFst  : ∀{ u e } →
+           hole-name-new e u →
+           hole-name-new (fst e) u
+    HNSnd  : ∀{ u e } →
+           hole-name-new e u →
+           hole-name-new (snd e) u
+    HNPair : ∀{ u e1 e2 } →
+           hole-name-new e1 u →
+           hole-name-new e2 u →
+           hole-name-new ⟨ e1 , e2 ⟩ u
 
   -- two terms that do not share any hole names
   data holes-disjoint : (e1 : hexp) → (e2 : hexp) → Set where
@@ -155,6 +198,9 @@ module core where
     HDHole : ∀{u e2} → hole-name-new e2 u → holes-disjoint (⦇⦈[ u ]) e2
     HDNEHole : ∀{u e1 e2} → hole-name-new e2 u → holes-disjoint e1 e2 → holes-disjoint (⦇⌜ e1 ⌟⦈[ u ]) e2
     HDAp :  ∀{e1 e2 e3} → holes-disjoint e1 e3 → holes-disjoint e2 e3 → holes-disjoint (e1 ∘ e2) e3
+    HDFst  : ∀{e1 e2} → holes-disjoint e1 e2 → holes-disjoint (fst e1) e2
+    HDSnd  : ∀{e1 e2} → holes-disjoint e1 e2 → holes-disjoint (snd e1) e2
+    HDPair : ∀{e1 e2 e3} → holes-disjoint e1 e3 → holes-disjoint e2 e3 → holes-disjoint ⟨ e1 , e2 ⟩ e3
 
   -- bidirectional type checking judgements for hexp
   mutual
@@ -182,6 +228,19 @@ module core where
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
                  Γ ⊢ ·λ x [ τ1 ] e => τ1 ==> τ2
+      SFst    : ∀{ e τ τ1 τ2 Γ} →
+                Γ ⊢ e => τ →
+                τ ▸prod τ1 ⊗ τ2 →
+                Γ ⊢ fst e => τ1
+      SSnd    : ∀{ e τ τ1 τ2 Γ} →
+                Γ ⊢ e => τ →
+                τ ▸prod τ1 ⊗ τ2 →
+                Γ ⊢ snd e => τ2
+      SPair   : ∀{ e1 e2 τ1 τ2 Γ} →
+                holes-disjoint e1 e2 →
+                Γ ⊢ e1 => τ1 →
+                Γ ⊢ e2 => τ2 →
+                Γ ⊢ ⟨ e1 , e2 ⟩ => τ1 ⊗ τ2
 
     -- analysis
     data _⊢_<=_ : (Γ : htyp ctx) (e : hexp) (τ : htyp) → Set where
@@ -199,6 +258,7 @@ module core where
   data _tcomplete : htyp → Set where
     TCBase : b tcomplete
     TCArr : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ==> τ2) tcomplete
+    TCProd : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ⊗ τ2) tcomplete
 
   -- those external expressions without holes
   data _ecomplete : hexp → Set where
@@ -208,6 +268,9 @@ module core where
     ECLam1 : ∀{x e} → e ecomplete → (·λ x e) ecomplete
     ECLam2 : ∀{x e τ} → e ecomplete → τ tcomplete → (·λ x [ τ ] e) ecomplete
     ECAp : ∀{e1 e2} → e1 ecomplete → e2 ecomplete → (e1 ∘ e2) ecomplete
+    ECFst : ∀{e} → e ecomplete → (fst e) ecomplete
+    ECSnd : ∀{e} → e ecomplete → (snd e) ecomplete
+    ECPair : ∀{e1 e2} → e1 ecomplete → e2 ecomplete → ⟨ e1 , e2 ⟩ ecomplete
 
   -- those internal expressions without holes
   data _dcomplete : ihexp → Set where
@@ -216,6 +279,10 @@ module core where
     DCLam : ∀{x τ d} → d dcomplete → τ tcomplete → (·λ x [ τ ] d) dcomplete
     DCAp : ∀{d1 d2} → d1 dcomplete → d2 dcomplete → (d1 ∘ d2) dcomplete
     DCCast : ∀{d τ1 τ2} → d dcomplete → τ1 tcomplete → τ2 tcomplete → (d ⟨ τ1 ⇒ τ2 ⟩) dcomplete
+    DCFst : ∀{d} → d dcomplete → (fst d) dcomplete
+    DCSnd : ∀{d} → d dcomplete → (snd d) dcomplete
+    DCPair : ∀{d1 d2} → d1 dcomplete → d2 dcomplete → ⟨ d1 , d2 ⟩ dcomplete
+
 
   -- contexts that only produce complete types
   _gcomplete : tctx → Set
@@ -231,6 +298,9 @@ module core where
     CINEHole : ∀{d u} → cast-id d → cast-id (⦇⌜ d ⌟⦈⟨ u ⟩)
     CIAp     : ∀{d1 d2} → cast-id d1 → cast-id d2 → cast-id (d1 ∘ d2)
     CICast   : ∀{d τ} → cast-id d → cast-id (d ⟨ τ ⇒ τ ⟩)
+    CIFst    : ∀{d} → cast-id d → cast-id (fst d)
+    CISnd    : ∀{d} → cast-id d → cast-id (snd d)
+    CIPair   : ∀{d1 d2} → cast-id d1 → cast-id d2 → cast-id ⟨ d1 , d2 ⟩
 
   -- expansion
   mutual
@@ -260,6 +330,22 @@ module core where
       ESAsc : ∀ {Γ e τ d τ' Δ} →
                  Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                  Γ ⊢ (e ·: τ) ⇒ τ ~> d ⟨ τ' ⇒ τ ⟩ ⊣ Δ
+      ESFst  : ∀{Γ e τ τ' d τ1 τ2 Δ} →
+                 Γ ⊢ e => τ →
+                 τ ▸prod τ1 ⊗ τ2 →
+                 Γ ⊢ e ⇐ τ1 ⊗ τ2 ~> d :: τ' ⊣ Δ →
+                 Γ ⊢ fst e ⇒ τ1 ~> fst (d ⟨ τ' ⇒ τ1 ⊗ τ2 ⟩) ⊣ Δ
+      ESSnd  : ∀{Γ e τ τ' d τ1 τ2 Δ} →
+                 Γ ⊢ e => τ →
+                 τ ▸prod τ1 ⊗ τ2 →
+                 Γ ⊢ e ⇐ τ1 ⊗ τ2 ~> d :: τ' ⊣ Δ →
+                 Γ ⊢ snd e ⇒ τ2 ~> snd (d ⟨ τ' ⇒ τ1 ⊗ τ2 ⟩) ⊣ Δ
+      ESPair : ∀{Γ e1 τ1 d1 Δ1 e2 τ2 d2 Δ2} →
+                 holes-disjoint e1 e2 →
+                 Δ1 ## Δ2 →
+                 Γ ⊢ e1 ⇒ τ1 ~> d1 ⊣ Δ1 →
+                 Γ ⊢ e2 ⇒ τ2 ~> d2 ⊣ Δ2 →
+                 Γ ⊢ ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2 ~> ⟨ d1 , d2 ⟩ ⊣ (Δ1 ∪ Δ2)
 
     -- analysis
     data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : hexp) (τ : htyp) (d : ihexp) (τ' : htyp) (Δ : hctx) → Set where
@@ -285,6 +371,7 @@ module core where
   data _ground : (τ : htyp) → Set where
     GBase : b ground
     GHole : ⦇⦈ ==> ⦇⦈ ground
+    GProd : ⦇⦈ ⊗ ⦇⦈ ground
 
   mutual
     -- substitution typing
@@ -328,6 +415,16 @@ module core where
              τ2 ground →
              τ1 ≠ τ2 →
              Δ , Γ ⊢ d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ :: τ2
+      TAFst : ∀{Δ Γ d τ1 τ2} →
+             Δ , Γ ⊢ d :: τ1 ⊗ τ2 →
+             Δ , Γ ⊢ fst d :: τ1
+      TASnd : ∀{Δ Γ d τ1 τ2} →
+             Δ , Γ ⊢ d :: τ1 ⊗ τ2 →
+             Δ , Γ ⊢ snd d :: τ2
+      TAPair : ∀{Δ Γ d1 d2 τ1 τ2} →
+             Δ , Γ ⊢ d1 :: τ1 →
+             Δ , Γ ⊢ d2 :: τ2 →
+             Δ , Γ ⊢ ⟨ d1 , d2 ⟩ :: τ1 ⊗ τ2
 
   -- substitution
   [_/_]_ : ihexp → Nat → ihexp → ihexp
@@ -345,6 +442,9 @@ module core where
   [ d / y ] (d1 ∘ d2) = ([ d / y ] d1) ∘ ([ d / y ] d2)
   [ d / y ] (d' ⟨ τ1 ⇒ τ2 ⟩ ) = ([ d / y ] d') ⟨ τ1 ⇒ τ2 ⟩
   [ d / y ] (d' ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ ) = ([ d / y ] d') ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩
+  [ d / y ] ⟨ d1 , d2 ⟩ = ⟨ [ d / y ] d1 , [ d / y ] d2 ⟩
+  [ d / y ] (fst d') = fst ([ d / y ] d')
+  [ d / y ] (snd d') = snd ([ d / y ] d')
 
   -- applying an environment to an expression
   apply-env : env → ihexp → ihexp
@@ -355,14 +455,20 @@ module core where
   data _val : (d : ihexp) → Set where
     VConst : c val
     VLam   : ∀{x τ d} → (·λ x [ τ ] d) val
+    VPair  : ∀{d1 d2} → d1 val → d2 val → ⟨ d1 , d2 ⟩ val
 
   -- boxed values
   data _boxedval : (d : ihexp) → Set where
     BVVal : ∀{d} → d val → d boxedval
+    BVPair : ∀{d1 d2} → d1 boxedval → d2 boxedval → ⟨ d1 , d2 ⟩ boxedval
     BVArrCast : ∀{ d τ1 τ2 τ3 τ4 } →
                 τ1 ==> τ2 ≠ τ3 ==> τ4 →
                 d boxedval →
                 d ⟨ (τ1 ==> τ2) ⇒ (τ3 ==> τ4) ⟩ boxedval
+    BVProdCast : ∀{ d τ1 τ2 τ3 τ4 } →
+                τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
+                d boxedval →
+                d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ boxedval
     BVHoleCast : ∀{ τ d } → τ ground → d boxedval → d ⟨ τ ⇒ ⦇⦈ ⟩ boxedval
 
   mutual
@@ -375,10 +481,32 @@ module core where
                        d1 indet →
                        d2 final →
                        (d1 ∘ d2) indet
+      IFst   : ∀{d} →
+               d indet →
+               (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
+               (∀{d' τ1 τ2 τ3 τ4} → d ≠ (d' ⟨ τ1 ⊗ τ2 ⇒ τ3 ⊗ τ4 ⟩)) →
+               (fst d) indet
+      ISnd   : ∀{d} →
+               d indet →
+               (∀{d1 d2} → d ≠ ⟨ d1 , d2 ⟩) →
+               (∀{d' τ1 τ2 τ3 τ4} → d ≠ (d' ⟨ τ1 ⊗ τ2 ⇒ τ3 ⊗ τ4 ⟩)) →
+               (snd d) indet
+      IPair1 : ∀{d1 d2} →
+               d1 indet →
+               d2 final →
+               ⟨ d1 , d2 ⟩ indet
+      IPair2 : ∀{d1 d2} →
+               d1 final →
+               d2 indet →
+               ⟨ d1 , d2 ⟩ indet
       ICastArr : ∀{d τ1 τ2 τ3 τ4} →
                  τ1 ==> τ2 ≠ τ3 ==> τ4 →
                  d indet →
                  d ⟨ (τ1 ==> τ2) ⇒ (τ3 ==> τ4) ⟩ indet
+      ICastProd : ∀{d τ1 τ2 τ3 τ4} →
+                 τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
+                 d indet →
+                 d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ indet
       ICastGroundHole : ∀{ τ d } →
                         τ ground →
                         d indet →
@@ -409,6 +537,10 @@ module core where
     _∘₁_ : ectx → ihexp → ectx
     _∘₂_ : ihexp → ectx → ectx
     ⦇⌜_⌟⦈⟨_⟩ : ectx → (Nat × env ) → ectx
+    fst·_ : ectx → ectx
+    snd·_ : ectx → ectx
+    ⟨_,_⟩₁ : ectx → ihexp → ectx
+    ⟨_,_⟩₂ : ihexp → ectx → ectx
     _⟨_⇒_⟩ : ectx → htyp → htyp → ectx
     _⟨_⇒⦇⦈⇏_⟩ : ectx → htyp → htyp → ectx
 
@@ -432,6 +564,17 @@ module core where
     ECNEHole : ∀{ε u σ} →
                ε evalctx →
                ⦇⌜ ε ⌟⦈⟨ u , σ ⟩ evalctx
+    ECFst   : ∀{ε} →
+              (fst· ε) evalctx
+    ECSnd   : ∀{ε} →
+              (snd· ε) evalctx
+    ECPair1 : ∀{d ε} →
+              ε evalctx →
+              ⟨ ε , d ⟩₁ evalctx
+    ECPair2 : ∀{d ε} →
+              -- d final → -- red brackets
+              ε evalctx →
+              ⟨ d , ε ⟩₂ evalctx
     ECCast : ∀{ ε τ1 τ2} →
              ε evalctx →
              (ε ⟨ τ1 ⇒ τ2 ⟩) evalctx
@@ -452,6 +595,18 @@ module core where
     FHNEHole : ∀{ d d' ε u σ} →
               d == ε ⟦ d' ⟧ →
               ⦇⌜ d ⌟⦈⟨ (u , σ ) ⟩ ==  ⦇⌜ ε ⌟⦈⟨ (u , σ ) ⟩ ⟦ d' ⟧
+    FHFst   : ∀{d d' ε} →
+              d == ε ⟦ d' ⟧ →
+              fst d == (fst· ε) ⟦ d' ⟧
+    FHSnd   : ∀{d d' ε} →
+              d == ε ⟦ d' ⟧ →
+              snd d == (snd· ε) ⟦ d' ⟧
+    FHPair1 : ∀{d1 d1' d2 ε} →
+              d1 == ε ⟦ d1' ⟧ →
+              ⟨ d1 , d2 ⟩ == ⟨ ε , d2 ⟩₁ ⟦ d1' ⟧
+    FHPair2 : ∀{d1 d2 d2' ε} →
+              d2 == ε ⟦ d2' ⟧ →
+              ⟨ d1 , d2 ⟩ == ⟨ d1 , ε ⟩₂ ⟦ d2' ⟧
     FHCast : ∀{ d d' ε τ1 τ2 } →
             d == ε ⟦ d' ⟧ →
             d ⟨ τ1 ⇒ τ2 ⟩ == ε ⟨ τ1 ⇒ τ2 ⟩ ⟦ d' ⟧
@@ -464,12 +619,23 @@ module core where
     MGArr : ∀{τ1 τ2} →
             (τ1 ==> τ2) ≠ (⦇⦈ ==> ⦇⦈) →
             (τ1 ==> τ2) ▸gnd (⦇⦈ ==> ⦇⦈)
+    MGProd : ∀{τ1 τ2} →
+            (τ1 ⊗ τ2) ≠ (⦇⦈ ⊗ ⦇⦈) →
+            (τ1 ⊗ τ2) ▸gnd (⦇⦈ ⊗ ⦇⦈)
 
   -- instruction transition judgement
   data _→>_ : (d d' : ihexp) → Set where
     ITLam : ∀{ x τ d1 d2 } →
             -- d2 final → -- red brackets
             ((·λ x [ τ ] d1) ∘ d2) →> ([ d2 / x ] d1)
+    ITFst : ∀{d1 d2} →
+            -- d1 final → -- red brackets
+            -- d2 final → -- red brackets
+            fst ⟨ d1 , d2 ⟩ →> d1
+    ITSnd : ∀{d1 d2} →
+            -- d1 final → -- red brackets
+            -- d2 final → -- red brackets
+            snd ⟨ d1 , d2 ⟩ →> d2
     ITCastID : ∀{d τ } →
                -- d final → -- red brackets
                (d ⟨ τ ⇒ τ ⟩) →> d
@@ -487,6 +653,12 @@ module core where
                -- d1 final → -- red brackets
                -- d2 final → -- red brackets
                ((d1 ⟨ (τ1 ==> τ2) ⇒ (τ1' ==> τ2')⟩) ∘ d2) →> ((d1 ∘ (d2 ⟨ τ1' ⇒ τ1 ⟩)) ⟨ τ2 ⇒ τ2' ⟩)
+    ITFstCast : ∀{d τ1 τ2 τ1' τ2' } →
+               -- d final → -- red brackets
+               fst (d ⟨ τ1 ⊗ τ2 ⇒ τ1' ⊗ τ2' ⟩) →> ((fst d) ⟨ τ1 ⇒ τ1' ⟩)
+    ITSndCast : ∀{d τ1 τ2 τ1' τ2' } →
+               -- d final → -- red brackets
+               snd (d ⟨ τ1 ⊗ τ2 ⇒ τ1' ⊗ τ2' ⟩) →> ((snd d) ⟨ τ2 ⇒ τ2' ⟩)
     ITGround : ∀{ d τ τ'} →
                -- d final → -- red brackets
                τ ▸gnd τ' →
@@ -532,6 +704,9 @@ module core where
       FAp     : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x (d1 ∘ d2)
       FCast   : ∀{x d τ1 τ2} → fresh x d → fresh x (d ⟨ τ1 ⇒ τ2 ⟩)
       FFailedCast : ∀{x d τ1 τ2} → fresh x d → fresh x (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+      FFst  : ∀{x d} → fresh x d → fresh x (fst d)
+      FSnd  : ∀{x d} → fresh x d → fresh x (snd d)
+      FPair : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x ⟨ d1 , d2 ⟩
 
   -- ... for external expressions
   data freshh : Nat → hexp → Set where
@@ -543,6 +718,9 @@ module core where
     FRHEHole : ∀{x u} → freshh x (⦇⦈[ u ])
     FRHNEHole : ∀{x u e} → freshh x e → freshh x (⦇⌜ e ⌟⦈[ u ])
     FRHAp : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x (e1 ∘ e2)
+    FRHFst  : ∀{x e} → freshh x e → freshh x (fst e)
+    FRHSnd  : ∀{x e} → freshh x e → freshh x (snd e)
+    FRHPair : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x ⟨ e1 , e2 ⟩
 
   -- with respect to all bindings in a context
   freshΓ : {A : Set} → (Γ : A ctx) → (e : hexp) → Set
@@ -575,7 +753,15 @@ module core where
             unbound-in x (d1 ∘ d2)
       UBCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒ τ2 ⟩)
       UBFailedCast : ∀{x d τ1 τ2} → unbound-in x d → unbound-in x (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+      UBFst  : ∀{x d} → unbound-in x d → unbound-in x (fst d)
+      UBSnd  : ∀{x d} → unbound-in x d → unbound-in x (snd d)
+      UBPair : ∀{x d1 d2} → unbound-in x d1 → unbound-in x d2 → unbound-in x ⟨ d1 , d2 ⟩
 
+  -- todo does this belong in core? do we use it any more? maybe i just
+  -- want to refactor core a little bit and remove some of the techincal
+  -- devices into techincal-core.agda or something. there's a way to
+  -- structure module imports with new agda syntax so you inheret the
+  -- imports of what you import.
   mutual
     remove-from-free' : Nat → hexp → List Nat
     remove-from-free' x e = remove-all natEQ (free-vars e) x
@@ -589,6 +775,9 @@ module core where
     free-vars ⦇⦈[ u ] = []
     free-vars ⦇⌜ e ⌟⦈[ u ] = free-vars e
     free-vars (e₁ ∘ e₂) = free-vars e₁ ++ free-vars e₂
+    free-vars ⟨ x , x₁ ⟩ = free-vars x ++ free-vars x₁
+    free-vars (fst x) = free-vars x
+    free-vars (snd x) = free-vars x
 
   mutual
     data binders-disjoint-σ : env → ihexp → Set where
@@ -614,6 +803,12 @@ module core where
                           → binders-disjoint (d1 ∘ d2) d3
       BDCast : ∀{d1 d2 τ1 τ2} → binders-disjoint d1 d2 → binders-disjoint (d1 ⟨ τ1 ⇒ τ2 ⟩) d2
       BDFailedCast : ∀{d1 d2 τ1 τ2} → binders-disjoint d1 d2 → binders-disjoint (d1 ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) d2
+      BDFst  : ∀{d1 d2} → binders-disjoint d1 d2 → binders-disjoint (fst d1) d2
+      BDSnd  : ∀{d1 d2} → binders-disjoint d1 d2 → binders-disjoint (snd d1) d2
+      BDPair : ∀{d1 d2 d3} →
+               binders-disjoint d1 d3 →
+               binders-disjoint d2 d3 →
+               binders-disjoint ⟨ d1 , d2 ⟩ d3
 
   mutual
   -- each term has to be binders unique, and they have to be pairwise
@@ -645,6 +840,17 @@ module core where
                            → binders-unique (d ⟨ τ1 ⇒ τ2 ⟩)
       BUFailedCast : ∀{d τ1 τ2} → binders-unique d
                                  → binders-unique (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+      BUFst  : ∀{d} →
+               binders-unique d →
+               binders-unique (fst d)
+      BUSnd  : ∀{d} →
+               binders-unique d →
+               binders-unique (snd d)
+      BUPair : ∀{d1 d2} →
+               binders-unique d1 →
+               binders-unique d2 →
+               binders-disjoint d1 d2 →
+               binders-unique ⟨ d1 , d2 ⟩
 
   _⇓_ : ihexp → ihexp → Set
   d1 ⇓ d2 = (d1 ↦* d2 × d2 final)
@@ -729,6 +935,19 @@ module core where
                            hole-name-new e u →
                            Φ , Γ ⊢ p ~~> e ⇒ τ →
                            Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈
+        SPEFst   : ∀{Φ Γ p e τ τ1 τ2} →
+                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           τ ▸prod τ1 ⊗ τ2 →
+                           Φ , Γ ⊢ fst p ~~> fst e ⇒ τ1
+        SPESnd   : ∀{Φ Γ p e τ τ1 τ2} →
+                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           τ ▸prod τ1 ⊗ τ2 →
+                           Φ , Γ ⊢ snd p ~~> snd e ⇒ τ2
+        SPEPair  : ∀{Φ Γ p1 p2 τ1 τ2 e1 e2} →
+                           Φ , Γ ⊢ p1 ~~> e1 ⇒ τ1 →
+                           Φ , Γ ⊢ p2 ~~> e2 ⇒ τ2 →
+                           holes-disjoint e1 e2 →
+                           Φ , Γ ⊢ ⟨ p1 , p2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
         SPELetPal : ∀{Φ Γ π ρ p e τ} →
                            (#h : ρ # (Φ)₁) →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →

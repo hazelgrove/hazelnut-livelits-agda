@@ -8,7 +8,6 @@ open import htype-decidable
 open import lemmas-complete
 
 module complete-progress where
-
   -- as in progress, we define a datatype for the possible outcomes of
   -- progress for readability.
   data okc : (d : ihexp) (Δ : hctx) → Set where
@@ -20,8 +19,6 @@ module complete-progress where
                        d dcomplete →
                        okc d Δ
   complete-progress wt comp with progress wt
-  complete-progress wt comp | I x = abort (lem-ind-comp comp x)
   complete-progress wt comp | S x = S x
-  complete-progress wt comp | BV (BVVal x) = V x
-  complete-progress wt (DCCast comp x₂ ()) | BV (BVHoleCast x x₁)
-  complete-progress (TACast wt x) (DCCast comp x₃ x₄) | BV (BVArrCast x₁ x₂) = abort (x₁ (complete-consistency x x₃ x₄))
+  complete-progress wt comp | I x = abort (lem-ind-comp comp x)
+  complete-progress wt comp | BV x = V (lem-comp-boxed-val wt comp x)

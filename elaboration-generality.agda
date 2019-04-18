@@ -16,6 +16,9 @@ module elaboration-generality where
     elaboration-generality-synth ESEHole = SEHole
     elaboration-generality-synth (ESNEHole dis ex) = SNEHole (elab-disjoint-new-synth ex dis) (elaboration-generality-synth ex)
     elaboration-generality-synth (ESAsc x) = SAsc (elaboration-generality-ana x)
+    elaboration-generality-synth (ESFst s m _) = SFst s m
+    elaboration-generality-synth (ESSnd s m _) = SSnd s m
+    elaboration-generality-synth (ESPair x x₁ e e₁) = SPair x (elaboration-generality-synth e) (elaboration-generality-synth e₁)
 
     elaboration-generality-ana : {Γ : tctx} {e : hexp} {τ τ' : htyp} {d : ihexp} {Δ : hctx} →
                           Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →

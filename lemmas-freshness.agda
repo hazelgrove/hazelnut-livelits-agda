@@ -21,6 +21,11 @@ module lemmas-freshness where
     fresh-elab-synth1 apt (FRHAp frsh frsh₁) (ESAp x₁ x₂ x₃ x₄ x₅ x₆) =
                                FAp (FCast (fresh-elab-ana1 apt frsh x₅))
                                    (FCast (fresh-elab-ana1 apt frsh₁ x₆))
+    fresh-elab-synth1 apt (FRHLam1 x₁ frsh) ()
+    fresh-elab-synth1 apt (FRHFst frsh) (ESFst s m esana) = FFst (FCast (fresh-elab-ana1 apt frsh esana))
+    fresh-elab-synth1 apt (FRHSnd frsh) (ESSnd s m esana) = FSnd (FCast (fresh-elab-ana1 apt frsh esana))
+    fresh-elab-synth1 apt (FRHPair frsh frsh₁) (ESPair x₁ x₂ exp exp₁) = FPair (fresh-elab-synth1 apt frsh exp)
+                                                                           (fresh-elab-synth1 apt frsh₁ exp₁)
 
     fresh-elab-ana1 : ∀{ x e τ d τ' Γ Δ} →
                       x # Γ →
@@ -47,6 +52,10 @@ module lemmas-freshness where
                         FRHAp (fresh-elab-ana2 frsh x₅)
                               (fresh-elab-ana2 frsh₁ x₆)
     fresh-elab-synth2 (FCast frsh) (ESAsc x₁) = FRHAsc (fresh-elab-ana2 frsh x₁)
+    fresh-elab-synth2 (FFailedCast frsh) ()
+    fresh-elab-synth2 (FFst (FCast frsh)) (ESFst s m esana) = FRHFst (fresh-elab-ana2 frsh esana)
+    fresh-elab-synth2 (FSnd (FCast frsh)) (ESSnd s m esana) = FRHSnd (fresh-elab-ana2 frsh esana)
+    fresh-elab-synth2 (FPair frsh frsh₁) (ESPair x₁ x₂ exp exp₁) = FRHPair (fresh-elab-synth2 frsh exp) (fresh-elab-synth2 frsh₁ exp₁)
 
     fresh-elab-ana2 : ∀{ x e τ d τ' Γ Δ} →
                       fresh x d →

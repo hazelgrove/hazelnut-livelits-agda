@@ -25,6 +25,11 @@ module progress-checks where
   boxedval-not-indet (BVArrCast x bv) (ICastArr x₁ ind) = boxedval-not-indet bv ind
   boxedval-not-indet (BVHoleCast x bv) (ICastGroundHole x₁ ind) = boxedval-not-indet bv ind
   boxedval-not-indet (BVHoleCast x bv) (ICastHoleGround x₁ ind x₂) = boxedval-not-indet bv ind
+  boxedval-not-indet (BVVal (VPair x x₂)) (IPair1 ind x₁) = boxedval-not-indet (BVVal x) ind
+  boxedval-not-indet (BVVal (VPair x x₂)) (IPair2 x₁ ind) = boxedval-not-indet (BVVal x₂) ind
+  boxedval-not-indet (BVProdCast x bv) (ICastProd x₁ ind) = boxedval-not-indet bv ind
+  boxedval-not-indet (BVPair bv bv₁) (IPair1 ind x) = boxedval-not-indet bv ind
+  boxedval-not-indet (BVPair bv bv₁) (IPair2 x ind) = boxedval-not-indet bv₁ ind
 
   -- boxed values don't step
   boxedval-not-step : ∀{d} → d boxedval → (Σ[ d' ∈ ihexp ] (d ↦ d')) → ⊥
@@ -38,6 +43,15 @@ module progress-checks where
   boxedval-not-step (BVHoleCast x bv) (_ , Step (FHCast x₁) x₂ (FHCast x₃)) = boxedval-not-step bv (_ , Step x₁ x₂ x₃)
   boxedval-not-step (BVHoleCast x x₁) (_ , Step FHOuter (ITExpand ()) FHOuter)
   boxedval-not-step (BVHoleCast x x₁) (_ , Step FHOuter (ITCastFail x₂ () x₄) FHOuter)
+  boxedval-not-step (BVHoleCast GProd bv) (_ , Step FHOuter (ITGround (MGProd x₁)) FHOuter) = x₁ refl
+  boxedval-not-step (BVVal (VPair x x₁)) (_ , Step FHOuter () _)
+  boxedval-not-step (BVVal (VPair x x₁)) (_ , Step (FHPair1 fh1) it (FHPair1 fh2)) = boxedval-not-step (BVVal x) (_ , Step fh1 it fh2)
+  boxedval-not-step (BVVal (VPair x x₁)) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = boxedval-not-step (BVVal x₁) (_ , Step fh1 it fh2)
+  boxedval-not-step (BVProdCast x bv) (_ , Step FHOuter ITCastID FHOuter) = x refl
+  boxedval-not-step (BVProdCast x bv) (_ , Step (FHCast fh1) it (FHCast fh2)) = boxedval-not-step bv (_ , Step fh1 it fh2)
+  boxedval-not-step (BVPair bv bv₁) (_ , Step FHOuter () FHOuter)
+  boxedval-not-step (BVPair bv bv₁) (_ , Step (FHPair1 fh1) it (FHPair1 fh2)) = boxedval-not-step bv (_ , Step fh1 it fh2)
+  boxedval-not-step (BVPair bv bv₁) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = boxedval-not-step bv₁ (_ , Step fh1 it fh2)
 
   mutual
     -- indeterminates don't step
@@ -65,6 +79,24 @@ module progress-checks where
     indet-not-step (ICastHoleGround x x₁ x₂) (_ , Step FHOuter (ITCastFail x₃ x₄ x₅) FHOuter) = x _ _ refl
     indet-not-step (IFailedCast x x₁ x₂ x₃) (d' , Step FHOuter () FHOuter)
     indet-not-step (IFailedCast x x₁ x₂ x₃) (_ , Step (FHFailedCast x₄) x₅ (FHFailedCast x₆)) = final-not-step x (_ , Step x₄ x₅ x₆)
+    indet-not-step (ICastGroundHole GBase ind) (_ , Step FHOuter (ITGround ()) FHOuter)
+    indet-not-step (ICastGroundHole GProd ind) (_ , Step FHOuter (ITGround (MGProd x)) FHOuter) = x refl
+    indet-not-step (ICastHoleGround x ind GBase) (_ , Step FHOuter (ITExpand ()) FHOuter)
+    indet-not-step (ICastHoleGround x ind GProd) (_ , Step FHOuter (ITExpand (MGProd x₁)) FHOuter) = x₁ refl
+    indet-not-step (IFst ind x _) (_ , Step FHOuter ITFst fh2) = x refl
+    indet-not-step (IFst ind x _) (_ , Step (FHFst fh1) it (FHFst fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (ISnd ind x _) (_ , Step FHOuter ITSnd fh2) = x refl
+    indet-not-step (ISnd ind x _) (_ , Step (FHSnd fh1) it (FHSnd fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (IPair1 ind x) (_ , Step FHOuter () fh2)
+    indet-not-step (IPair1 ind x) (_ , Step (FHPair1 fh1) it (FHPair1 fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (IPair1 ind x) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = final-not-step x (_ , Step fh1 it fh2)
+    indet-not-step (IPair2 x ind) (_ , Step FHOuter () FHOuter)
+    indet-not-step (IPair2 x ind) (_ , Step (FHPair1 fh1) it (FHPair1 fh2)) = final-not-step x (_ , Step fh1 it fh2)
+    indet-not-step (IPair2 x ind) (_ , Step (FHPair2 fh1) it (FHPair2 fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (ICastProd x ind) (_ , Step FHOuter ITCastID FHOuter) = x refl
+    indet-not-step (ICastProd x ind) (_ , Step (FHCast fh1) it (FHCast fh2)) = indet-not-step ind (_ , Step fh1 it fh2)
+    indet-not-step (IFst (ICastProd x₂ ind) x x₁) (_ , Step FHOuter it FHOuter) = x₁ refl
+    indet-not-step (ISnd (ICastProd x₂ ind) x x₁) (_ , Step FHOuter it FHOuter) = x₁ refl
 
     -- final expressions don't step
     final-not-step : ∀{d} → d final → Σ[ d' ∈ ihexp ] (d ↦ d') → ⊥

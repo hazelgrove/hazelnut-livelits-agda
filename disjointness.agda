@@ -16,13 +16,16 @@ module disjointness where
     elab-new-disjoint-synth HNConst ESConst = empty-disj (■ (_ , _ , _))
     elab-new-disjoint-synth (HNAsc hn) (ESAsc x) = elab-new-disjoint-ana hn x
     elab-new-disjoint-synth HNVar (ESVar x₁) = empty-disj (■ (_ , _ , _))
-    elab-new-disjoint-synth (HNLam1 hn) ()
     elab-new-disjoint-synth (HNLam2 hn) (ESLam x₁ exp) = elab-new-disjoint-synth hn exp
     elab-new-disjoint-synth (HNHole x) ESEHole = disjoint-singles x
     elab-new-disjoint-synth (HNNEHole x hn) (ESNEHole x₁ exp) = disjoint-parts (elab-new-disjoint-synth hn exp) (disjoint-singles x)
     elab-new-disjoint-synth (HNAp hn hn₁) (ESAp x x₁ x₂ x₃ x₄ x₅) =
                                             disjoint-parts (elab-new-disjoint-ana hn x₄)
                                                   (elab-new-disjoint-ana hn₁ x₅)
+    elab-new-disjoint-synth (HNLam1 hn) ()
+    elab-new-disjoint-synth (HNFst hn) (ESFst x x₁ x₂) = elab-new-disjoint-ana hn x₂
+    elab-new-disjoint-synth (HNSnd hn) (ESSnd x x₁ x₂) = elab-new-disjoint-ana hn x₂
+    elab-new-disjoint-synth (HNPair hn hn₁) (ESPair x x₁ h h₁) = disjoint-parts (elab-new-disjoint-synth hn h) (elab-new-disjoint-synth hn₁ h₁)
 
     elab-new-disjoint-ana : ∀ { e u τ d Δ Γ Γ' τ' τ2} →
                               hole-name-new e u →
@@ -51,6 +54,11 @@ module disjointness where
     elab-disjoint-new-synth (ESNEHole {Δ = Δ} x ex) disj = HNNEHole (singles-notequal (disjoint-union2 {Γ1 = Δ} disj))
                                                                       (elab-disjoint-new-synth ex (disjoint-union1 disj))
     elab-disjoint-new-synth (ESAsc x) disj = HNAsc (elab-disjoint-new-ana x disj)
+    elab-disjoint-new-synth (ESFst x x₁ x₂) disj = HNFst (elab-disjoint-new-ana x₂ disj)
+    elab-disjoint-new-synth (ESSnd x x₁ x₂) disj = HNSnd (elab-disjoint-new-ana x₂ disj)
+    elab-disjoint-new-synth (ESPair {Δ1 = Δ1} x x₁ h h₁) disj
+      with elab-disjoint-new-synth h (disjoint-union1 disj) | elab-disjoint-new-synth h₁ (disjoint-union2 {Γ1 = Δ1} disj)
+    ... | ih1 | ih2 = HNPair ih1 ih2
 
     elab-disjoint-new-ana : ∀{ e τ d Δ u Γ Γ' τ2 τ'} →
                                 Γ ⊢ e ⇐ τ ~> d :: τ2 ⊣ Δ →
@@ -62,7 +70,7 @@ module disjointness where
     elab-disjoint-new-ana (EANEHole {Δ = Δ} x x₁) disj = HNNEHole (singles-notequal (disjoint-union2 {Γ1 = Δ} disj))
                                                                     (elab-disjoint-new-synth x₁ (disjoint-union1 disj))
 
-  -- collect up the hole names of a term as the indices of a trivial contex
+  -- collect up the hole names of a term as the indices of a trivial context
   data holes : (e : hexp) (H : ⊤ ctx) → Set where
     HConst : holes c ∅
     HAsc   : ∀{e τ H} → holes e H → holes (e ·: τ) H
@@ -72,9 +80,12 @@ module disjointness where
     HEHole : ∀{u} → holes (⦇⦈[ u ]) (■ (u , <>))
     HNEHole : ∀{e u H} → holes e H → holes (⦇⌜ e ⌟⦈[ u ]) (H ,, (u , <>))
     HAp : ∀{e1 e2 H1 H2} → holes e1 H1 → holes e2 H2 → holes (e1 ∘ e2) (H1 ∪ H2)
+    HFst  : ∀{e H} → holes e H → holes (fst e) H
+    HSnd  : ∀{e H} → holes e H → holes (snd e) H
+    HPair : ∀{e1 e2 H1 H2} → holes e1 H1 → holes e2 H2 → holes ⟨ e1 , e2 ⟩ (H1 ∪ H2)
 
   -- the above judgement has mode (∀,∃). this doesn't prove uniqueness; any
-  -- contex that extends the one computed here will be indistinguishable
+  -- context that extends the one computed here will be indistinguishable
   -- but we'll treat this one as canonical
   find-holes : (e : hexp) → Σ[ H ∈ ⊤ ctx ](holes e H)
   find-holes c = ∅ , HConst
@@ -90,6 +101,12 @@ module disjointness where
   ... | (h , d) = h ,, (x , <>) , HNEHole d
   find-holes (e1 ∘ e2) with find-holes e1 | find-holes e2
   ... | (h1 , d1) | (h2 , d2)  = (h1 ∪ h2 ) , (HAp d1 d2)
+  find-holes (fst e) with find-holes e
+  ... | (h , d) = h , HFst d
+  find-holes (snd e) with find-holes e
+  ... | (h , d) = h , HSnd d
+  find-holes ⟨ e1 , e2 ⟩ with find-holes e1 | find-holes e2
+  ... | (h1 , d1) | (h2 , d2)  = (h1 ∪ h2 ) , (HPair d1 d2)
 
   -- if a hole name is new then it's apart from the collection of hole
   -- names
@@ -102,6 +119,9 @@ module disjointness where
   lem-apart-new HEHole (HNHole x) = apart-singleton (flip x)
   lem-apart-new (HNEHole {u = u'} {H = H} h) (HNNEHole  {u = u}  x hn) = apart-parts H (■ (u' , <>)) u (lem-apart-new h hn) (apart-singleton (flip x))
   lem-apart-new (HAp {H1 = H1} {H2 = H2} h h₁) (HNAp hn hn₁) = apart-parts H1 H2 _ (lem-apart-new h hn) (lem-apart-new h₁ hn₁)
+  lem-apart-new (HFst h) (HNFst hn) = lem-apart-new h hn
+  lem-apart-new (HSnd h) (HNSnd hn) = lem-apart-new h hn
+  lem-apart-new (HPair {H1 = H1} {H2 = H2} h h₁) (HNPair hn hn₁) = apart-parts H1 H2 _ (lem-apart-new h hn) (lem-apart-new h₁ hn₁)
 
   -- if the holes of two expressions are disjoint, so are their collections
   -- of hole names
@@ -118,6 +138,9 @@ module disjointness where
   holes-disjoint-disjoint HEHole he2 (HDHole x) = lem-apart-sing-disj (lem-apart-new he2 x)
   holes-disjoint-disjoint (HNEHole he1) he2 (HDNEHole x hd) = disjoint-parts (holes-disjoint-disjoint he1 he2 hd) (lem-apart-sing-disj (lem-apart-new he2 x))
   holes-disjoint-disjoint (HAp he1 he2) he3 (HDAp hd hd₁) = disjoint-parts (holes-disjoint-disjoint he1 he3 hd) (holes-disjoint-disjoint he2 he3 hd₁)
+  holes-disjoint-disjoint (HFst he1) he2 (HDFst hd) = holes-disjoint-disjoint he1 he2 hd
+  holes-disjoint-disjoint (HSnd he1) he2 (HDSnd hd) = holes-disjoint-disjoint he1 he2 hd
+  holes-disjoint-disjoint (HPair he1 he3) he2 (HDPair hd hd₁) = disjoint-parts (holes-disjoint-disjoint he1 he2 hd) (holes-disjoint-disjoint he3 he2 hd₁)
 
   -- the holes of an expression have the same domain as the context
   -- produced during expansion; that is, we don't add anything we don't
@@ -148,16 +171,16 @@ module disjointness where
                                                                        (holes-delta-synth h exp)
                                                                        (dom-single u)
     holes-delta-synth (HAp h h₁) (ESAp x x₁ x₂ x₃ x₄ x₅) = dom-union (holes-disjoint-disjoint h h₁ x) (holes-delta-ana h x₄) (holes-delta-ana h₁ x₅)
+    holes-delta-synth (HLam1 h) ()
+    holes-delta-synth (HFst h) (ESFst x x₁ x₂) = holes-delta-ana h x₂
+    holes-delta-synth (HSnd h) (ESSnd x x₁ x₂) = holes-delta-ana h x₂
+    holes-delta-synth (HPair h h₁) (ESPair x x₁ h' h'') = dom-union (holes-disjoint-disjoint h h₁ x) (holes-delta-synth h h') (holes-delta-synth h₁ h'')
 
-  -- this is the main result of this file:
+  -- these are the main result of this file:
   --
-  -- if you elaborate two hole-disjoint expressions analytically, the Δs
-  -- produced are disjoint.
+  -- if you elaborate two hole-disjoint expressions, the Δs produced are disjoint.
   --
-  -- note that this is likely true for synthetic expansions in much the
-  -- same way, but we only prove half of the usual pair here because that's
-  -- all we need to establish expansion generality and elaborability. the
-  -- proof technique here is explcitly *not* structurally inductive on the
+  -- the proof technique here is explcitly *not* structurally inductive on the
   -- expansion judgement, because that approach relies on weakening of
   -- expansion, which is false because of the substitution contexts. giving
   -- expansion weakning would take away unicity, so we avoid the whole
@@ -172,3 +195,14 @@ module disjointness where
   ... | (_ , he1) | (_ , he2) = dom-eq-disj (holes-disjoint-disjoint he1 he2 hd)
                                             (holes-delta-ana he1 ana1)
                                             (holes-delta-ana he2 ana2)
+
+  elab-synth-disjoint : ∀{ e1 e2 τ1 τ2 e1' e2' Γ Δ1 Δ2 } →
+            holes-disjoint e1 e2 →
+            Γ ⊢ e1 ⇒ τ1 ~> e1' ⊣ Δ1 →
+            Γ ⊢ e2 ⇒ τ2 ~> e2' ⊣ Δ2 →
+            Δ1 ## Δ2
+  elab-synth-disjoint {e1} {e2} hd syn1 syn2
+    with find-holes e1 | find-holes e2
+  ... | (_ , he1) | (_ , he2) = dom-eq-disj (holes-disjoint-disjoint he1 he2 hd)
+                                            (holes-delta-synth he1 syn1)
+                                            (holes-delta-synth he2 syn2)
