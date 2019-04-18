@@ -91,16 +91,16 @@ module progress where
   progress (TAFst wt) | S (_ , Step fh1 it fh2) = S (_ , Step (FHFst fh1) it (FHFst fh2))
   progress (TAFst wt) | I h
     with canonical-indeterminate-forms-prod wt h
-  progress (TAFst wt) | I h | CIFPEHole (_ , _ , _ , refl , _)             = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TAFst wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _)    = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TAFst wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)        = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TAFst wt) | I h | CIFPFst (_ , _ , refl , _)                   = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TAFst wt) | I h | CIFPSnd (_ , _ , refl , _)                   = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPEHole (_ , _ , _ , refl , _)             = I (IFst h (λ ()) (λ ()))
+  progress (TAFst wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _)    = I (IFst h (λ ()) (λ ()))
+  progress (TAFst wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)        = I (IFst h (λ ()) (λ ()))
+  progress (TAFst wt) | I h | CIFPFst (_ , _ , refl , _)                   = I (IFst h (λ ()) (λ ()))
+  progress (TAFst wt) | I h | CIFPSnd (_ , _ , refl , _)                   = I (IFst h (λ ()) (λ ()))
   progress (TAFst wt) | I h | CIFPPair1 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITFst FHOuter)
   progress (TAFst wt) | I h | CIFPPair2 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITFst FHOuter)
   progress (TAFst wt) | I h | CIFPCast (_ , _ , _ , _ , _ , refl , _ , _ ) = S (_ , Step FHOuter ITFstCast FHOuter)
-  progress (TAFst wt) | I h | CIFPCastHole (_ , refl , refl , refl , _ )   = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TAFst wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (IFst h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TAFst wt) | I h | CIFPCastHole (_ , refl , refl , refl , _ )   = I (IFst h (λ ()) (λ ()))
+  progress (TAFst wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (IFst h (λ ()) (λ ()))
   progress (TAFst wt) | BV h
     with canonical-boxed-forms-prod wt h
   progress (TAFst wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITFst FHOuter)
@@ -112,16 +112,16 @@ module progress where
   progress (TASnd wt) | S (_ , Step fh1 it fh2) = S (_ , Step (FHSnd fh1) it (FHSnd fh2))
   progress (TASnd wt) | I h
     with canonical-indeterminate-forms-prod wt h
-  progress (TASnd wt) | I h | CIFPEHole (_ , _ , _ , refl , _)             = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TASnd wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _)    = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TASnd wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)        = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TASnd wt) | I h | CIFPFst (_ , _ , refl , _)                   = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TASnd wt) | I h | CIFPSnd (_ , _ , refl , _)                   = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPEHole (_ , _ , _ , refl , _)             = I (ISnd h (λ ()) (λ ()))
+  progress (TASnd wt) | I h | CIFPNEHole (_ , _ , _ , _ , _ , refl , _)    = I (ISnd h (λ ()) (λ ()))
+  progress (TASnd wt) | I h | CIFPAp (_ , _ , _ , _ , _ , refl , _)        = I (ISnd h (λ ()) (λ ()))
+  progress (TASnd wt) | I h | CIFPFst (_ , _ , refl , _)                   = I (ISnd h (λ ()) (λ ()))
+  progress (TASnd wt) | I h | CIFPSnd (_ , _ , refl , _)                   = I (ISnd h (λ ()) (λ ()))
   progress (TASnd wt) | I h | CIFPPair1 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITSnd FHOuter)
   progress (TASnd wt) | I h | CIFPPair2 (_ , _ , refl , _ )                = S (_ , Step FHOuter ITSnd FHOuter)
   progress (TASnd wt) | I h | CIFPCast (_ , _ , _ , _ , _ , refl , _ , _ ) = S (_ , Step FHOuter ITSndCast FHOuter)
-  progress (TASnd wt) | I h | CIFPCastHole (_ , refl , refl , refl , _ )   = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
-  progress (TASnd wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (ISnd h (λ {d1} {d2} ()) (λ {d'} {τ1} {τ2} {τ3} {τ4} ()))
+  progress (TASnd wt) | I h | CIFPCastHole (_ , refl , refl , refl , _ )   = I (ISnd h (λ ()) (λ ()))
+  progress (TASnd wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (ISnd h (λ ()) (λ ()))
   progress (TASnd wt) | BV h
     with canonical-boxed-forms-prod wt h
   progress (TASnd wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITSnd FHOuter)
