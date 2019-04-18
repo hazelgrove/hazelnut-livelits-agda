@@ -85,3 +85,18 @@ module lemmas-complete where
   comp-synth gc (ECSnd ec) (SSnd wt MPHole) = comp-synth gc ec wt
   comp-synth gc (ECSnd ec) (SSnd wt MPProd) = lem-comp-prod2 (comp-synth gc ec wt)
   comp-synth gc (ECPair ec ec₁) (SPair x wt wt₁) = TCProd (comp-synth gc ec wt) (comp-synth gc ec₁ wt₁)
+
+  -- complete boxed values are just values
+  lem-comp-boxed-val : {Δ : hctx} {d : ihexp} {τ : htyp} {Γ : tctx} →
+                           Δ , Γ ⊢ d :: τ →
+                           d dcomplete →
+                           d boxedval →
+                           d val
+  lem-comp-boxed-val wt comp (BVVal VConst) = VConst
+  lem-comp-boxed-val wt comp (BVVal VLam) = VLam
+  lem-comp-boxed-val wt comp (BVVal (VPair x x₁)) = VPair x x₁
+  lem-comp-boxed-val (TAPair wt wt₁) (DCPair comp comp₁) (BVPair bv bv₁) = VPair (lem-comp-boxed-val wt comp bv)
+                                                                                 (lem-comp-boxed-val wt₁ comp₁ bv₁)
+  lem-comp-boxed-val (TACast wt x₃) (DCCast comp x₁ x₂) (BVArrCast x bv) = abort (x (complete-consistency x₃ x₁ x₂))
+  lem-comp-boxed-val (TACast wt x₁) (DCCast comp x₂ x₃) (BVProdCast x bv) = abort (x (complete-consistency x₁ x₂ x₃))
+  lem-comp-boxed-val (TACast wt x₁) (DCCast comp x₂ ()) (BVHoleCast x bv)
