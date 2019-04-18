@@ -28,14 +28,28 @@ module canonical-boxed-forms where
       → cbf-arr Δ d τ1 τ2
 
   data cbf-prod : (Δ : hctx) (d : ihexp) (τ1 τ2 : htyp) → Set where
-    CBFPair : ∀{Δ d τ1 τ2} →
+    CBFPairVal : ∀{Δ d τ1 τ2} →
               (Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
-               (d == ⟨ d1 , d2 ⟩ × Δ , ∅ ⊢ d1 :: τ1 × Δ , ∅ ⊢ d2 :: τ2))
+               (d == ⟨ d1 , d2 ⟩ ×
+                Δ , ∅ ⊢ d1 :: τ1 ×
+                Δ , ∅ ⊢ d2 :: τ2 ×
+                d1 val ×
+                d2 val))
+              → cbf-prod Δ d τ1 τ2
+    CBFPairBV : ∀{Δ d τ1 τ2} →
+              (Σ[ d1 ∈ ihexp ] Σ[ d2 ∈ ihexp ]
+               (d == ⟨ d1 , d2 ⟩ ×
+                Δ , ∅ ⊢ d1 :: τ1 ×
+                Δ , ∅ ⊢ d2 :: τ2 ×
+                d1 boxedval ×
+                d2 boxedval  ))
               → cbf-prod Δ d τ1 τ2
     CBFCastProd : ∀{Δ d τ1 τ2} →
                   (Σ[ d' ∈ ihexp ] Σ[ τ1' ∈ htyp ] Σ[ τ2' ∈ htyp ]
                    (d == (d' ⟨ τ1' ⊗ τ2' ⇒ τ1 ⊗ τ2 ⟩) ×
                    (τ1' ⊗ τ2' ≠ τ1 ⊗ τ2) ×
+                   (τ1' ⊗ τ2' ~ τ1 ⊗ τ2) ×
+                   (d' boxedval) ×
                    (Δ , ∅ ⊢ d' :: τ1' ⊗ τ2')))
                   → cbf-prod Δ d τ1 τ2
 
@@ -80,12 +94,12 @@ module canonical-boxed-forms where
   canonical-boxed-forms-prod (TAEHole x x₁) (BVVal ())
   canonical-boxed-forms-prod (TANEHole x wt x₁) (BVVal ())
   canonical-boxed-forms-prod (TACast wt x) (BVVal ())
-  canonical-boxed-forms-prod (TACast wt x) (BVProdCast x₁ bv) = CBFCastProd (_ , _ , _ , refl , x₁ , wt)
+  canonical-boxed-forms-prod (TACast wt x) (BVProdCast x₁ bv) = CBFCastProd (_ , _ , _ , refl , x₁ , x , bv , wt)
   canonical-boxed-forms-prod (TAFailedCast wt x x₁ x₂) (BVVal ())
   canonical-boxed-forms-prod (TAFst wt) (BVVal ())
   canonical-boxed-forms-prod (TASnd wt) (BVVal ())
-  canonical-boxed-forms-prod (TAPair wt wt₁) (BVVal x) = CBFPair (_ , _ , refl , wt , wt₁)
-  canonical-boxed-forms-prod (TAPair wt wt₁) (BVPair bv bv₁) = CBFPair (_ , _ , refl , wt , wt₁)
+  canonical-boxed-forms-prod (TAPair wt wt₁) (BVVal (VPair x x₁)) = CBFPairVal (_ , _ , refl , wt , wt₁ , x , x₁)
+  canonical-boxed-forms-prod (TAPair wt wt₁) (BVPair bv bv₁) = CBFPairBV (_ , _ , refl , wt , wt₁ , bv , bv₁)
 
   canonical-boxed-forms-coverage : ∀{Δ d τ} →
                                    Δ , ∅ ⊢ d :: τ →
