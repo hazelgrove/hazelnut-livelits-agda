@@ -315,7 +315,8 @@ module canonical-indeterminate-forms where
         ((d == d' ⟨ (τ1' ⊗ τ2') ⇒ (τ1 ⊗ τ2) ⟩) ×
           (Δ , ∅ ⊢ d' :: τ1' ⊗ τ2') ×
           (d' indet) ×
-          ((τ1' ⊗ τ2') ≠ (τ1 ⊗ τ2))
+          ((τ1' ⊗ τ2') ≠ (τ1 ⊗ τ2)) ×
+          ((τ1' ⊗ τ2') ~ (τ1 ⊗ τ2))
         )
        → cif-prod Δ d τ1 τ2
     CIFPCastHole : ∀{d Δ τ1 τ2} →
@@ -335,8 +336,8 @@ module canonical-indeterminate-forms where
            (τ2 == ⦇⦈) ×
            (Δ , ∅ ⊢ d' :: τ') ×
            (τ' ground) ×
-           (τ' ≠ (⦇⦈ ⊗ ⦇⦈))
-           )
+           (τ' ≠ (⦇⦈ ⊗ ⦇⦈) ×
+           d' final))
           → cif-prod Δ d τ1 τ2
 
   canonical-indeterminate-forms-prod : ∀{Δ d τ1 τ2 } →
@@ -347,9 +348,9 @@ module canonical-indeterminate-forms where
   canonical-indeterminate-forms-prod (TAAp wt wt₁) (IAp x ind x₁) = CIFPAp (_ , _ , _ , _ , _ , refl , wt , wt₁ , ind , x₁ , x)
   canonical-indeterminate-forms-prod (TAEHole x x₁) IEHole = CIFPEHole (_ , _ , _ , refl , x , x₁)
   canonical-indeterminate-forms-prod (TANEHole x wt x₁) (INEHole x₂) = CIFPNEHole (_ , _ , _ , _ , _ , refl , wt , x₂ , x , x₁)
-  canonical-indeterminate-forms-prod (TACast wt x) (ICastProd x₁ ind) = CIFPCast (_ , _ , _ , _ , _ , refl , wt , ind , x₁)
+  canonical-indeterminate-forms-prod (TACast wt x) (ICastProd x₁ ind) = CIFPCast (_ , _ , _ , _ , _ , refl , wt , ind , x₁ , x)
   canonical-indeterminate-forms-prod (TACast wt TCHole2) (ICastHoleGround x₁ ind GProd) = CIFPCastHole (_ , refl , refl , refl , wt , ind , x₁)
-  canonical-indeterminate-forms-prod (TAFailedCast wt x GProd x₂) (IFailedCast x₃ x₄ x₅ x₆) = CIFPFailedCast (_ , _ , refl , refl , refl , wt , x₄ , x₆)
+  canonical-indeterminate-forms-prod (TAFailedCast wt x GProd x₂) (IFailedCast x₃ x₄ GProd x₆) = CIFPFailedCast (_ , _ , refl , refl , refl , wt , x₄ , x₆ , x₃)
   canonical-indeterminate-forms-prod (TAFst wt) (IFst ind h1 h2) = CIFPFst (_ , _ , refl , wt , ind , h1 , h2)
   canonical-indeterminate-forms-prod (TASnd wt) (ISnd ind h1 h2) = CIFPSnd (_ , _ , refl , wt , ind , h1 , h2)
   canonical-indeterminate-forms-prod (TAPair wt wt₁) (IPair1 ind x) = CIFPPair1 (_ , _ , refl , wt , wt₁ , ind , x)
