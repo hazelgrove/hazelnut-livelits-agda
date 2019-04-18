@@ -58,3 +58,4 @@ open import palettes-checks
 open import typed-palette-elaboration
 open import lemmas-freevars
 open import palette-reasoning-principles
+open import expansion-unicity
