@@ -103,7 +103,8 @@ module progress where
   progress (TAFst wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (IFst h (λ ()) (λ ()))
   progress (TAFst wt) | BV h
     with canonical-boxed-forms-prod wt h
-  progress (TAFst wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITFst FHOuter)
+  progress (TAFst wt) | BV h | CBFPairVal (_ , _ , refl , _ , _)         = S (_ , Step FHOuter ITFst FHOuter)
+  progress (TAFst wt) | BV h | CBFPairBV (_ , _ , refl , _ , _)          = S (_ , Step FHOuter ITFst FHOuter)
   progress (TAFst wt) | BV h | CBFCastProd (_ , _ , _ , refl , _) = S (_ , Step FHOuter ITFstCast FHOuter)
 
   -- products : snd
@@ -124,7 +125,8 @@ module progress where
   progress (TASnd wt) | I h | CIFPFailedCast (_ , _ , refl , _ )           = I (ISnd h (λ ()) (λ ()))
   progress (TASnd wt) | BV h
     with canonical-boxed-forms-prod wt h
-  progress (TASnd wt) | BV h | CBFPair (_ , _ , refl , _)         = S (_ , Step FHOuter ITSnd FHOuter)
+  progress (TASnd wt) | BV h | CBFPairVal (_ , _ , refl , _ )         = S (_ , Step FHOuter ITSnd FHOuter)
+  progress (TASnd wt) | BV h | CBFPairBV (_ , _ , refl , _ )          = S (_ , Step FHOuter ITSnd FHOuter)
   progress (TASnd wt) | BV h | CBFCastProd (_ , _ , _ , refl , _) = S (_ , Step FHOuter ITSndCast FHOuter)
 
   -- products : pairs

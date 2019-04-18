@@ -46,7 +46,7 @@ module complete-progress where
   complete-progress wt comp | I x = abort (lem-ind-comp comp x)
   complete-progress wt comp | S x = S x
   complete-progress wt comp | BV (BVVal x) = V x
-  complete-progress (TAPair wt wt₁) (DCPair comp comp₁) | BV (BVPair bv1 bv2) = V (lem-comp-boxed-prod→val (TAPair wt wt₁) (DCPair comp comp₁) bv1 bv2)
+  complete-progress (TAPair wt wt₁) (DCPair comp comp₁) | BV (BVPair bv1 bv2) = V {!!} -- V (lem-comp-boxed-prod→val (TAPair wt wt₁) (DCPair comp comp₁) bv1 bv2)
   complete-progress (TACast wt x₁) (DCCast comp x₂ x₃) | BV (BVProdCast x _) = abort (x (complete-consistency x₁ x₂ x₃))
   complete-progress wt (DCCast comp x₂ ()) | BV (BVHoleCast x x₁)
   complete-progress (TACast wt x) (DCCast comp x₃ x₄) | BV (BVArrCast x₁ x₂) = abort (x₁ (complete-consistency x x₃ x₄))
