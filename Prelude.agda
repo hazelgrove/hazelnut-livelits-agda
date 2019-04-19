@@ -96,3 +96,7 @@ module Prelude where
   _≃_ : Set → Set → Set
   _≃_ A B = Σ[ f ∈ (A → B) ] Σ[ g ∈ (B → A) ]
              (((a : A) → g (f a) == a) × (((b : B) → f (g b) == b)))
+
+  -- decidable equality
+  dec : Set → Set
+  dec A = (a1 a2 : A) → (a1 == a2) + ((a1 == a2) → ⊥)
