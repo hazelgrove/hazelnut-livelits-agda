@@ -32,8 +32,13 @@ module expansion-unicity where
     ... | refl = refl , refl
     expansion-unicity-synth (SPEPair D1 D2 x) (SPEPair D3 D4 x₁) with expansion-unicity-synth D1 D3 | expansion-unicity-synth D2 D4
     ... | refl , refl | refl , refl = refl , refl
-    expansion-unicity-synth (SPELetPal #h x D1) (SPELetPal #h₁ x₁ D2) = {! !}
-    expansion-unicity-synth (SPEApPal x x₁ x₂ x₃ x₄ x₅ x₆ x₇) (SPEApPal x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ x₁₅) = {!!}
+    expansion-unicity-synth (SPELetPal #h x D1) (SPELetPal #h₁ x₁ D2) = {!!}
+    expansion-unicity-synth (SPEApPal x x₁ x₂ x₃ x₄ x₅ x₆ x₇) (SPEApPal x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ x₁₅) with expansion-unicity-ana x₆ x₁₄
+    ... | refl , refl with someinj (! x₁₀ · x₂)
+    ... | refl =  {!!} , refl --  i think we might need something about
+                              --  denc that the postulate junk doesn't give
+                              --  us right here. you need to know that the
+                              --  two eexpandeds are the same.
     expansion-unicity-synth (SPELetFPal #h eh D1) (SPELetFPal #h₁ eh₁ D2) = {!!}
     expansion-unicity-synth (SPEApFPal x x₁ x₂ x₃ x₄ x₅ x₆ x₇) (SPEApFPal x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ x₁₅) = {!!}
 
