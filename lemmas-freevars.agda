@@ -30,19 +30,20 @@ module lemmas-freevars where
     -- if e synthesizes a type under a context that doesn't mention x, x is
     -- not in free vars of e
     fv-lemma-syn : ∀{Γ x e τ} → x # Γ → Γ ⊢ e => τ → x inList (free-vars e) → ⊥
-    fv-lemma-syn {e = c} h₁ h₂ ()
-    fv-lemma-syn {e = _ ·: _} h₁ (SAsc h₂) = fv-lemma-ana h₁ h₂
-    fv-lemma-syn {e = X _} hx (SVar hx') InH = somenotnone (! hx' · hx)
-    fv-lemma-syn {e = X _} hx (SVar hx') (InT ())
-    fv-lemma-syn {e = ·λ _ _} h₁ ()
-    fv-lemma-syn {Γ} {_} {·λ _ [ _ ] _} hx (SLam hx' h₂) = rff-lemma-syn {Γ} hx h₂
-    fv-lemma-syn {e = ⦇⦈[ u ]} h₁ h₂ ()
-    fv-lemma-syn {e = ⦇⌜ _ ⌟⦈[ _ ]} h₁ (SNEHole _ h₂) = fv-lemma-syn h₁ h₂
-    fv-lemma-syn {e = e1 ∘ e2} h₁ (SAp _ h₂ _ h₃) inlist with inList++ {l1 = free-vars e1} natEQ inlist
-    fv-lemma-syn {e = e1 ∘ e2} h₁ (SAp _ h₂ _ h₃) inlist | Inl x₁ = fv-lemma-syn h₁ h₂ x₁
-    fv-lemma-syn {e = e1 ∘ e2} h₁ (SAp _ h₂ _ h₃) inlist | Inr x₁ = fv-lemma-ana h₁ h₃ x₁
-    fv-lemma-syn {e = ⟨ e1 , e2 ⟩} h1 (SPair x₁ wt wt₁) inlist with inList++ {l1 = free-vars e1} natEQ inlist
-    fv-lemma-syn {x = x} {⟨ _ , _ ⟩} h1 (SPair x₁ wt wt₁) inlist | Inl x₄ = fv-lemma-syn h1 wt x₄
-    fv-lemma-syn {x = _} {⟨ _ , _ ⟩} h1 (SPair x₁ wt wt₁) inlist | Inr x₄ = fv-lemma-syn h1 wt₁ x₄
-    fv-lemma-syn {e = fst _} h1 (SFst wt x₁) = fv-lemma-syn h1 wt
-    fv-lemma-syn {e = snd _} h1 (SSnd wt x₁) = fv-lemma-syn h1 wt
+    fv-lemma-syn apt SConst ()
+    fv-lemma-syn apt (SAsc x₁) = fv-lemma-ana apt x₁
+    fv-lemma-syn apt (SVar x₂) InH = somenotnone (! x₂ · apt)
+    fv-lemma-syn apt (SVar x₂) (InT ())
+    fv-lemma-syn apt (SAp {e1 = e1} x₁ wt x₂ x₃) xin
+      with inList++ {l1 = free-vars e1} natEQ xin
+    ... | Inl x₄ = fv-lemma-syn apt wt x₄
+    ... | Inr x₄ = fv-lemma-ana apt x₃ x₄
+    fv-lemma-syn apt SEHole ()
+    fv-lemma-syn apt (SNEHole x₁ wt) = fv-lemma-syn apt wt
+    fv-lemma-syn {Γ} apt (SLam x₂ wt) xin = rff-lemma-syn {Γ} apt wt xin
+    fv-lemma-syn apt (SFst wt x₁) = fv-lemma-syn apt wt
+    fv-lemma-syn apt (SSnd wt x₁) = fv-lemma-syn apt wt
+    fv-lemma-syn apt (SPair {e1 = e1} x₁ wt wt₁) xin
+      with inList++ {l1 = free-vars e1} natEQ xin
+    ... | Inl y = fv-lemma-syn apt wt y
+    ... | Inr y = fv-lemma-syn apt wt₁ y
