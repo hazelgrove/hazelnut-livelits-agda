@@ -9,7 +9,7 @@ to [POPL21](https://popl21.sigplan.org/).
 
 # How To Check These Proofs
 
-These proofs are known to check under `Agda version 2.6.0`. The most
+These proofs are known to check under `Agda version 2.6.1`. The most
 direct, if not the easiest, option to check the proofs is to install that
 version of Agda or one compatible with it, download the code in this repo,
 and run `agda all.agda` at the command line.

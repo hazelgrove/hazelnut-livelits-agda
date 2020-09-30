@@ -69,10 +69,10 @@ module canonical-boxed-forms where
   canonical-boxed-forms-arr (TASnd wt) (BVVal ())
 
   canonical-boxed-forms-hole : ∀{Δ d} →
-                               Δ , ∅ ⊢ d :: ⦇⦈ →
+                               Δ , ∅ ⊢ d :: ⦇·⦈ →
                                d boxedval →
                                Σ[ d' ∈ ihexp ] Σ[ τ' ∈ htyp ]
-                                 ((d == d' ⟨ τ' ⇒ ⦇⦈ ⟩) ×
+                                 ((d == d' ⟨ τ' ⇒ ⦇·⦈ ⟩) ×
                                   (τ' ground) ×
                                   (Δ , ∅ ⊢ d' :: τ'))
   canonical-boxed-forms-hole (TAVar x₁) (BVVal ())
@@ -106,7 +106,7 @@ module canonical-boxed-forms where
                                    d boxedval →
                                    τ ≠ b →
                                    ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ==> τ2)) →
-                                   τ ≠ ⦇⦈ →
+                                   τ ≠ ⦇·⦈ →
                                    ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ⊗ τ2)) →
                                    ⊥
   canonical-boxed-forms-coverage TAConst (BVVal x) nb na nh = λ _ → nb refl

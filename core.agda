@@ -7,7 +7,7 @@ module core where
   -- types
   data htyp : Set where
     b     : htyp
-    ⦇⦈    : htyp
+    ⦇·⦈    : htyp
     _==>_ : htyp → htyp → htyp
     _⊗_   : htyp → htyp → htyp
 
@@ -101,8 +101,8 @@ module core where
   -- type consistency
   data _~_ : (t1 t2 : htyp) → Set where
     TCRefl  : {τ : htyp} → τ ~ τ
-    TCHole1 : {τ : htyp} → τ ~ ⦇⦈
-    TCHole2 : {τ : htyp} → ⦇⦈ ~ τ
+    TCHole1 : {τ : htyp} → τ ~ ⦇·⦈
+    TCHole2 : {τ : htyp} → ⦇·⦈ ~ τ
     TCArr   : {τ1 τ2 τ1' τ2' : htyp} →
                τ1 ~ τ1' →
                τ2 ~ τ2' →
@@ -137,12 +137,12 @@ module core where
 
   --- matching for arrows
   data _▸arr_ : htyp → htyp → Set where
-    MAHole : ⦇⦈ ▸arr ⦇⦈ ==> ⦇⦈
+    MAHole : ⦇·⦈ ▸arr ⦇·⦈ ==> ⦇·⦈
     MAArr  : {τ1 τ2 : htyp} → τ1 ==> τ2 ▸arr τ1 ==> τ2
 
   -- matching for products
   data _▸prod_ : htyp → htyp → Set where
-    MPHole : ⦇⦈ ▸prod ⦇⦈ ⊗ ⦇⦈
+    MPHole : ⦇·⦈ ▸prod ⦇·⦈ ⊗ ⦇·⦈
     MPProd  : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
 
   -- the type of hole contexts, i.e. Δs in the judgements
@@ -219,11 +219,11 @@ module core where
                  τ1 ▸arr τ2 ==> τ →
                  Γ ⊢ e2 <= τ2 →
                  Γ ⊢ (e1 ∘ e2) => τ
-      SEHole  : {Γ : tctx} {u : Nat} → Γ ⊢ ⦇⦈[ u ] => ⦇⦈
+      SEHole  : {Γ : tctx} {u : Nat} → Γ ⊢ ⦇⦈[ u ] => ⦇·⦈
       SNEHole : {Γ : tctx} {e : hexp} {τ : htyp} {u : Nat} →
                  hole-name-new e u →
                  Γ ⊢ e => τ →
-                 Γ ⊢ ⦇⌜ e ⌟⦈[ u ] => ⦇⦈
+                 Γ ⊢ ⦇⌜ e ⌟⦈[ u ] => ⦇·⦈
       SLam    : {Γ : tctx} {e : hexp} {τ1 τ2 : htyp} {x : Nat} →
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
@@ -322,11 +322,11 @@ module core where
               Γ ⊢ e2 ⇐ τ2 ~> d2 :: τ2' ⊣ Δ2 →
               Γ ⊢ e1 ∘ e2 ⇒ τ ~> (d1 ⟨ τ1' ⇒ τ2 ==> τ ⟩) ∘ (d2 ⟨ τ2' ⇒ τ2 ⟩) ⊣ (Δ1 ∪ Δ2)
       ESEHole : ∀{ Γ u } →
-                Γ ⊢ ⦇⦈[ u ] ⇒ ⦇⦈ ~> ⦇⦈⟨ u , Id Γ ⟩ ⊣  ■ (u :: ⦇⦈ [ Γ ])
+                Γ ⊢ ⦇⦈[ u ] ⇒ ⦇·⦈ ~> ⦇⦈⟨ u , Id Γ ⟩ ⊣  ■ (u :: ⦇·⦈ [ Γ ])
       ESNEHole : ∀{ Γ e τ d u Δ } →
-                 Δ ## (■ (u , Γ , ⦇⦈)) →
+                 Δ ## (■ (u , Γ , ⦇·⦈)) →
                  Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
-                 Γ ⊢ ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈ ~> ⦇⌜ d ⌟⦈⟨ u , Id Γ  ⟩ ⊣ (Δ ,, u :: ⦇⦈ [ Γ ])
+                 Γ ⊢ ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇·⦈ ~> ⦇⌜ d ⌟⦈⟨ u , Id Γ  ⟩ ⊣ (Δ ,, u :: ⦇·⦈ [ Γ ])
       ESAsc : ∀ {Γ e τ d τ' Δ} →
                  Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                  Γ ⊢ (e ·: τ) ⇒ τ ~> d ⟨ τ' ⇒ τ ⟩ ⊣ Δ
@@ -370,8 +370,8 @@ module core where
   -- ground types
   data _ground : (τ : htyp) → Set where
     GBase : b ground
-    GHole : ⦇⦈ ==> ⦇⦈ ground
-    GProd : ⦇⦈ ⊗ ⦇⦈ ground
+    GHole : ⦇·⦈ ==> ⦇·⦈ ground
+    GProd : ⦇·⦈ ⊗ ⦇·⦈ ground
 
   mutual
     -- substitution typing
@@ -469,7 +469,7 @@ module core where
                 τ1 ⊗ τ2 ≠ τ3 ⊗ τ4 →
                 d boxedval →
                 d ⟨ (τ1 ⊗ τ2) ⇒ (τ3 ⊗ τ4) ⟩ boxedval
-    BVHoleCast : ∀{ τ d } → τ ground → d boxedval → d ⟨ τ ⇒ ⦇⦈ ⟩ boxedval
+    BVHoleCast : ∀{ τ d } → τ ground → d boxedval → d ⟨ τ ⇒ ⦇·⦈ ⟩ boxedval
 
   mutual
     -- indeterminate forms
@@ -510,12 +510,12 @@ module core where
       ICastGroundHole : ∀{ τ d } →
                         τ ground →
                         d indet →
-                        d ⟨ τ ⇒  ⦇⦈ ⟩ indet
+                        d ⟨ τ ⇒  ⦇·⦈ ⟩ indet
       ICastHoleGround : ∀ { d τ } →
-                        ((d' : ihexp) (τ' : htyp) → d ≠ (d' ⟨ τ' ⇒ ⦇⦈ ⟩)) →
+                        ((d' : ihexp) (τ' : htyp) → d ≠ (d' ⟨ τ' ⇒ ⦇·⦈ ⟩)) →
                         d indet →
                         τ ground →
-                        d ⟨ ⦇⦈ ⇒ τ ⟩ indet
+                        d ⟨ ⦇·⦈ ⇒ τ ⟩ indet
       IFailedCast : ∀{ d τ1 τ2 } →
                     d final →
                     τ1 ground →
@@ -542,7 +542,7 @@ module core where
     ⟨_,_⟩₁ : ectx → ihexp → ectx
     ⟨_,_⟩₂ : ihexp → ectx → ectx
     _⟨_⇒_⟩ : ectx → htyp → htyp → ectx
-    _⟨_⇒⦇⦈⇏_⟩ : ectx → htyp → htyp → ectx
+    _⟨_⇒⦇·⦈⇏_⟩ : ectx → htyp → htyp → ectx
 
   -- note: this judgement is redundant: in the absence of the premises in
   -- the red brackets, all syntactically well formed ectxs are valid. with
@@ -580,7 +580,7 @@ module core where
              (ε ⟨ τ1 ⇒ τ2 ⟩) evalctx
     ECFailedCast : ∀{ ε τ1 τ2 } →
                    ε evalctx →
-                   ε ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ evalctx
+                   ε ⟨ τ1 ⇒⦇·⦈⇏ τ2 ⟩ evalctx
 
   -- d is the result of filling the hole in ε with d'
   data _==_⟦_⟧ : (d : ihexp) (ε : ectx) (d' : ihexp) → Set where
@@ -612,16 +612,16 @@ module core where
             d ⟨ τ1 ⇒ τ2 ⟩ == ε ⟨ τ1 ⇒ τ2 ⟩ ⟦ d' ⟧
     FHFailedCast : ∀{ d d' ε τ1 τ2} →
             d == ε ⟦ d' ⟧ →
-            (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) == (ε ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) ⟦ d' ⟧
+            (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) == (ε ⟨ τ1 ⇒⦇·⦈⇏ τ2 ⟩) ⟦ d' ⟧
 
   -- matched ground types
   data _▸gnd_ : htyp → htyp → Set where
     MGArr : ∀{τ1 τ2} →
-            (τ1 ==> τ2) ≠ (⦇⦈ ==> ⦇⦈) →
-            (τ1 ==> τ2) ▸gnd (⦇⦈ ==> ⦇⦈)
+            (τ1 ==> τ2) ≠ (⦇·⦈ ==> ⦇·⦈) →
+            (τ1 ==> τ2) ▸gnd (⦇·⦈ ==> ⦇·⦈)
     MGProd : ∀{τ1 τ2} →
-            (τ1 ⊗ τ2) ≠ (⦇⦈ ⊗ ⦇⦈) →
-            (τ1 ⊗ τ2) ▸gnd (⦇⦈ ⊗ ⦇⦈)
+            (τ1 ⊗ τ2) ≠ (⦇·⦈ ⊗ ⦇·⦈) →
+            (τ1 ⊗ τ2) ▸gnd (⦇·⦈ ⊗ ⦇·⦈)
 
   -- instruction transition judgement
   data _→>_ : (d d' : ihexp) → Set where
@@ -642,13 +642,13 @@ module core where
     ITCastSucceed : ∀{d τ } →
                     -- d final → -- red brackets
                     τ ground →
-                    (d ⟨ τ ⇒ ⦇⦈ ⇒ τ ⟩) →> d
+                    (d ⟨ τ ⇒ ⦇·⦈ ⇒ τ ⟩) →> d
     ITCastFail : ∀{ d τ1 τ2} →
                  -- d final → -- red brackets
                  τ1 ground →
                  τ2 ground →
                  τ1 ≠ τ2 →
-                 (d ⟨ τ1 ⇒ ⦇⦈ ⇒ τ2 ⟩) →> (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
+                 (d ⟨ τ1 ⇒ ⦇·⦈ ⇒ τ2 ⟩) →> (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩)
     ITApCast : ∀{d1 d2 τ1 τ2 τ1' τ2' } →
                -- d1 final → -- red brackets
                -- d2 final → -- red brackets
@@ -662,11 +662,11 @@ module core where
     ITGround : ∀{ d τ τ'} →
                -- d final → -- red brackets
                τ ▸gnd τ' →
-               (d ⟨ τ ⇒ ⦇⦈ ⟩) →> (d ⟨ τ ⇒ τ' ⇒ ⦇⦈ ⟩)
+               (d ⟨ τ ⇒ ⦇·⦈ ⟩) →> (d ⟨ τ ⇒ τ' ⇒ ⦇·⦈ ⟩)
     ITExpand : ∀{d τ τ' } →
                -- d final → -- red brackets
                τ ▸gnd τ' →
-               (d ⟨ ⦇⦈ ⇒ τ ⟩) →> (d ⟨ ⦇⦈ ⇒ τ' ⇒ τ ⟩)
+               (d ⟨ ⦇·⦈ ⇒ τ ⟩) →> (d ⟨ ⦇·⦈ ⇒ τ' ⇒ τ ⟩)
 
   -- single step (in contextual evaluation sense)
   data _↦_ : (d d' : ihexp) → Set where
@@ -930,11 +930,11 @@ module core where
                            Φ , Γ ⊢ p2 ~~> e2 ⇐ τ2 →
                            holes-disjoint e1 e2 →
                            Φ , Γ ⊢ p1 ∘ p2 ~~> e1 ∘ e2 ⇒ τ
-        SPEHole  : ∀{Φ Γ u} → Φ , Γ ⊢ ⦇⦈[ u ] ~~> ⦇⦈[ u ] ⇒ ⦇⦈
+        SPEHole  : ∀{Φ Γ u} → Φ , Γ ⊢ ⦇⦈[ u ] ~~> ⦇⦈[ u ] ⇒ ⦇·⦈
         SPNEHole : ∀{Φ Γ p e τ u} →
                            hole-name-new e u →
                            Φ , Γ ⊢ p ~~> e ⇒ τ →
-                           Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇⦈
+                           Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇·⦈
         SPEFst   : ∀{Φ Γ p e τ τ1 τ2} →
                            Φ , Γ ⊢ p ~~> e ⇒ τ →
                            τ ▸prod τ1 ⊗ τ2 →
