@@ -60,24 +60,24 @@ module core where
   _⟨_⇒_⇒_⟩ : ihexp → htyp → htyp → htyp → ihexp
   d ⟨ t1 ⇒ t2 ⇒ t3 ⟩ = d ⟨ t1 ⇒ t2 ⟩ ⟨ t2 ⇒ t3 ⟩
 
-  record paldef : Set where
+  record paldef : Set where -- todo pal
     field
       expand : ihexp
       model-type : htyp
       expansion-type : htyp
 
-  record fpaldef : Set where
+  record fpaldef : Set where -- todo pal
     field
       expand : hexp
       model-type : htyp
       splice-type : htyp
       expansion-type : htyp
 
-  data palctx-entry : Set where
+  data palctx-entry : Set where -- todo pal
     MPalDef : paldef → palctx-entry
     FPalDef : fpaldef → palctx-entry
 
-  -- new outermost layer: a langauge exactly like hexp but also with palettes
+  -- new outermost layer: a langauge exactly like hexp but also with livelits
   data pexp : Set where
     c       : pexp
     _·:_    : pexp → htyp → pexp
@@ -91,10 +91,10 @@ module core where
     fst     : pexp → pexp
     snd     : pexp → pexp
     -- new forms below
-    -- macro-like palettes
+    -- macro-like livelits --todo pal
     let-pal_be_·in_ : Nat → paldef → pexp → pexp
     ap-pal : Nat → ihexp → (htyp × pexp) → pexp
-    -- function-like palettes
+    -- function-like livelits --todo pal
     let-fpal_be_·in_ : Nat → fpaldef → pexp → pexp
     ap-fpal : Nat → hexp → pexp → pexp
 
@@ -868,7 +868,7 @@ module core where
 -- pexps are p
 -- paldefs are π
 
-  -- function-like palette context well-formedness
+  -- function-like livelit context well-formedness
   mutual
     palctx = Σ[ Φ' ∈ palctx-entry ctx ] (Φ' palctx')
 
@@ -904,7 +904,7 @@ module core where
                    palctx
   Φ ,, ρ :: π ⦅given #h and eh ⦆ = ((Φ)₁ ,, (ρ , FPalDef π) , PhiWFInductive Φ #h eh)
 
-  -- palette expansion -- todo, should this be called elaboration?
+  -- livelit expansion -- todo, should this be called elaboration?
   mutual
     data _,_⊢_~~>_⇒_ : (Φ : palctx) →
                        (Γ : tctx) →
