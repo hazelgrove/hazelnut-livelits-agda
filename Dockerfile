@@ -11,7 +11,7 @@ run apt-get -qy install agda=2.6.0.1-1build4
 copy . .
 
 # remove any agdai files that might be local to the host
-cmd ["rm" , "*.agdai"]
+run ["rm", "-f", "*.agdai"]
 
-# run agda on all.agda very verbosely
-cmd ["agda" , "-v", "3", "all.agda"]
+# run agda on all.agda, noting that unicode ought to be allowed
+cmd ["agda" , "-v", "1", "all.agda"]

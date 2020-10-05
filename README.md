@@ -15,25 +15,30 @@ version of Agda or one compatible with it, download the code in this repo,
 and run `agda all.agda` at the command line.
 
 Alternatively, we have provided a [Docker file](Dockerfile) to make it
-easier to build that environment and check the proofs. To use it, first
-install [Docker](https://www.docker.com/products/docker-desktop), make sure
-the Docker daemon is running, and clone this repository to your local
+easier to build that environment and check the proofs. Note that this only
+checks the proofs in `2.6.0.1-1build4` because that is the most recent
+version available via `apt-get` at the time of writing of this README.
+
+To use it, first install
+[Docker](https://www.docker.com/products/docker-desktop), make sure the
+Docker daemon is running, and clone this repository to your local
 machine. Then, at a command line inside that clone, run
 
 ```
 docker build -t hazel-livelit .
 ```
 
-This may take a fair amount of time. When it finishes, run
+This may take a fair amount of time as Docker installs Agda on top of a
+base Ubuntu image. When it finishes, run
 
 ```
 docker run hazel-livelit
 ```
 
 This should take less than a minute, produce a lot of output as Agda checks
-each module and function, and end with either the line `Finished all.` or
-`Loading all (/all.agdai).` to indicate success, depending on Docker-level
-caching.
+each module and function, and then exit without producing an error.
+
+# Editing These Proofs
 
 Most text editors that support Agda can be configured to use the version
 instead a Docker container instead of your host machine, so you can
