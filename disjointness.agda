@@ -71,7 +71,7 @@ module disjointness where
                                                                     (elab-disjoint-new-synth x₁ (disjoint-union1 disj))
 
   -- collect up the hole names of a term as the indices of a trivial context
-  data holes : (e : hexp) (H : ⊤ ctx) → Set where
+  data holes : (e : eexp) (H : ⊤ ctx) → Set where
     HConst : holes c ∅
     HAsc   : ∀{e τ H} → holes e H → holes (e ·: τ) H
     HVar   : ∀{x} → holes (X x) ∅
@@ -87,7 +87,7 @@ module disjointness where
   -- the above judgement has mode (∀,∃). this doesn't prove uniqueness; any
   -- context that extends the one computed here will be indistinguishable
   -- but we'll treat this one as canonical
-  find-holes : (e : hexp) → Σ[ H ∈ ⊤ ctx ](holes e H)
+  find-holes : (e : eexp) → Σ[ H ∈ ⊤ ctx ](holes e H)
   find-holes c = ∅ , HConst
   find-holes (e ·: x) with find-holes e
   ... | (h , d)= h , (HAsc d)

@@ -15,14 +15,14 @@ module continuity where
   postulate
     action : Set
     zexp : Set
-    _◆ : zexp → hexp
+    _◆ : zexp → eexp
     _⊢_=>_~_~>_=>_ : (Γ : tctx) → (e1 : zexp) → (t1 : htyp)
                         → (α : action) → (e2 : zexp) → (t2 : htyp) → Set
     sensibility : {Γ : tctx} {e e' : zexp} {τ τ' : htyp} {α : action} →
                   Γ ⊢ (e ◆) => τ →
                   Γ ⊢ e => τ ~ α ~> e' => τ' →
                   Γ ⊢ (e' ◆) => τ'
-    binders-unique-h : hexp → Set
+    binders-unique-h : eexp → Set
     binders-unique-z : zexp → Set
     binders-unique-cursor1 : ∀{e} → binders-unique-z e → binders-unique-h (e ◆)
     binders-unique-cursor2 : ∀{e} → binders-unique-h (e ◆) → binders-unique-z e

@@ -121,7 +121,7 @@ module holes-disjoint-checks where
   ds-lem-snd (HDPair hd hd₁) = HDPair (ds-lem-snd hd) (ds-lem-snd hd₁)
 
   -- holes-disjoint is symmetric
-  disjoint-sym : (e1 e2 : hexp) → holes-disjoint e1 e2 → holes-disjoint e2 e1
+  disjoint-sym : (e1 e2 : eexp) → holes-disjoint e1 e2 → holes-disjoint e2 e1
   disjoint-sym .c c HDConst = HDConst
   disjoint-sym .c (e2 ·: x) HDConst = HDAsc (disjoint-sym _ _ HDConst)
   disjoint-sym .c (X x) HDConst = HDVar

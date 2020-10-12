@@ -13,13 +13,13 @@ module livelit-reasoning-principles where
                               (dm : ihexp)
                               (τsplice : htyp)
                               (psplice : pexp)
-                              (eresult : hexp)
+                              (eresult : eexp)
                               (τresult : htyp) : Set where
     field
       π   : paldef
       domain : dom (Φ ₁) ρ
-      eexpanded : hexp
-      esplice : hexp
+      eexpanded : eexp
+      esplice : eexp
 
       expanded-application-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
       expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)

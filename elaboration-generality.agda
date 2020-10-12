@@ -5,7 +5,7 @@ open import disjointness
 
 module elaboration-generality where
   mutual
-    elaboration-generality-synth : {Γ : tctx} {e : hexp} {τ : htyp} {d : ihexp} {Δ : hctx} →
+    elaboration-generality-synth : {Γ : tctx} {e : eexp} {τ : htyp} {d : ihexp} {Δ : hctx} →
                             Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
                             Γ ⊢ e => τ
     elaboration-generality-synth ESConst = SConst
@@ -20,7 +20,7 @@ module elaboration-generality where
     elaboration-generality-synth (ESSnd s m _) = SSnd s m
     elaboration-generality-synth (ESPair x x₁ e e₁) = SPair x (elaboration-generality-synth e) (elaboration-generality-synth e₁)
 
-    elaboration-generality-ana : {Γ : tctx} {e : hexp} {τ τ' : htyp} {d : ihexp} {Δ : hctx} →
+    elaboration-generality-ana : {Γ : tctx} {e : eexp} {τ τ' : htyp} {d : ihexp} {Δ : hctx} →
                           Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                           Γ ⊢ e <= τ
     elaboration-generality-ana (EALam apt m ex) = ALam apt m (elaboration-generality-ana ex)

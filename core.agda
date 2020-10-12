@@ -15,19 +15,20 @@ module core where
   infixr 25  _==>_
   infixr 25  _⊗_
 
-  -- middle layer expressions
-  data hexp : Set where
-    c       : hexp
-    _·:_    : hexp → htyp → hexp
-    X       : Nat → hexp
-    ·λ      : Nat → hexp → hexp
-    ·λ_[_]_ : Nat → htyp → hexp → hexp
-    ⦇⦈[_]   : Nat → hexp
-    ⦇⌜_⌟⦈[_]  : hexp → Nat → hexp
-    _∘_     : hexp → hexp → hexp
-    ⟨_,_⟩   : hexp → hexp → hexp
-    fst     : hexp → hexp
-    snd     : hexp → hexp
+  -- "external expressions", or the middle layer of expressions. presented
+  -- first because of the dependence structure below.
+  data eexp : Set where
+    c       : eexp
+    _·:_    : eexp → htyp → eexp
+    X       : Nat → eexp
+    ·λ      : Nat → eexp → eexp
+    ·λ_[_]_ : Nat → htyp → eexp → eexp
+    ⦇⦈[_]   : Nat → eexp
+    ⦇⌜_⌟⦈[_] : eexp → Nat → eexp
+    _∘_     : eexp → eexp → eexp
+    ⟨_,_⟩   : eexp → eexp → eexp
+    fst     : eexp → eexp
+    snd     : eexp → eexp
 
   -- todo : rename everything.
 
@@ -68,7 +69,7 @@ module core where
 
   record fpaldef : Set where -- todo pal
     field
-      expand : hexp
+      expand : eexp
       model-type : htyp
       splice-type : htyp
       expansion-type : htyp
@@ -96,7 +97,7 @@ module core where
     ap-pal : Nat → ihexp → (htyp × pexp) → pexp
     -- function-like livelits --todo pal
     let-fpal_be_·in_ : Nat → fpaldef → pexp → pexp
-    ap-fpal : Nat → hexp → pexp → pexp
+    ap-fpal : Nat → eexp → pexp → pexp
 
   -- type consistency
   data _~_ : (t1 t2 : htyp) → Set where
@@ -154,7 +155,7 @@ module core where
   u :: τ [ Γ ] = u , (Γ , τ)
 
   -- the hole name u does not appear in the term e
-  data hole-name-new : (e : hexp) (u : Nat) → Set where
+  data hole-name-new : (e : eexp) (u : Nat) → Set where
     HNConst : ∀{u} → hole-name-new c u
     HNAsc : ∀{e τ u} →
             hole-name-new e u →
@@ -189,7 +190,7 @@ module core where
            hole-name-new ⟨ e1 , e2 ⟩ u
 
   -- two terms that do not share any hole names
-  data holes-disjoint : (e1 : hexp) → (e2 : hexp) → Set where
+  data holes-disjoint : (e1 : eexp) → (e2 : eexp) → Set where
     HDConst : ∀{e} → holes-disjoint c e
     HDAsc : ∀{e1 e2 τ} → holes-disjoint e1 e2 → holes-disjoint (e1 ·: τ) e2
     HDVar : ∀{x e} → holes-disjoint (X x) e
@@ -205,26 +206,26 @@ module core where
   -- bidirectional type checking judgements for hexp
   mutual
     -- synthesis
-    data _⊢_=>_ : (Γ : tctx) (e : hexp) (τ : htyp) → Set where
+    data _⊢_=>_ : (Γ : tctx) (e : eexp) (τ : htyp) → Set where
       SConst  : {Γ : tctx} → Γ ⊢ c => b
-      SAsc    : {Γ : tctx} {e : hexp} {τ : htyp} →
+      SAsc    : {Γ : tctx} {e : eexp} {τ : htyp} →
                  Γ ⊢ e <= τ →
                  Γ ⊢ (e ·: τ) => τ
       SVar    : {Γ : tctx} {τ : htyp} {x : Nat} →
                  (x , τ) ∈ Γ →
                  Γ ⊢ X x => τ
-      SAp     : {Γ : tctx} {e1 e2 : hexp} {τ τ1 τ2 : htyp} →
+      SAp     : {Γ : tctx} {e1 e2 : eexp} {τ τ1 τ2 : htyp} →
                  holes-disjoint e1 e2 →
                  Γ ⊢ e1 => τ1 →
                  τ1 ▸arr τ2 ==> τ →
                  Γ ⊢ e2 <= τ2 →
                  Γ ⊢ (e1 ∘ e2) => τ
       SEHole  : {Γ : tctx} {u : Nat} → Γ ⊢ ⦇⦈[ u ] => ⦇·⦈
-      SNEHole : {Γ : tctx} {e : hexp} {τ : htyp} {u : Nat} →
+      SNEHole : {Γ : tctx} {e : eexp} {τ : htyp} {u : Nat} →
                  hole-name-new e u →
                  Γ ⊢ e => τ →
                  Γ ⊢ ⦇⌜ e ⌟⦈[ u ] => ⦇·⦈
-      SLam    : {Γ : tctx} {e : hexp} {τ1 τ2 : htyp} {x : Nat} →
+      SLam    : {Γ : tctx} {e : eexp} {τ1 τ2 : htyp} {x : Nat} →
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
                  Γ ⊢ ·λ x [ τ1 ] e => τ1 ==> τ2
@@ -243,12 +244,12 @@ module core where
                 Γ ⊢ ⟨ e1 , e2 ⟩ => τ1 ⊗ τ2
 
     -- analysis
-    data _⊢_<=_ : (Γ : htyp ctx) (e : hexp) (τ : htyp) → Set where
-      ASubsume : {Γ : tctx} {e : hexp} {τ τ' : htyp} →
+    data _⊢_<=_ : (Γ : htyp ctx) (e : eexp) (τ : htyp) → Set where
+      ASubsume : {Γ : tctx} {e : eexp} {τ τ' : htyp} →
                  Γ ⊢ e => τ' →
                  τ ~ τ' →
                  Γ ⊢ e <= τ
-      ALam : {Γ : tctx} {e : hexp} {τ τ1 τ2 : htyp} {x : Nat} →
+      ALam : {Γ : tctx} {e : eexp} {τ τ1 τ2 : htyp} {x : Nat} →
                  x # Γ →
                  τ ▸arr τ1 ==> τ2 →
                  (Γ ,, (x , τ1)) ⊢ e <= τ2 →
@@ -261,7 +262,7 @@ module core where
     TCProd : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ⊗ τ2) tcomplete
 
   -- those external expressions without holes
-  data _ecomplete : hexp → Set where
+  data _ecomplete : eexp → Set where
     ECConst : c ecomplete
     ECAsc : ∀{τ e} → τ tcomplete → e ecomplete → (e ·: τ) ecomplete
     ECVar : ∀{x} → (X x) ecomplete
@@ -305,7 +306,7 @@ module core where
   -- expansion
   mutual
     -- synthesis
-    data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : hexp) (τ : htyp) (d : ihexp) (Δ : hctx) → Set where
+    data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : ihexp) (Δ : hctx) → Set where
       ESConst : ∀{Γ} → Γ ⊢ c ⇒ b ~> c ⊣ ∅
       ESVar   : ∀{Γ x τ} → (x , τ) ∈ Γ →
                          Γ ⊢ X x ⇒ τ ~> X x ⊣ ∅
@@ -348,7 +349,7 @@ module core where
                  Γ ⊢ ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2 ~> ⟨ d1 , d2 ⟩ ⊣ (Δ1 ∪ Δ2)
 
     -- analysis
-    data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : hexp) (τ : htyp) (d : ihexp) (τ' : htyp) (Δ : hctx) → Set where
+    data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : ihexp) (τ' : htyp) (Δ : hctx) → Set where
       EALam : ∀{Γ x τ τ1 τ2 e d τ2' Δ } →
               (x # Γ) →
               τ ▸arr τ1 ==> τ2 →
@@ -356,7 +357,7 @@ module core where
               Γ ⊢ ·λ x e ⇐ τ ~> ·λ x [ τ1 ] d :: τ1 ==> τ2' ⊣ Δ
       EASubsume : ∀{e Γ τ' d Δ τ} →
                   ((u : Nat) → e ≠ ⦇⦈[ u ]) →
-                  ((e' : hexp) (u : Nat) → e ≠ ⦇⌜ e' ⌟⦈[ u ]) →
+                  ((e' : eexp) (u : Nat) → e ≠ ⦇⌜ e' ⌟⦈[ u ]) →
                   Γ ⊢ e ⇒ τ' ~> d ⊣ Δ →
                   τ ~ τ' →
                   Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ
@@ -709,7 +710,7 @@ module core where
       FPair : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x ⟨ d1 , d2 ⟩
 
   -- ... for external expressions
-  data freshh : Nat → hexp → Set where
+  data freshh : Nat → eexp → Set where
     FRHConst : ∀{x} → freshh x c
     FRHAsc   : ∀{x e τ} → freshh x e → freshh x (e ·: τ)
     FRHVar   : ∀{x y} → x ≠ y → freshh x (X y)
@@ -723,7 +724,7 @@ module core where
     FRHPair : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x ⟨ e1 , e2 ⟩
 
   -- with respect to all bindings in a context
-  freshΓ : {A : Set} → (Γ : A ctx) → (e : hexp) → Set
+  freshΓ : {A : Set} → (Γ : A ctx) → (e : eexp) → Set
   freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshh x e
 
   -- x is not used in a binding site in d
@@ -763,10 +764,10 @@ module core where
   -- structure module imports with new agda syntax so you inheret the
   -- imports of what you import.
   mutual
-    remove-from-free' : Nat → hexp → List Nat
+    remove-from-free' : Nat → eexp → List Nat
     remove-from-free' x e = remove-all natEQ (free-vars e) x
 
-    free-vars : (e : hexp) → List Nat
+    free-vars : (e : eexp) → List Nat
     free-vars c = []
     free-vars (e ·: τ) = free-vars e
     free-vars (X x) = x :: []
@@ -857,8 +858,8 @@ module core where
 
   -- this is the decoding function, so half the iso. this won't work long term
   postulate
-    _↑_ : ihexp → hexp → Set
-    _↓_ : hexp → ihexp → Set -- not used
+    _↑_ : ihexp → eexp → Set
+    _↓_ : eexp → ihexp → Set -- not used
     iso : Set
     Exp : htyp
 
@@ -909,7 +910,7 @@ module core where
     data _,_⊢_~~>_⇒_ : (Φ : palctx) →
                        (Γ : tctx) →
                        (P : pexp) →
-                       (e : hexp) →
+                       (e : eexp) →
                        (τ : htyp) →
                        Set
       where
@@ -984,7 +985,7 @@ module core where
     data _,_⊢_~~>_⇐_ : (Φ : palctx) →
                        (Γ : tctx) →
                        (P : pexp) →
-                       (e : hexp) →
+                       (e : eexp) →
                        (τ : htyp) →
                        Set
       where
