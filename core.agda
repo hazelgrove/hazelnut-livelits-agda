@@ -206,7 +206,7 @@ module core where
     HDSnd  : ∀{e1 e2} → holes-disjoint e1 e2 → holes-disjoint (snd e1) e2
     HDPair : ∀{e1 e2 e3} → holes-disjoint e1 e3 → holes-disjoint e2 e3 → holes-disjoint ⟨ e1 , e2 ⟩ e3
 
-  -- bidirectional type checking judgements for hexp
+  -- bidirectional type checking judgements for eexp
   mutual
     -- synthesis
     data _⊢_=>_ : (Γ : tctx) (e : eexp) (τ : typ) → Set where
@@ -713,22 +713,22 @@ module core where
       FPair : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x ⟨ d1 , d2 ⟩
 
   -- ... for external expressions
-  data freshh : Nat → eexp → Set where
-    FRHConst : ∀{x} → freshh x c
-    FRHAsc   : ∀{x e τ} → freshh x e → freshh x (e ·: τ)
-    FRHVar   : ∀{x y} → x ≠ y → freshh x (X y)
-    FRHLam1  : ∀{x y e} → x ≠ y → freshh x e → freshh x (·λ y e)
-    FRHLam2  : ∀{x τ e y} → x ≠ y → freshh x e → freshh x (·λ y [ τ ] e)
-    FRHEHole : ∀{x u} → freshh x (⦇⦈[ u ])
-    FRHNEHole : ∀{x u e} → freshh x e → freshh x (⦇⌜ e ⌟⦈[ u ])
-    FRHAp : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x (e1 ∘ e2)
-    FRHFst  : ∀{x e} → freshh x e → freshh x (fst e)
-    FRHSnd  : ∀{x e} → freshh x e → freshh x (snd e)
-    FRHPair : ∀{x e1 e2} → freshh x e1 → freshh x e2 → freshh x ⟨ e1 , e2 ⟩
+  data freshe : Nat → eexp → Set where
+    FRHConst : ∀{x} → freshe x c
+    FRHAsc   : ∀{x e τ} → freshe x e → freshe x (e ·: τ)
+    FRHVar   : ∀{x y} → x ≠ y → freshe x (X y)
+    FRHLam1  : ∀{x y e} → x ≠ y → freshe x e → freshe x (·λ y e)
+    FRHLam2  : ∀{x τ e y} → x ≠ y → freshe x e → freshe x (·λ y [ τ ] e)
+    FRHEHole : ∀{x u} → freshe x (⦇⦈[ u ])
+    FRHNEHole : ∀{x u e} → freshe x e → freshe x (⦇⌜ e ⌟⦈[ u ])
+    FRHAp : ∀{x e1 e2} → freshe x e1 → freshe x e2 → freshe x (e1 ∘ e2)
+    FRHFst  : ∀{x e} → freshe x e → freshe x (fst e)
+    FRHSnd  : ∀{x e} → freshe x e → freshe x (snd e)
+    FRHPair : ∀{x e1 e2} → freshe x e1 → freshe x e2 → freshe x ⟨ e1 , e2 ⟩
 
   -- with respect to all bindings in a context
   freshΓ : {A : Set} → (Γ : A ctx) → (e : eexp) → Set
-  freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshh x e
+  freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshe x e
 
   -- x is not used in a binding site in d
   mutual
@@ -869,7 +869,7 @@ module core where
 -- naming conventions:
 --
 -- pal names are ρ
--- pexps are p
+-- pexps are p  -- TODO should now be uexps, which we call ê
 -- paldefs are π
 
   -- function-like livelit context well-formedness

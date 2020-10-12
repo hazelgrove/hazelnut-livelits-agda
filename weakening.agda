@@ -94,12 +94,12 @@ module weakening where
 
   -- the very structural forms also follow from the union weakening, since
   -- ,, is defined by ∪
-  weaken-synth : ∀{ x Γ e τ τ'} → freshh x e
+  weaken-synth : ∀{ x Γ e τ τ'} → freshe x e
                                   → Γ ⊢ e => τ
                                   → (Γ ,, (x , τ')) ⊢ e => τ
   weaken-synth f wt = weaken-synth-∪ (fresh-freshΓ f) wt
 
-  weaken-ana : ∀{x Γ e τ τ'} → freshh x e
+  weaken-ana : ∀{x Γ e τ τ'} → freshe x e
                                → Γ ⊢ e <= τ
                                → (Γ ,, (x , τ')) ⊢ e <= τ
   weaken-ana f wt = weaken-ana-∪ (fresh-freshΓ f) wt

@@ -30,10 +30,10 @@ module lemmas-freshG where
   freshΓ-lam2 fr x y with fr x y
   freshΓ-lam2 fr x y | FRHLam2 x₂ qq = qq
 
-  lem-fresh-lam1 : ∀{x e} → freshh x (·λ x e) → ⊥
+  lem-fresh-lam1 : ∀{x e} → freshe x (·λ x e) → ⊥
   lem-fresh-lam1 (FRHLam1 x₁ f) = x₁ refl
 
-  lem-fresh-lam2 : ∀{x τ e} → freshh x (·λ x [ τ ] e) → ⊥
+  lem-fresh-lam2 : ∀{x τ e} → freshe x (·λ x [ τ ] e) → ⊥
   lem-fresh-lam2 (FRHLam2 x₁ f) = x₁ refl
 
   freshΓ-pair1 : {A : Set} → {Γ : A ctx} → ∀{e1 e2} → freshΓ Γ ⟨ e1 , e2 ⟩ → freshΓ Γ e1
@@ -52,6 +52,6 @@ module lemmas-freshG where
   freshΓ-snd fr x x₁ with fr x x₁
   freshΓ-snd fr x x₁ | FRHSnd qq = qq
 
-  fresh-freshΓ : {A : Set} {τ : A} → ∀{x e} → freshh x e → freshΓ (■ (x , τ)) e
+  fresh-freshΓ : {A : Set} {τ : A} → ∀{x e} → freshe x e → freshΓ (■ (x , τ)) e
   fresh-freshΓ fr x y with lem-dom-eq y
   fresh-freshΓ fr x y | refl = fr

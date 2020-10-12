@@ -5,11 +5,11 @@ open import contexts
 open import lemmas-disjointness
 
 module lemmas-freshness where
-  -- if x is fresh in an hexp, it's fresh in its expansion
+  -- if x is fresh in an eexp, it's fresh in its expansion
   mutual
     fresh-elab-synth1 : ∀{x e τ d Γ Δ} →
                          x # Γ →
-                         freshh x e →
+                         freshe x e →
                          Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
                          fresh x d
     fresh-elab-synth1 _ FRHConst ESConst = FConst
@@ -29,7 +29,7 @@ module lemmas-freshness where
 
     fresh-elab-ana1 : ∀{ x e τ d τ' Γ Δ} →
                       x # Γ →
-                      freshh x e →
+                      freshe x e →
                       Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                       fresh x d
     fresh-elab-ana1 {Γ = Γ}  apt (FRHLam1 x₁ frsh) (EALam x₂ x₃ exp) = FLam x₁ (fresh-elab-ana1 (apart-extend1 Γ x₁ apt) frsh exp )
@@ -37,12 +37,12 @@ module lemmas-freshness where
     fresh-elab-ana1 apt FRHEHole EAEHole = FHole (EFId apt)
     fresh-elab-ana1 apt (FRHNEHole frsh) (EANEHole x₁ x₂) = FNEHole (EFId apt) (fresh-elab-synth1 apt frsh x₂)
 
-  -- if x is fresh in the expansion of an hexp, it's fresh in that hexp
+  -- if x is fresh in the expansion of an eexp, it's fresh in that eexp
   mutual
     fresh-elab-synth2 : ∀{x e τ d Γ Δ} →
                          fresh x d →
                          Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
-                         freshh x e
+                         freshe x e
     fresh-elab-synth2 FConst ESConst = FRHConst
     fresh-elab-synth2 (FVar x₂) (ESVar x₃) = FRHVar x₂
     fresh-elab-synth2 (FLam x₂ frsh) (ESLam x₃ exp) = FRHLam2 x₂ (fresh-elab-synth2 frsh exp)
@@ -60,7 +60,7 @@ module lemmas-freshness where
     fresh-elab-ana2 : ∀{ x e τ d τ' Γ Δ} →
                       fresh x d →
                       Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
-                      freshh x e
+                      freshe x e
     fresh-elab-ana2 (FLam x₁ frsh) (EALam x₂ x₃ exp) = FRHLam1 x₁ (fresh-elab-ana2 frsh exp)
     fresh-elab-ana2 frsh (EASubsume x₁ x₂ x₃ x₄) = fresh-elab-synth2 frsh x₃
     fresh-elab-ana2 (FHole x₁) EAEHole = FRHEHole
