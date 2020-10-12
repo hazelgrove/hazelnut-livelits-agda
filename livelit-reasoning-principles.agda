@@ -12,7 +12,7 @@ module livelit-reasoning-principles where
                               (ρ : Nat)
                               (dm : ihexp)
                               (τsplice : htyp)
-                              (psplice : pexp)
+                              (psplice : uexp)
                               (eresult : eexp)
                               (τresult : htyp) : Set where
     field

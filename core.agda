@@ -79,25 +79,25 @@ module core where
     FPalDef : fpaldef → palctx-entry
 
   -- new outermost layer: a langauge exactly like hexp but also with livelits
-  data pexp : Set where
-    c       : pexp
-    _·:_    : pexp → htyp → pexp
-    X       : Nat → pexp
-    ·λ      : Nat → pexp → pexp
-    ·λ_[_]_ : Nat → htyp → pexp → pexp
-    ⦇⦈[_]   : Nat → pexp
-    ⦇⌜_⌟⦈[_]  : pexp → Nat → pexp
-    _∘_     : pexp → pexp → pexp
-    ⟨_,_⟩   : pexp → pexp → pexp
-    fst     : pexp → pexp
-    snd     : pexp → pexp
+  data uexp : Set where
+    c       : uexp
+    _·:_    : uexp → htyp → uexp
+    X       : Nat → uexp
+    ·λ      : Nat → uexp → uexp
+    ·λ_[_]_ : Nat → htyp → uexp → uexp
+    ⦇⦈[_]   : Nat → uexp
+    ⦇⌜_⌟⦈[_]  : uexp → Nat → uexp
+    _∘_     : uexp → uexp → uexp
+    ⟨_,_⟩   : uexp → uexp → uexp
+    fst     : uexp → uexp
+    snd     : uexp → uexp
     -- new forms below
     -- macro-like livelits --todo pal
-    let-pal_be_·in_ : Nat → paldef → pexp → pexp
-    ap-pal : Nat → ihexp → (htyp × pexp) → pexp
+    let-pal_be_·in_ : Nat → paldef → uexp → uexp
+    ap-pal : Nat → ihexp → (htyp × uexp) → uexp
     -- function-like livelits --todo pal
-    let-fpal_be_·in_ : Nat → fpaldef → pexp → pexp
-    ap-fpal : Nat → eexp → pexp → pexp
+    let-fpal_be_·in_ : Nat → fpaldef → uexp → uexp
+    ap-fpal : Nat → eexp → uexp → uexp
 
   -- type consistency
   data _~_ : (t1 t2 : htyp) → Set where
@@ -909,7 +909,7 @@ module core where
   mutual
     data _,_⊢_~~>_⇒_ : (Φ : palctx) →
                        (Γ : tctx) →
-                       (P : pexp) →
+                       (P : uexp) →
                        (e : eexp) →
                        (τ : htyp) →
                        Set
@@ -921,7 +921,7 @@ module core where
         SPEVar   : ∀{Φ Γ x τ} →
                            (x , τ) ∈ Γ →
                            Φ , Γ ⊢ (X x) ~~> (X x) ⇒ τ
-        SPELam   : ∀{Φ Γ x e τ1 τ2} {p : pexp} →
+        SPELam   : ∀{Φ Γ x e τ1 τ2} {p : uexp} →
                            x # Γ →
                            Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇒ τ2 →
                            Φ , Γ ⊢ (·λ_[_]_ x τ1 p) ~~> (·λ x [ τ1 ] e) ⇒ (τ1 ==> τ2)
@@ -984,12 +984,12 @@ module core where
 
     data _,_⊢_~~>_⇐_ : (Φ : palctx) →
                        (Γ : tctx) →
-                       (P : pexp) →
+                       (P : uexp) →
                        (e : eexp) →
                        (τ : htyp) →
                        Set
       where
-        APELam     : ∀{Φ Γ x e τ τ1 τ2} {p : pexp} →
+        APELam     : ∀{Φ Γ x e τ τ1 τ2} {p : uexp} →
                            x # Γ →
                            τ ▸arr τ1 ==> τ2 →
                            Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇐ τ2 →
