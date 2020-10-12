@@ -12,7 +12,7 @@ module livelit-reasoning-principles where
                               (ρ : Nat)
                               (dm : iexp)
                               (τsplice : typ)
-                              (psplice : uexp)
+                              (êsplice : uexp)
                               (eresult : eexp)
                               (τresult : typ) : Set where
     field
@@ -24,7 +24,7 @@ module livelit-reasoning-principles where
       expanded-application-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
       expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)
       responsibility            : Σ[ denc ∈ iexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
-      splice-typing             : Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
+      splice-typing             : Φ , Γ ⊢ êsplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 
   livelit-reasoning-principles : ∀{Φ Γ ρ dm τsplice psplice eresult τresult} →

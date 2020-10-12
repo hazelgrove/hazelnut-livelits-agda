@@ -61,7 +61,7 @@ module core where
 
   -- convenient notation for chaining together two agreeable casts
   _⟨_⇒_⇒_⟩ : iexp → typ → typ → typ → iexp
-  d ⟨ t1 ⇒ t2 ⇒ t3 ⟩ = d ⟨ t1 ⇒ t2 ⟩ ⟨ t2 ⇒ t3 ⟩
+  d ⟨ τ1 ⇒ τ2 ⇒ τ3 ⟩ = d ⟨ τ1 ⇒ τ2 ⟩ ⟨ τ2 ⇒ τ3 ⟩
 
   record paldef : Set where -- todo pal
     field
@@ -247,7 +247,7 @@ module core where
                 Γ ⊢ ⟨ e1 , e2 ⟩ => τ1 ⊗ τ2
 
     -- analysis
-    data _⊢_<=_ : (Γ : typ ctx) (e : eexp) (τ : typ) → Set where
+    data _⊢_<=_ : (Γ : tctx) (e : eexp) (τ : typ) → Set where
       ASubsume : {Γ : tctx} {e : eexp} {τ τ' : typ} →
                  Γ ⊢ e => τ' →
                  τ ~ τ' →
@@ -868,6 +868,18 @@ module core where
 
 -- naming conventions:
 --
+-- type contexts, tctx, are named Γ (because they always are)
+-- hole contextst, ??, are named Δ
+-- livelit contexts (TODO  name?), ?? (todo rename), are named ??
+--
+-- types, typ, are named τ
+-- unexpanded expressions, uexp, are named ê (for "_e_xpression but also following the POPL17 notation)
+-- expanded expressions, eexp, are named e (for "_e_xpression")
+-- internal expressions, iexp, are named d (because they have a _d_ynamics)
+-- splices, ??, are named ψ
+
+----------------------- below this line is out of date but not ready to remove yet TODO
+--
 -- pal names are ρ
 -- pexps are p  -- TODO should now be uexps, which we call ê
 -- paldefs are π
@@ -912,51 +924,51 @@ module core where
   mutual
     data _,_⊢_~~>_⇒_ : (Φ : palctx) →
                        (Γ : tctx) →
-                       (P : uexp) →
+                       (ê : uexp) →
                        (e : eexp) →
                        (τ : typ) →
                        Set
       where
         SPEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c ⇒ b
-        SPEAsc   : ∀{Φ Γ p e τ} →
-                           Φ , Γ ⊢ p ~~> e ⇐ τ →
-                           Φ , Γ ⊢ (p ·: τ) ~~> e ·: τ ⇒ τ
+        SPEAsc   : ∀{Φ Γ ê e τ} →
+                           Φ , Γ ⊢ ê ~~> e ⇐ τ →
+                           Φ , Γ ⊢ (ê ·: τ) ~~> e ·: τ ⇒ τ
         SPEVar   : ∀{Φ Γ x τ} →
                            (x , τ) ∈ Γ →
                            Φ , Γ ⊢ (X x) ~~> (X x) ⇒ τ
-        SPELam   : ∀{Φ Γ x e τ1 τ2} {p : uexp} →
+        SPELam   : ∀{Φ Γ x e τ1 τ2 ê} →
                            x # Γ →
-                           Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇒ τ2 →
-                           Φ , Γ ⊢ (·λ_[_]_ x τ1 p) ~~> (·λ x [ τ1 ] e) ⇒ (τ1 ==> τ2)
-        SPEAp    : ∀{Φ Γ p1 p2 τ1 τ2 τ e1 e2} →
-                           Φ , Γ ⊢ p1 ~~> e1 ⇒ τ1 →
+                           Φ , Γ ,, (x , τ1) ⊢ ê ~~> e ⇒ τ2 →
+                           Φ , Γ ⊢ (·λ_[_]_ x τ1 ê) ~~> (·λ x [ τ1 ] e) ⇒ (τ1 ==> τ2)
+        SPEAp    : ∀{Φ Γ ê1 ê2 τ1 τ2 τ e1 e2} →
+                           Φ , Γ ⊢ ê1 ~~> e1 ⇒ τ1 →
                            τ1 ▸arr τ2 ==> τ →
-                           Φ , Γ ⊢ p2 ~~> e2 ⇐ τ2 →
+                           Φ , Γ ⊢ ê2 ~~> e2 ⇐ τ2 →
                            holes-disjoint e1 e2 →
-                           Φ , Γ ⊢ p1 ∘ p2 ~~> e1 ∘ e2 ⇒ τ
+                           Φ , Γ ⊢ ê1 ∘ ê2 ~~> e1 ∘ e2 ⇒ τ
         SPEHole  : ∀{Φ Γ u} → Φ , Γ ⊢ ⦇⦈[ u ] ~~> ⦇⦈[ u ] ⇒ ⦇·⦈
-        SPNEHole : ∀{Φ Γ p e τ u} →
+        SPNEHole : ∀{Φ Γ ê e τ u} →
                            hole-name-new e u →
-                           Φ , Γ ⊢ p ~~> e ⇒ τ →
-                           Φ , Γ ⊢ ⦇⌜ p ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇·⦈
-        SPEFst   : ∀{Φ Γ p e τ τ1 τ2} →
-                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           Φ , Γ ⊢ ê ~~> e ⇒ τ →
+                           Φ , Γ ⊢ ⦇⌜ ê ⌟⦈[ u ] ~~> ⦇⌜ e ⌟⦈[ u ] ⇒ ⦇·⦈
+        SPEFst   : ∀{Φ Γ ê e τ τ1 τ2} →
+                           Φ , Γ ⊢ ê ~~> e ⇒ τ →
                            τ ▸prod τ1 ⊗ τ2 →
-                           Φ , Γ ⊢ fst p ~~> fst e ⇒ τ1
-        SPESnd   : ∀{Φ Γ p e τ τ1 τ2} →
-                           Φ , Γ ⊢ p ~~> e ⇒ τ →
+                           Φ , Γ ⊢ fst ê ~~> fst e ⇒ τ1
+        SPESnd   : ∀{Φ Γ ê e τ τ1 τ2} →
+                           Φ , Γ ⊢ ê ~~> e ⇒ τ →
                            τ ▸prod τ1 ⊗ τ2 →
-                           Φ , Γ ⊢ snd p ~~> snd e ⇒ τ2
-        SPEPair  : ∀{Φ Γ p1 p2 τ1 τ2 e1 e2} →
-                           Φ , Γ ⊢ p1 ~~> e1 ⇒ τ1 →
-                           Φ , Γ ⊢ p2 ~~> e2 ⇒ τ2 →
+                           Φ , Γ ⊢ snd ê ~~> snd e ⇒ τ2
+        SPEPair  : ∀{Φ Γ ê1 ê2 τ1 τ2 e1 e2} →
+                           Φ , Γ ⊢ ê1 ~~> e1 ⇒ τ1 →
+                           Φ , Γ ⊢ ê2 ~~> e2 ⇒ τ2 →
                            holes-disjoint e1 e2 →
-                           Φ , Γ ⊢ ⟨ p1 , p2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
-        SPELetPal : ∀{Φ Γ π ρ p e τ} →
+                           Φ , Γ ⊢ ⟨ ê1 , ê2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
+        SPELetPal : ∀{Φ Γ π ρ ê e τ} → --todo rule names here
                            (#h : ρ # (Φ)₁) →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
-                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ p ~~> e ⇒ τ →
-                           Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇒ τ
+                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ ê ~~> e ⇒ τ →
+                           Φ , Γ ⊢ let-pal ρ be π ·in ê ~~> e ⇒ τ
         SPEApPal  : ∀{Φ Γ ρ dm π denc eexpanded τsplice psplice esplice} →
                          holes-disjoint eexpanded esplice →
                          freshΓ Γ eexpanded →
@@ -967,11 +979,11 @@ module core where
                          Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice →
                          ∅ ⊢ eexpanded <= τsplice ==> (paldef.expansion-type π) →
                          Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> paldef.expansion-type π) ∘ esplice) ⇒ paldef.expansion-type π
-        SPELetFPal : ∀{Φ Γ π ρ p e τ} →
+        SPELetFPal : ∀{Φ Γ π ρ ê e τ} →
                          (#h : ρ # (Φ)₁) →
                          (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
-                         (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ p ~~> e ⇒ τ →
-                         Φ , Γ ⊢ let-fpal ρ be π ·in p ~~> e ⇒ τ
+                         (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ ê ~~> e ⇒ τ →
+                         Φ , Γ ⊢ let-fpal ρ be π ·in ê ~~> e ⇒ τ
         SPEApFPal : ∀{Φ Γ π ρ emodel psplice esplice} →
                          holes-disjoint (fpaldef.expand π) emodel →
                          holes-disjoint (fpaldef.expand π) esplice →
@@ -987,27 +999,27 @@ module core where
 
     data _,_⊢_~~>_⇐_ : (Φ : palctx) →
                        (Γ : tctx) →
-                       (P : uexp) →
+                       (ê : uexp) →
                        (e : eexp) →
                        (τ : typ) →
                        Set
       where
-        APELam     : ∀{Φ Γ x e τ τ1 τ2} {p : uexp} →
+        APELam     : ∀{Φ Γ x e τ τ1 τ2 ê} →
                            x # Γ →
                            τ ▸arr τ1 ==> τ2 →
-                           Φ , Γ ,, (x , τ1) ⊢ p ~~> e ⇐ τ2 →
-                           Φ , Γ ⊢ (·λ x p) ~~> (·λ x e) ⇐ τ
-        APESubsume : ∀{Φ Γ p e τ τ'} →
-                           Φ , Γ ⊢ p ~~> e ⇒ τ' →
+                           Φ , Γ ,, (x , τ1) ⊢ ê ~~> e ⇐ τ2 →
+                           Φ , Γ ⊢ (·λ x ê) ~~> (·λ x e) ⇐ τ
+        APESubsume : ∀{Φ Γ ê e τ τ'} →
+                           Φ , Γ ⊢ ê ~~> e ⇒ τ' →
                            τ ~ τ' →
-                           Φ , Γ ⊢ p ~~> e ⇐ τ
-        APELetPal  : ∀{Φ Γ π ρ p e τ} →
+                           Φ , Γ ⊢ ê ~~> e ⇐ τ
+        APELetPal  : ∀{Φ Γ π ρ ê e τ} →
                            (#h : ρ # (Φ)₁) →
                            ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
-                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ p ~~> e ⇐ τ →
-                           Φ , Γ ⊢ let-pal ρ be π ·in p ~~> e ⇐ τ
-        APELetFPal : ∀{Φ Γ π ρ p e τ} →
+                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ ê ~~> e ⇐ τ →
+                           Φ , Γ ⊢ let-pal ρ be π ·in ê ~~> e ⇐ τ
+        APELetFPal : ∀{Φ Γ π ρ ê e τ} →
                            (#h : ρ # (Φ)₁) →
                            (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
-                           (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ p ~~> e ⇐ τ →
-                           Φ , Γ ⊢ let-fpal ρ be π ·in p ~~> e ⇐ τ
+                           (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ ê ~~> e ⇐ τ →
+                           Φ , Γ ⊢ let-fpal ρ be π ·in ê ~~> e ⇐ τ
