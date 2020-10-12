@@ -30,8 +30,6 @@ module core where
     fst     : eexp → eexp
     snd     : eexp → eexp
 
-  -- todo : rename everything.
-
   -- the type of type contexts, i.e. Γs in the judegments below
   tctx : Set
   tctx = typ ctx
@@ -306,7 +304,7 @@ module core where
     CISnd    : ∀{d} → cast-id d → cast-id (snd d)
     CIPair   : ∀{d1 d2} → cast-id d1 → cast-id d2 → cast-id ⟨ d1 , d2 ⟩
 
-  -- expansion
+  -- expansion TODO: make sure this really is expansion / get it clear with elaboration in your head
   mutual
     -- synthesis
     data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : typ) (d : iexp) (Δ : hctx) → Set where
@@ -714,6 +712,7 @@ module core where
 
   -- ... for external expressions
   data freshe : Nat → eexp → Set where
+    -- TODO: should be FRE* not FRH*
     FRHConst : ∀{x} → freshe x c
     FRHAsc   : ∀{x e τ} → freshe x e → freshe x (e ·: τ)
     FRHVar   : ∀{x y} → x ≠ y → freshe x (X y)

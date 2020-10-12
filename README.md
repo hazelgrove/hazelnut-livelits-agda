@@ -45,3 +45,9 @@ instead a Docker container instead of your host machine, so you can
 experiment with or evolve this code without making too much of a mess. For
 some example instructions, see [the docker-agda
 repo](https://github.com/banacorn/docker-agda).
+
+# How To Connect The Paper To This Mechanization
+
+* elaboration @ core TODO in `_⊢_⇒_~>_⊣_`
+
+*
