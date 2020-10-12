@@ -42,7 +42,9 @@ module core where
       Id : (Γ : tctx) → env
       Subst : (d : iexp) → (y : Nat) → env → env
 
-    -- internal expressions
+    -- internal expressions, the bottom most layer of expresions. these are
+    -- what the elaboration phase targets and the expressions on which
+    -- evaluation is given.
     data iexp : Set where
       c         : iexp
       X         : Nat → iexp
@@ -78,7 +80,8 @@ module core where
     MPalDef : paldef → palctx-entry
     FPalDef : fpaldef → palctx-entry
 
-  -- new outermost layer: a langauge exactly like hexp but also with livelits
+  -- unexpanded expressions, the outermost layer of expressions: a langauge
+  -- exactly like eexp, but also with livelits
   data uexp : Set where
     c       : uexp
     _·:_    : uexp → htyp → uexp
