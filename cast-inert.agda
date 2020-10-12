@@ -41,7 +41,7 @@ module cast-inert where
   -- relates expressions to the same thing with all identity casts
   -- removed. note that this is a syntactic rewrite and it goes under
   -- binders.
-  data no-id-casts : ihexp → ihexp → Set where
+  data no-id-casts : iexp → iexp → Set where
     NICConst  : no-id-casts c c
     NICVar    : ∀{x} → no-id-casts (X x) (X x)
     NICLam    : ∀{x τ d d'} → no-id-casts d d' → no-id-casts (·λ x [ τ ] d) (·λ x [ τ ] d')

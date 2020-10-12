@@ -10,11 +10,11 @@ open import lemmas-complete
 module complete-progress where
   -- as in progress, we define a datatype for the possible outcomes of
   -- progress for readability.
-  data okc : (d : ihexp) (Δ : hctx) → Set where
+  data okc : (d : iexp) (Δ : hctx) → Set where
     V : ∀{d Δ} → d val → okc d Δ
-    S : ∀{d Δ} → Σ[ d' ∈ ihexp ] (d ↦ d') → okc d Δ
+    S : ∀{d Δ} → Σ[ d' ∈ iexp ] (d ↦ d') → okc d Δ
 
-  complete-progress : {Δ : hctx} {d : ihexp} {τ : htyp} →
+  complete-progress : {Δ : hctx} {d : iexp} {τ : htyp} →
                        Δ , ∅ ⊢ d :: τ →
                        d dcomplete →
                        okc d Δ

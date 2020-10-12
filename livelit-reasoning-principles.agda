@@ -10,7 +10,7 @@ module livelit-reasoning-principles where
   record reasoning-principles (Φ : palctx)
                               (Γ : tctx)
                               (ρ : Nat)
-                              (dm : ihexp)
+                              (dm : iexp)
                               (τsplice : htyp)
                               (psplice : uexp)
                               (eresult : eexp)
@@ -23,7 +23,7 @@ module livelit-reasoning-principles where
 
       expanded-application-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
       expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)
-      responsibility            : Σ[ denc ∈ ihexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
+      responsibility            : Σ[ denc ∈ iexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
       splice-typing             : Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 

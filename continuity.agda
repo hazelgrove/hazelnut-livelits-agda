@@ -40,10 +40,10 @@ module continuity where
              → binders-unique-z e
              → ∅ ⊢ (e ◆) => τ
              → ∅ ⊢ e => τ ~ α ~> e' => τ'
-             → Σ[ Δ ∈ hctx ] Σ[ d ∈ ihexp ]
+             → Σ[ Δ ∈ hctx ] Σ[ d ∈ iexp ]
                 (   ∅ ⊢ (e' ◆) ⇒ τ' ~> d ⊣ Δ
                   × Δ , ∅ ⊢ d :: τ'
-                  × ( (Σ[ d' ∈ ihexp ]( d ↦ d' × Δ , ∅ ⊢ d' :: τ' ))
+                  × ( (Σ[ d' ∈ iexp ]( d ↦ d' × Δ , ∅ ⊢ d' :: τ' ))
                      + d boxedval
                      + d indet
                     )

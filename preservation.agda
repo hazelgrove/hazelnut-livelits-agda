@@ -103,7 +103,7 @@ module preservation where
   lem-bd-ε1 (FHPair2 eps) (BUPair bu bu₁ x) = lem-bd-ε1 eps bu₁
 
   -- this is the main preservation theorem, gluing together the above
-  preservation : {Δ : hctx} {d d' : ihexp} {τ : htyp} {Γ : tctx} →
+  preservation : {Δ : hctx} {d d' : iexp} {τ : htyp} {Γ : tctx} →
              binders-unique d →
              Δ , Γ ⊢ d :: τ →
              d ↦ d' →
@@ -115,7 +115,7 @@ module preservation where
   -- note that the exact statement of preservation in the paper, where Γ is
   -- empty indicating that the terms are closed, is an immediate corrolary
   -- of the slightly more general statement above.
-  preservation' : {Δ : hctx} {d d' : ihexp} {τ : htyp} →
+  preservation' : {Δ : hctx} {d d' : iexp} {τ : htyp} →
              binders-unique d →
              Δ , ∅ ⊢ d :: τ →
              d ↦ d' →

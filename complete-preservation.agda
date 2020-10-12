@@ -29,7 +29,7 @@ module complete-preservation where
   -- bound in any of the constructors explicitly since it's only in the
   -- lambda case; so below i have no idea how else to get a name for it,
   -- instead of leaving it dotted in the context
-  lem-proj : {x : Nat} {d : ihexp} { τ : htyp} → (·λ_[_]_ x τ d) dcomplete → Σ[ y ∈ Nat ] (y == x)
+  lem-proj : {x : Nat} {d : iexp} { τ : htyp} → (·λ_[_]_ x τ d) dcomplete → Σ[ y ∈ Nat ] (y == x)
   lem-proj {x} (DCLam dc x₁) = x , refl
 
   -- a complete well typed term steps to a complete term.

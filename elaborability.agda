@@ -10,7 +10,7 @@ module elaborability where
   mutual
     elaborability-synth : {Γ : tctx} {e : eexp} {τ : htyp} →
                           Γ ⊢ e => τ →
-                          Σ[ d ∈ ihexp ] Σ[ Δ ∈ hctx ]
+                          Σ[ d ∈ iexp ] Σ[ Δ ∈ hctx ]
                             (Γ ⊢ e ⇒ τ ~> d ⊣ Δ)
     elaborability-synth SConst = _ , _ , ESConst
     elaborability-synth (SAsc {τ = τ} wt)
@@ -41,7 +41,7 @@ module elaborability where
 
     elaborability-ana : {Γ : tctx} {e : eexp} {τ : htyp} →
                          Γ ⊢ e <= τ →
-                          Σ[ d ∈ ihexp ] Σ[ Δ ∈ hctx ] Σ[ τ' ∈ htyp ]
+                          Σ[ d ∈ iexp ] Σ[ Δ ∈ hctx ] Σ[ τ' ∈ htyp ]
                             (Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ)
     elaborability-ana {e = e} (ASubsume D x₁)
       with elaborability-synth D

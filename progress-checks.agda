@@ -32,7 +32,7 @@ module progress-checks where
   boxedval-not-indet (BVPair bv bv₁) (IPair2 x ind) = boxedval-not-indet bv₁ ind
 
   -- boxed values don't step
-  boxedval-not-step : ∀{d} → d boxedval → (Σ[ d' ∈ ihexp ] (d ↦ d')) → ⊥
+  boxedval-not-step : ∀{d} → d boxedval → (Σ[ d' ∈ iexp ] (d ↦ d')) → ⊥
   boxedval-not-step (BVVal VConst) (d' , Step FHOuter () x₃)
   boxedval-not-step (BVVal VLam) (d' , Step FHOuter () x₃)
   boxedval-not-step (BVArrCast x bv) (d0' , Step FHOuter (ITCastID) FHOuter) = x refl
@@ -55,7 +55,7 @@ module progress-checks where
 
   mutual
     -- indeterminates don't step
-    indet-not-step : ∀{d} → d indet → (Σ[ d' ∈ ihexp ] (d ↦ d')) → ⊥
+    indet-not-step : ∀{d} → d indet → (Σ[ d' ∈ iexp ] (d ↦ d')) → ⊥
     indet-not-step IEHole (d' , Step FHOuter () FHOuter)
     indet-not-step (INEHole x) (d' , Step FHOuter () FHOuter)
     indet-not-step (INEHole x) (_ , Step (FHNEHole x₁) x₂ (FHNEHole x₃)) = final-sub-not-trans x x₁ x₂
@@ -99,6 +99,6 @@ module progress-checks where
     indet-not-step (ISnd (ICastProd x₂ ind) x x₁) (_ , Step FHOuter it FHOuter) = x₁ refl
 
     -- final expressions don't step
-    final-not-step : ∀{d} → d final → Σ[ d' ∈ ihexp ] (d ↦ d') → ⊥
+    final-not-step : ∀{d} → d final → Σ[ d' ∈ iexp ] (d ↦ d') → ⊥
     final-not-step (FBoxedVal x) stp = boxedval-not-step x stp
     final-not-step (FIndet x) stp = indet-not-step x stp

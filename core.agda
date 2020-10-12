@@ -40,30 +40,30 @@ module core where
     -- identity substitution, substitition environments
     data env : Set where
       Id : (Γ : tctx) → env
-      Subst : (d : ihexp) → (y : Nat) → env → env
+      Subst : (d : iexp) → (y : Nat) → env → env
 
     -- internal expressions
-    data ihexp : Set where
-      c         : ihexp
-      X         : Nat → ihexp
-      ·λ_[_]_   : Nat → htyp → ihexp → ihexp
-      ⦇⦈⟨_⟩     : (Nat × env) → ihexp
-      ⦇⌜_⌟⦈⟨_⟩    : ihexp → (Nat × env) → ihexp
-      _∘_       : ihexp → ihexp → ihexp
-      _⟨_⇒_⟩    : ihexp → htyp → htyp → ihexp
-      _⟨_⇒⦇⦈⇏_⟩ : ihexp → htyp → htyp → ihexp
-      ⟨_,_⟩   : ihexp → ihexp → ihexp
-      fst     : ihexp → ihexp
-      snd     : ihexp → ihexp
+    data iexp : Set where
+      c         : iexp
+      X         : Nat → iexp
+      ·λ_[_]_   : Nat → htyp → iexp → iexp
+      ⦇⦈⟨_⟩     : (Nat × env) → iexp
+      ⦇⌜_⌟⦈⟨_⟩    : iexp → (Nat × env) → iexp
+      _∘_       : iexp → iexp → iexp
+      _⟨_⇒_⟩    : iexp → htyp → htyp → iexp
+      _⟨_⇒⦇⦈⇏_⟩ : iexp → htyp → htyp → iexp
+      ⟨_,_⟩   : iexp → iexp → iexp
+      fst     : iexp → iexp
+      snd     : iexp → iexp
 
 
   -- convenient notation for chaining together two agreeable casts
-  _⟨_⇒_⇒_⟩ : ihexp → htyp → htyp → htyp → ihexp
+  _⟨_⇒_⇒_⟩ : iexp → htyp → htyp → htyp → iexp
   d ⟨ t1 ⇒ t2 ⇒ t3 ⟩ = d ⟨ t1 ⇒ t2 ⟩ ⟨ t2 ⇒ t3 ⟩
 
   record paldef : Set where -- todo pal
     field
-      expand : ihexp
+      expand : iexp
       model-type : htyp
       expansion-type : htyp
 
@@ -94,7 +94,7 @@ module core where
     -- new forms below
     -- macro-like livelits --todo pal
     let-pal_be_·in_ : Nat → paldef → uexp → uexp
-    ap-pal : Nat → ihexp → (htyp × uexp) → uexp
+    ap-pal : Nat → iexp → (htyp × uexp) → uexp
     -- function-like livelits --todo pal
     let-fpal_be_·in_ : Nat → fpaldef → uexp → uexp
     ap-fpal : Nat → eexp → uexp → uexp
@@ -274,7 +274,7 @@ module core where
     ECPair : ∀{e1 e2} → e1 ecomplete → e2 ecomplete → ⟨ e1 , e2 ⟩ ecomplete
 
   -- those internal expressions without holes
-  data _dcomplete : ihexp → Set where
+  data _dcomplete : iexp → Set where
     DCVar : ∀{x} → (X x) dcomplete
     DCConst : c dcomplete
     DCLam : ∀{x τ d} → d dcomplete → τ tcomplete → (·λ x [ τ ] d) dcomplete
@@ -291,7 +291,7 @@ module core where
 
   -- those internal expressions where every cast is the identity cast and
   -- there are no failed casts
-  data cast-id : ihexp → Set where
+  data cast-id : iexp → Set where
     CIConst  : cast-id c
     CIVar    : ∀{x} → cast-id (X x)
     CILam    : ∀{x τ d} → cast-id d → cast-id (·λ x [ τ ] d)
@@ -306,7 +306,7 @@ module core where
   -- expansion
   mutual
     -- synthesis
-    data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : ihexp) (Δ : hctx) → Set where
+    data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : iexp) (Δ : hctx) → Set where
       ESConst : ∀{Γ} → Γ ⊢ c ⇒ b ~> c ⊣ ∅
       ESVar   : ∀{Γ x τ} → (x , τ) ∈ Γ →
                          Γ ⊢ X x ⇒ τ ~> X x ⊣ ∅
@@ -349,7 +349,7 @@ module core where
                  Γ ⊢ ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2 ~> ⟨ d1 , d2 ⟩ ⊣ (Δ1 ∪ Δ2)
 
     -- analysis
-    data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : ihexp) (τ' : htyp) (Δ : hctx) → Set where
+    data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : iexp) (τ' : htyp) (Δ : hctx) → Set where
       EALam : ∀{Γ x τ τ1 τ2 e d τ2' Δ } →
               (x # Γ) →
               τ ▸arr τ1 ==> τ2 →
@@ -386,7 +386,7 @@ module core where
                Δ , Γ ⊢ Subst d y σ :s: Γ'
 
     -- type assignment
-    data _,_⊢_::_ : (Δ : hctx) (Γ : tctx) (d : ihexp) (τ : htyp) → Set where
+    data _,_⊢_::_ : (Δ : hctx) (Γ : tctx) (d : iexp) (τ : htyp) → Set where
       TAConst : ∀{Δ Γ} → Δ , Γ ⊢ c :: b
       TAVar : ∀{Δ Γ x τ} → (x , τ) ∈ Γ → Δ , Γ ⊢ X x :: τ
       TALam : ∀{ Δ Γ x τ1 d τ2} →
@@ -428,7 +428,7 @@ module core where
              Δ , Γ ⊢ ⟨ d1 , d2 ⟩ :: τ1 ⊗ τ2
 
   -- substitution
-  [_/_]_ : ihexp → Nat → ihexp → ihexp
+  [_/_]_ : iexp → Nat → iexp → iexp
   [ d / y ] c = c
   [ d / y ] X x
     with natEQ x y
@@ -448,18 +448,18 @@ module core where
   [ d / y ] (snd d') = snd ([ d / y ] d')
 
   -- applying an environment to an expression
-  apply-env : env → ihexp → ihexp
+  apply-env : env → iexp → iexp
   apply-env (Id Γ) d = d
   apply-env (Subst d y σ) d' = [ d / y ] ( apply-env σ d')
 
   -- values
-  data _val : (d : ihexp) → Set where
+  data _val : (d : iexp) → Set where
     VConst : c val
     VLam   : ∀{x τ d} → (·λ x [ τ ] d) val
     VPair  : ∀{d1 d2} → d1 val → d2 val → ⟨ d1 , d2 ⟩ val
 
   -- boxed values
-  data _boxedval : (d : ihexp) → Set where
+  data _boxedval : (d : iexp) → Set where
     BVVal : ∀{d} → d val → d boxedval
     BVPair : ∀{d1 d2} → d1 boxedval → d2 boxedval → ⟨ d1 , d2 ⟩ boxedval
     BVArrCast : ∀{ d τ1 τ2 τ3 τ4 } →
@@ -474,10 +474,10 @@ module core where
 
   mutual
     -- indeterminate forms
-    data _indet : (d : ihexp) → Set where
+    data _indet : (d : iexp) → Set where
       IEHole : ∀{u σ} → ⦇⦈⟨ u , σ ⟩ indet
       INEHole : ∀{d u σ} → d final → ⦇⌜ d ⌟⦈⟨ u , σ ⟩ indet
-      IAp : ∀{d1 d2} → ((τ1 τ2 τ3 τ4 : htyp) (d1' : ihexp) →
+      IAp : ∀{d1 d2} → ((τ1 τ2 τ3 τ4 : htyp) (d1' : iexp) →
                        d1 ≠ (d1' ⟨(τ1 ==> τ2) ⇒ (τ3 ==> τ4)⟩)) →
                        d1 indet →
                        d2 final →
@@ -513,7 +513,7 @@ module core where
                         d indet →
                         d ⟨ τ ⇒  ⦇·⦈ ⟩ indet
       ICastHoleGround : ∀ { d τ } →
-                        ((d' : ihexp) (τ' : htyp) → d ≠ (d' ⟨ τ' ⇒ ⦇·⦈ ⟩)) →
+                        ((d' : iexp) (τ' : htyp) → d ≠ (d' ⟨ τ' ⇒ ⦇·⦈ ⟩)) →
                         d indet →
                         τ ground →
                         d ⟨ ⦇·⦈ ⇒ τ ⟩ indet
@@ -525,7 +525,7 @@ module core where
                     d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩ indet
 
     -- final expressions
-    data _final : (d : ihexp) → Set where
+    data _final : (d : iexp) → Set where
       FBoxedVal : ∀{d} → d boxedval → d final
       FIndet    : ∀{d} → d indet    → d final
 
@@ -535,13 +535,13 @@ module core where
   -- evaluation contexts
   data ectx : Set where
     ⊙ : ectx
-    _∘₁_ : ectx → ihexp → ectx
-    _∘₂_ : ihexp → ectx → ectx
+    _∘₁_ : ectx → iexp → ectx
+    _∘₂_ : iexp → ectx → ectx
     ⦇⌜_⌟⦈⟨_⟩ : ectx → (Nat × env ) → ectx
     fst·_ : ectx → ectx
     snd·_ : ectx → ectx
-    ⟨_,_⟩₁ : ectx → ihexp → ectx
-    ⟨_,_⟩₂ : ihexp → ectx → ectx
+    ⟨_,_⟩₁ : ectx → iexp → ectx
+    ⟨_,_⟩₂ : iexp → ectx → ectx
     _⟨_⇒_⟩ : ectx → htyp → htyp → ectx
     _⟨_⇒⦇·⦈⇏_⟩ : ectx → htyp → htyp → ectx
 
@@ -584,7 +584,7 @@ module core where
                    ε ⟨ τ1 ⇒⦇·⦈⇏ τ2 ⟩ evalctx
 
   -- d is the result of filling the hole in ε with d'
-  data _==_⟦_⟧ : (d : ihexp) (ε : ectx) (d' : ihexp) → Set where
+  data _==_⟦_⟧ : (d : iexp) (ε : ectx) (d' : iexp) → Set where
     FHOuter : ∀{d} → d == ⊙ ⟦ d ⟧
     FHAp1 : ∀{d1 d1' d2 ε} →
            d1 == ε ⟦ d1' ⟧ →
@@ -625,7 +625,7 @@ module core where
             (τ1 ⊗ τ2) ▸gnd (⦇·⦈ ⊗ ⦇·⦈)
 
   -- instruction transition judgement
-  data _→>_ : (d d' : ihexp) → Set where
+  data _→>_ : (d d' : iexp) → Set where
     ITLam : ∀{ x τ d1 d2 } →
             -- d2 final → -- red brackets
             ((·λ x [ τ ] d1) ∘ d2) →> ([ d2 / x ] d1)
@@ -670,7 +670,7 @@ module core where
                (d ⟨ ⦇·⦈ ⇒ τ ⟩) →> (d ⟨ ⦇·⦈ ⇒ τ' ⇒ τ ⟩)
 
   -- single step (in contextual evaluation sense)
-  data _↦_ : (d d' : ihexp) → Set where
+  data _↦_ : (d d' : iexp) → Set where
     Step : ∀{ d d0 d' d0' ε} →
            d == ε ⟦ d0 ⟧ →
            d0 →> d0' →
@@ -678,7 +678,7 @@ module core where
            d ↦ d'
 
   -- reflexive transitive closure of single steps into multi steps
-  data _↦*_ : (d d' : ihexp) → Set where
+  data _↦*_ : (d d' : iexp) → Set where
     MSRefl : ∀{d} → d ↦* d
     MSStep : ∀{d d' d''} →
                  d ↦ d' →
@@ -696,7 +696,7 @@ module core where
                            → envfresh x (Subst d y σ)
 
     -- ... for inernal expressions
-    data fresh : Nat → ihexp → Set where
+    data fresh : Nat → iexp → Set where
       FConst : ∀{x} → fresh x c
       FVar   : ∀{x y} → x ≠ y → fresh x (X y)
       FLam   : ∀{x y τ d} → x ≠ y → fresh x d → fresh x (·λ y [ τ ] d)
@@ -736,7 +736,7 @@ module core where
                             → x ≠ y
                             → unbound-in-σ x (Subst d y σ)
 
-    data unbound-in : (x : Nat) (d : ihexp) → Set where
+    data unbound-in : (x : Nat) (d : iexp) → Set where
       UBConst : ∀{x} → unbound-in x c
       UBVar : ∀{x y} → unbound-in x (X y)
       UBLam2 : ∀{x d y τ} → x ≠ y
@@ -781,14 +781,14 @@ module core where
     free-vars (snd x) = free-vars x
 
   mutual
-    data binders-disjoint-σ : env → ihexp → Set where
+    data binders-disjoint-σ : env → iexp → Set where
       BDσId : ∀{Γ d} → binders-disjoint-σ (Id Γ) d
       BDσSubst : ∀{d1 d2 y σ} → binders-disjoint d1 d2
                               → binders-disjoint-σ σ d2
                               → binders-disjoint-σ (Subst d1 y σ) d2
 
     -- two terms that do not share any binders
-    data binders-disjoint : (d1 : ihexp) → (d2 : ihexp) → Set where
+    data binders-disjoint : (d1 : iexp) → (d2 : iexp) → Set where
       BDConst : ∀{d} → binders-disjoint c d
       BDVar : ∀{x d} → binders-disjoint (X x) d
       BDLam : ∀{x τ d1 d2} → binders-disjoint d1 d2
@@ -822,10 +822,10 @@ module core where
                           → binders-unique-σ (Subst d y σ)
 
     -- all the variable names in the term are unique
-    data binders-unique : ihexp → Set where
+    data binders-unique : iexp → Set where
       BUHole : binders-unique c
       BUVar : ∀{x} → binders-unique (X x)
-      BULam : {x : Nat} {τ : htyp} {d : ihexp} → binders-unique d
+      BULam : {x : Nat} {τ : htyp} {d : iexp} → binders-unique d
                                                 → unbound-in x d
                                                 → binders-unique (·λ_[_]_ x τ d)
       BUEHole : ∀{u σ} → binders-unique-σ σ
@@ -853,13 +853,13 @@ module core where
                binders-disjoint d1 d2 →
                binders-unique ⟨ d1 , d2 ⟩
 
-  _⇓_ : ihexp → ihexp → Set
+  _⇓_ : iexp → iexp → Set
   d1 ⇓ d2 = (d1 ↦* d2 × d2 final)
 
   -- this is the decoding function, so half the iso. this won't work long term
   postulate
-    _↑_ : ihexp → eexp → Set
-    _↓_ : eexp → ihexp → Set -- not used
+    _↑_ : iexp → eexp → Set
+    _↓_ : eexp → iexp → Set -- not used (todo so why have it?)
     iso : Set
     Exp : htyp
 
