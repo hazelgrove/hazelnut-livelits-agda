@@ -4,7 +4,6 @@ open import core
 open import contexts
 
 open import progress
-open import htype-decidable
 open import lemmas-complete
 
 module complete-progress where

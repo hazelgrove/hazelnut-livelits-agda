@@ -19,7 +19,7 @@ open import ground-decidable
 open import grounding
 
 open import lemmas-subst-ta
-open import htype-decidable
+open import typ-dec
 open import lemmas-consistency
 open import lemmas-ground
 open import lemmas-matching

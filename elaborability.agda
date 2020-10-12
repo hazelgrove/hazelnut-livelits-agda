@@ -2,7 +2,6 @@ open import Nat
 open import Prelude
 open import core
 open import contexts
-open import htype-decidable
 open import lemmas-matching
 open import disjointness
 

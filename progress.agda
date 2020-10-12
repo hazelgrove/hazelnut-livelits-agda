@@ -12,7 +12,7 @@ open import canonical-value-forms
 open import canonical-indeterminate-forms
 
 open import ground-decidable
-open import htype-decidable
+open import typ-dec
 
 module progress where
   -- this is a little bit of syntactic sugar to avoid many layer nested Inl
@@ -170,7 +170,7 @@ module progress where
   progress (TACast wt (TCHole2 {b})) | I x | CIFHFst (_ , _ , refl , _)                 = I (ICastHoleGround (λ _ _ ()) x GBase)
   progress (TACast wt (TCHole2 {b})) | I x | CIFHSnd (_ , _ , refl , _)                 = I (ICastHoleGround (λ _ _ ()) x GBase)
   progress (TACast wt (TCHole2 {b})) | I x | CIFHCast (_ , τ , refl , _)
-    with htype-dec τ b
+    with typ-dec τ b
   progress (TACast wt (TCHole2 {b})) | I x₁ | CIFHCast (_ , .b , refl , _ , grn , _) | Inl refl = S (_ , Step FHOuter (ITCastSucceed grn ) FHOuter)
   progress (TACast wt (TCHole2 {b})) | I x₁ | CIFHCast (_ , _ , refl , π2 , grn , _)  | Inr x =    S (_ , Step FHOuter (ITCastFail grn GBase x) FHOuter)
   progress (TACast wt (TCHole2 {⦇·⦈}))| I x = S (_ , Step FHOuter ITCastID FHOuter)
@@ -202,12 +202,12 @@ module progress where
   progress (TACast wt (TCHole2 {.(_ ⊗ _)})) | I x | Inr h = S (_ , Step FHOuter (ITExpand (MGProd (ground-prod-not-hole h))) FHOuter)
     -- if both are arrows
   progress (TACast wt (TCArr {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x
-    with htype-dec (τ1 ==> τ2)  (τ1' ==> τ2')
+    with typ-dec (τ1 ==> τ2)  (τ1' ==> τ2')
   progress (TACast wt (TCArr c1 c2)) | I x₁ | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCArr c1 c2)) | I x₁ | Inr x = I (ICastArr x x₁)
     -- if both are products
   progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | I x
-    with htype-dec (τ1 ⊗ τ2) (τ1' ⊗ τ2')
+    with typ-dec (τ1 ⊗ τ2) (τ1' ⊗ τ2')
   progress (TACast wt (TCProd c1 c2)) | I x  | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCProd c1 c2)) | I h1 | Inr h2   = I (ICastProd h2 h1)
     -- boxed value cases, inspect how the casts are realted by consistency
@@ -220,18 +220,18 @@ module progress where
   progress (TACast wt (TCHole1 {b})) | BV x₁ | Inr x = abort (x GBase)
   progress (TACast wt (TCHole1 {⦇·⦈})) | BV x₁ | Inr x = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCHole1 {τ1 ==> τ2})) | BV x₁ | Inr x
-    with (htype-dec  (τ1 ==> τ2) (⦇·⦈ ==> ⦇·⦈))
+    with typ-dec  (τ1 ==> τ2) (⦇·⦈ ==> ⦇·⦈)
   progress (TACast wt (TCHole1 {.⦇·⦈ ==> .⦇·⦈})) | BV x₂ | Inr x₁ | Inl refl = BV (BVHoleCast GHole x₂)
   progress (TACast wt (TCHole1 {τ1 ==> τ2})) | BV x₂ | Inr x₁ | Inr x = S (_ , Step FHOuter (ITGround (MGArr x)) FHOuter)
   progress (TACast wt (TCHole1 {τ1 ⊗ τ2})) | BV x₁ | Inr x
-    with (htype-dec  (τ1 ⊗ τ2) (⦇·⦈ ⊗ ⦇·⦈))
+    with typ-dec  (τ1 ⊗ τ2) (⦇·⦈ ⊗ ⦇·⦈)
   progress (TACast wt (TCHole1 {_ ⊗ _})) | BV x₁ | Inr x | Inl refl = BV (BVHoleCast GProd x₁)
   progress (TACast wt (TCHole1 {_ ⊗ _})) | BV x₁ | Inr x | Inr h    = S (_ , Step FHOuter (ITGround (MGProd h)) FHOuter)
     -- if right is hole
   progress {τ = τ} (TACast wt TCHole2) | BV x
     with canonical-boxed-forms-hole wt x
   progress {τ = τ} (TACast wt TCHole2) | BV x | d' , τ' , refl , gnd , wt'
-    with htype-dec τ τ'
+    with typ-dec τ τ'
   progress (TACast wt TCHole2) | BV x₁ | d' , τ , refl , gnd , wt' | Inl refl = S (_  , Step FHOuter (ITCastSucceed gnd) FHOuter)
   progress {τ = τ} (TACast wt TCHole2) | BV x₁ | _ , _ , refl , _ , _ | Inr _
     with ground-decidable τ
@@ -245,11 +245,11 @@ module progress where
     S (_ , Step FHOuter (ITExpand (MGProd (ground-prod-not-hole h))) FHOuter)
     -- if both arrows
   progress (TACast wt (TCArr {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV x
-    with htype-dec (τ1 ==> τ2) (τ1' ==> τ2')
+    with typ-dec (τ1 ==> τ2) (τ1' ==> τ2')
   progress (TACast wt (TCArr c1 c2)) | BV x₁ | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCArr c1 c2)) | BV x₁ | Inr x = BV (BVArrCast x x₁)
   progress (TACast wt (TCProd {τ1} {τ2} {τ1'} {τ2'} c1 c2)) | BV x
-    with htype-dec (τ1 ⊗ τ2) (τ1' ⊗ τ2')
+    with typ-dec (τ1 ⊗ τ2) (τ1' ⊗ τ2')
   progress (TACast wt (TCProd c1 c2)) | BV x | Inl refl = S (_ , Step FHOuter ITCastID FHOuter)
   progress (TACast wt (TCProd c1 c2)) | BV x | Inr x₁   = BV (BVProdCast x₁ x)
 
