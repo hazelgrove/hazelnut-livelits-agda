@@ -17,18 +17,18 @@ module lemmas-ground where
   notground : ∀{τ} →
               (τ ground → ⊥) →
               (τ == ⦇·⦈) +
-                (Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ] (τ == (τ1 ==> τ2))) +
-                (Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ] (τ == (τ1 ⊗ τ2)))
+                (Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ] (τ == (τ1 ==> τ2))) +
+                (Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ] (τ == (τ1 ⊗ τ2)))
   notground {b} gnd = abort (gnd GBase)
   notground {⦇·⦈} gnd = Inl refl
   notground {τ ==> τ₁} gnd = Inr (Inl (τ , τ₁ , refl))
   notground {τ ⊗ τ₁} gnd = Inr (Inr (τ , τ₁ , refl))
 
   ground-arr-lem :
-                   (τ : htyp) →
+                   (τ : typ) →
                    ((τ ground) → ⊥) →
                    (τ ≠  ⦇·⦈) →
-                   Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ]
+                   Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ]
                      (((τ == (τ1 ==> τ2)) × ((τ1 ==> τ2) ≠ (⦇·⦈ ==> ⦇·⦈))) +
                       ((τ == (τ1 ⊗ τ2))  × ((τ1 ⊗ τ2)   ≠ (⦇·⦈ ⊗ ⦇·⦈))))
   ground-arr-lem b ng nh = abort (ng GBase)

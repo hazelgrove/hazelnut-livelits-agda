@@ -17,7 +17,7 @@ module canonical-indeterminate-forms where
         )
        → cif-base Δ d
     CIFBNEHole : ∀ {Δ d} →
-      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ Γ ∈ tctx ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ Γ ∈ tctx ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == ⦇⌜ d' ⌟⦈⟨ u , σ ⟩) ×
          (Δ , ∅ ⊢ d' :: τ') ×
          (d' final) ×
@@ -26,17 +26,17 @@ module canonical-indeterminate-forms where
         )
         → cif-base Δ d
     CIFBAp : ∀ {Δ d} →
-      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2 ∈ htyp ]
+      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2 ∈ typ ]
         ((d == d1 ∘ d2) ×
          (Δ , ∅ ⊢ d1 :: τ2 ==> b) ×
          (Δ , ∅ ⊢ d2 :: τ2) ×
          (d1 indet) ×
          (d2 final) ×
-         ((τ3 τ4 τ3' τ4' : htyp) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
+         ((τ3 τ4 τ3' τ4' : typ) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
         → cif-base Δ d
     CIFBFst : ∀{Δ d} →
-      Σ[ d' ∈ iexp ] Σ[ τ2 ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ2 ∈ typ ]
         ((d == fst d') ×
          (Δ , ∅ ⊢ d' :: b ⊗ τ2) ×
          (d' indet) ×
@@ -45,7 +45,7 @@ module canonical-indeterminate-forms where
         )
         → cif-base Δ d
     CIFBSnd : ∀{Δ d} →
-        Σ[ d' ∈ iexp ] Σ[ τ1 ∈ htyp ]
+        Σ[ d' ∈ iexp ] Σ[ τ1 ∈ typ ]
         ((d == snd d') ×
          (Δ , ∅ ⊢ d' :: τ1 ⊗ b) ×
          (d' indet) ×
@@ -58,11 +58,11 @@ module canonical-indeterminate-forms where
         ((d == d' ⟨ ⦇·⦈ ⇒ b ⟩) ×
          (Δ , ∅ ⊢ d' :: ⦇·⦈) ×
          (d' indet) ×
-         ((d'' : iexp) (τ' : htyp) → d' ≠ (d'' ⟨ τ' ⇒ ⦇·⦈ ⟩))
+         ((d'' : iexp) (τ' : typ) → d' ≠ (d'' ⟨ τ' ⇒ ⦇·⦈ ⟩))
         )
         → cif-base Δ d
     CIFBFailedCast : ∀ {Δ d} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == d' ⟨ τ' ⇒⦇⦈⇏ b ⟩) ×
          (Δ , ∅ ⊢ d' :: τ') ×
          (τ' ground) ×
@@ -86,7 +86,7 @@ module canonical-indeterminate-forms where
 
   -- this type gives somewhat nicer syntax for the output of the canonical
   -- forms lemma for indeterminates at arrow type
-  data cif-arr : (Δ : hctx) (d : iexp) (τ1 τ2 : htyp) → Set where
+  data cif-arr : (Δ : hctx) (d : iexp) (τ1 τ2 : typ) → Set where
     CIFAEHole : ∀{d Δ τ1 τ2} →
       Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ Γ ∈ tctx ]
         ((d == ⦇⦈⟨ u , σ ⟩) ×
@@ -95,7 +95,7 @@ module canonical-indeterminate-forms where
         )
       → cif-arr Δ d τ1 τ2
     CIFANEHole : ∀{d Δ τ1 τ2} →
-      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ] Σ[ Γ ∈ tctx ]
+      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ] Σ[ Γ ∈ tctx ]
         ((d == ⦇⌜ d' ⌟⦈⟨ u , σ ⟩) ×
          (Δ , ∅ ⊢ d' :: τ') ×
          (d' final) ×
@@ -104,17 +104,17 @@ module canonical-indeterminate-forms where
         )
         → cif-arr Δ d τ1 τ2
     CIFAAp : ∀{d Δ τ1 τ2} →
-      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2' ∈ htyp ] Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ]
+      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2' ∈ typ ] Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ]
         ((d == d1 ∘ d2) ×
          (Δ , ∅ ⊢ d1 :: τ2' ==> (τ1 ==> τ2)) ×
          (Δ , ∅ ⊢ d2 :: τ2') ×
          (d1 indet) ×
          (d2 final) ×
-         ((τ3 τ4 τ3' τ4' : htyp) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
+         ((τ3 τ4 τ3' τ4' : typ) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
         → cif-arr Δ d τ1 τ2
     CIFAFst : ∀{Δ d τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == fst d') ×
          (Δ , ∅ ⊢ d' :: (τ1 ==> τ2) ⊗ τ') ×
          (d' indet) ×
@@ -123,7 +123,7 @@ module canonical-indeterminate-forms where
         )
         → cif-arr Δ d τ1 τ2
     CIFASnd : ∀{Δ d τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == snd d') ×
          (Δ , ∅ ⊢ d' :: τ' ⊗ (τ1 ==> τ2)) ×
          (d' indet) ×
@@ -132,7 +132,7 @@ module canonical-indeterminate-forms where
         )
         → cif-arr Δ d τ1 τ2
     CIFACast : ∀{d Δ τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ] Σ[ τ1' ∈ htyp ] Σ[ τ2' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ] Σ[ τ1' ∈ typ ] Σ[ τ2' ∈ typ ]
         ((d == d' ⟨ (τ1' ==> τ2') ⇒ (τ1 ==> τ2) ⟩) ×
           (Δ , ∅ ⊢ d' :: τ1' ==> τ2') ×
           (d' indet) ×
@@ -146,11 +146,11 @@ module canonical-indeterminate-forms where
          (τ2 == ⦇·⦈) ×
          (Δ , ∅ ⊢ d' :: ⦇·⦈) ×
          (d' indet) ×
-         ((d'' : iexp) (τ' : htyp) → d' ≠ (d'' ⟨ τ' ⇒ ⦇·⦈ ⟩))
+         ((d'' : iexp) (τ' : typ) → d' ≠ (d'' ⟨ τ' ⇒ ⦇·⦈ ⟩))
         )
         → cif-arr Δ d τ1 τ2
     CIFAFailedCast : ∀{d Δ τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
           ((d == (d' ⟨ τ' ⇒⦇⦈⇏ ⦇·⦈ ==> ⦇·⦈ ⟩) ) ×
            (τ1 == ⦇·⦈) ×
            (τ2 == ⦇·⦈) ×
@@ -186,7 +186,7 @@ module canonical-indeterminate-forms where
         )
       → cif-hole Δ d
     CIFHNEHole : ∀ {Δ d} →
-      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ] Σ[ Γ ∈ tctx ]
+      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ] Σ[ Γ ∈ tctx ]
         ((d == ⦇⌜ d' ⌟⦈⟨ u , σ ⟩) ×
          (Δ , ∅ ⊢ d' :: τ') ×
          (d' final) ×
@@ -195,17 +195,17 @@ module canonical-indeterminate-forms where
         )
       → cif-hole Δ d
     CIFHAp : ∀ {Δ d} →
-      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2 ∈ htyp ]
+      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2 ∈ typ ]
         ((d == d1 ∘ d2) ×
          (Δ , ∅ ⊢ d1 :: (τ2 ==> ⦇·⦈)) ×
          (Δ , ∅ ⊢ d2 :: τ2) ×
          (d1 indet) ×
          (d2 final) ×
-         ((τ3 τ4 τ3' τ4' : htyp) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
+         ((τ3 τ4 τ3' τ4' : typ) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
       → cif-hole Δ d
     CIFHFst : ∀{Δ d} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
        ((d == fst d') ×
         (Δ , ∅ ⊢ d' :: ⦇·⦈ ⊗ τ') ×
         (d' indet) ×
@@ -214,7 +214,7 @@ module canonical-indeterminate-forms where
        )
       → cif-hole Δ d
     CIFHSnd : ∀{Δ d} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
        ((d == snd d') ×
         (Δ , ∅ ⊢ d' :: τ' ⊗ ⦇·⦈) ×
         (d' indet) ×
@@ -223,7 +223,7 @@ module canonical-indeterminate-forms where
        )
       → cif-hole Δ d
     CIFHCast : ∀ {Δ d} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == d' ⟨ τ' ⇒ ⦇·⦈ ⟩) ×
          (Δ , ∅ ⊢ d' :: τ') ×
          (τ' ground) ×
@@ -247,7 +247,7 @@ module canonical-indeterminate-forms where
 
   -- this type gives somewhat nicer syntax for the output of the canonical
   -- forms lemma for indeterminates at product type
-  data cif-prod : (Δ : hctx) (d : iexp) (τ1 τ2 : htyp) → Set where
+  data cif-prod : (Δ : hctx) (d : iexp) (τ1 τ2 : typ) → Set where
     CIFPEHole : ∀{d Δ τ1 τ2} →
       Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ Γ ∈ tctx ]
         ((d == ⦇⦈⟨ u , σ ⟩) ×
@@ -256,7 +256,7 @@ module canonical-indeterminate-forms where
         )
       → cif-prod Δ d τ1 τ2
     CIFPNEHole : ∀{d Δ τ1 τ2} →
-      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ] Σ[ Γ ∈ tctx ]
+      Σ[ u ∈ Nat ] Σ[ σ ∈ env ] Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ] Σ[ Γ ∈ tctx ]
         ((d == ⦇⌜ d' ⌟⦈⟨ u , σ ⟩) ×
          (Δ , ∅ ⊢ d' :: τ') ×
          (d' final) ×
@@ -265,17 +265,17 @@ module canonical-indeterminate-forms where
         )
         → cif-prod Δ d τ1 τ2
     CIFPAp : ∀{d Δ τ1 τ2} →
-      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2' ∈ htyp ] Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ]
+      Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ] Σ[ τ2' ∈ typ ] Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ]
         ((d == d1 ∘ d2) ×
          (Δ , ∅ ⊢ d1 :: τ2' ==> (τ1 ⊗ τ2)) ×
          (Δ , ∅ ⊢ d2 :: τ2') ×
          (d1 indet) ×
          (d2 final) ×
-         ((τ3 τ4 τ3' τ4' : htyp) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
+         ((τ3 τ4 τ3' τ4' : typ) (d1' : iexp) → d1 ≠ (d1' ⟨ τ3 ==> τ4 ⇒ τ3' ==> τ4' ⟩))
         )
         → cif-prod Δ d τ1 τ2
     CIFPFst : ∀{Δ d τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == fst d') ×
          (Δ , ∅ ⊢ d' :: (τ1 ⊗ τ2) ⊗ τ') ×
          (d' indet) ×
@@ -284,7 +284,7 @@ module canonical-indeterminate-forms where
         )
         → cif-prod Δ d τ1 τ2
     CIFPSnd : ∀{Δ d τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
         ((d == snd d') ×
          (Δ , ∅ ⊢ d' :: τ' ⊗ (τ1 ⊗ τ2)) ×
          (d' indet) ×
@@ -311,7 +311,7 @@ module canonical-indeterminate-forms where
         )
         → cif-prod Δ d τ1 τ2
     CIFPCast : ∀{d Δ τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ1 ∈ htyp ] Σ[ τ2 ∈ htyp ] Σ[ τ1' ∈ htyp ] Σ[ τ2' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ1 ∈ typ ] Σ[ τ2 ∈ typ ] Σ[ τ1' ∈ typ ] Σ[ τ2' ∈ typ ]
         ((d == d' ⟨ (τ1' ⊗ τ2') ⇒ (τ1 ⊗ τ2) ⟩) ×
           (Δ , ∅ ⊢ d' :: τ1' ⊗ τ2') ×
           (d' indet) ×
@@ -326,11 +326,11 @@ module canonical-indeterminate-forms where
          (τ2 == ⦇·⦈) ×
          (Δ , ∅ ⊢ d' :: ⦇·⦈) ×
          (d' indet) ×
-         ((d'' : iexp) (τ' : htyp) → d' ≠ (d'' ⟨ τ' ⇒ ⦇·⦈ ⟩))
+         ((d'' : iexp) (τ' : typ) → d' ≠ (d'' ⟨ τ' ⇒ ⦇·⦈ ⟩))
         )
         → cif-prod Δ d τ1 τ2
     CIFPFailedCast : ∀{d Δ τ1 τ2} →
-      Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+      Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
           ((d == (d' ⟨ τ' ⇒⦇⦈⇏ ⦇·⦈ ⊗ ⦇·⦈ ⟩) ) ×
            (τ1 == ⦇·⦈) ×
            (τ2 == ⦇·⦈) ×
@@ -360,9 +360,9 @@ module canonical-indeterminate-forms where
                                            Δ , ∅ ⊢ d :: τ →
                                            d indet →
                                            τ ≠ b →
-                                           ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ==> τ2)) →
+                                           ((τ1 : typ) (τ2 : typ) → τ ≠ (τ1 ==> τ2)) →
                                            τ ≠ ⦇·⦈ →
-                                           ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ⊗ τ2)) →
+                                           ((τ1 : typ) (τ2 : typ) → τ ≠ (τ1 ⊗ τ2)) →
                                            ⊥
   canonical-indeterminate-forms-coverage TAConst () nb na nh
   canonical-indeterminate-forms-coverage (TAVar x₁) () nb na nh

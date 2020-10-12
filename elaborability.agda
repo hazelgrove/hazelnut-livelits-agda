@@ -8,7 +8,7 @@ open import disjointness
 
 module elaborability where
   mutual
-    elaborability-synth : {Γ : tctx} {e : eexp} {τ : htyp} →
+    elaborability-synth : {Γ : tctx} {e : eexp} {τ : typ} →
                           Γ ⊢ e => τ →
                           Σ[ d ∈ iexp ] Σ[ Δ ∈ hctx ]
                             (Γ ⊢ e ⇒ τ ~> d ⊣ Δ)
@@ -39,9 +39,9 @@ module elaborability where
       with elaborability-synth wt1 | elaborability-synth wt2
     ... | _ , _ , D1 | _ , _ , D2 = _ , _ , ESPair dis (elab-synth-disjoint dis D1 D2) D1 D2
 
-    elaborability-ana : {Γ : tctx} {e : eexp} {τ : htyp} →
+    elaborability-ana : {Γ : tctx} {e : eexp} {τ : typ} →
                          Γ ⊢ e <= τ →
-                          Σ[ d ∈ iexp ] Σ[ Δ ∈ hctx ] Σ[ τ' ∈ htyp ]
+                          Σ[ d ∈ iexp ] Σ[ Δ ∈ hctx ] Σ[ τ' ∈ typ ]
                             (Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ)
     elaborability-ana {e = e} (ASubsume D x₁)
       with elaborability-synth D

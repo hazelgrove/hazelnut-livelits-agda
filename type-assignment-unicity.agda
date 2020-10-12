@@ -5,7 +5,7 @@ open import contexts
 
 module type-assignment-unicity where
   -- type assignment only assigns one type
-  type-assignment-unicity : {Γ : tctx} {d : iexp} {τ' τ : htyp} {Δ : hctx} →
+  type-assignment-unicity : {Γ : tctx} {d : iexp} {τ' τ : typ} {Δ : hctx} →
                               Δ , Γ ⊢ d :: τ →
                               Δ , Γ ⊢ d :: τ' →
                               τ == τ'

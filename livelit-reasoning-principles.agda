@@ -11,10 +11,10 @@ module livelit-reasoning-principles where
                               (Γ : tctx)
                               (ρ : Nat)
                               (dm : iexp)
-                              (τsplice : htyp)
+                              (τsplice : typ)
                               (psplice : uexp)
                               (eresult : eexp)
-                              (τresult : htyp) : Set where
+                              (τresult : typ) : Set where
     field
       π   : paldef
       domain : dom (Φ ₁) ρ

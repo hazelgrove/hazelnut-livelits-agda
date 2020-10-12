@@ -37,7 +37,7 @@ module preservation where
   wt-filling : ∀{ ε Δ Γ d τ d' } →
              Δ , Γ ⊢ d :: τ →
              d == ε ⟦ d' ⟧ →
-             Σ[ τ' ∈ htyp ] (Δ , Γ ⊢ d' :: τ')
+             Σ[ τ' ∈ typ ] (Δ , Γ ⊢ d' :: τ')
   wt-filling TAConst FHOuter = _ , TAConst
   wt-filling (TAVar x₁) FHOuter = _ , TAVar x₁
   wt-filling (TALam f ta) FHOuter = _ , TALam f ta
@@ -103,7 +103,7 @@ module preservation where
   lem-bd-ε1 (FHPair2 eps) (BUPair bu bu₁ x) = lem-bd-ε1 eps bu₁
 
   -- this is the main preservation theorem, gluing together the above
-  preservation : {Δ : hctx} {d d' : iexp} {τ : htyp} {Γ : tctx} →
+  preservation : {Δ : hctx} {d d' : iexp} {τ : typ} {Γ : tctx} →
              binders-unique d →
              Δ , Γ ⊢ d :: τ →
              d ↦ d' →
@@ -115,7 +115,7 @@ module preservation where
   -- note that the exact statement of preservation in the paper, where Γ is
   -- empty indicating that the terms are closed, is an immediate corrolary
   -- of the slightly more general statement above.
-  preservation' : {Δ : hctx} {d d' : iexp} {τ : htyp} →
+  preservation' : {Δ : hctx} {d d' : iexp} {τ : typ} →
              binders-unique d →
              Δ , ∅ ⊢ d :: τ →
              d ↦ d' →

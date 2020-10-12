@@ -5,11 +5,11 @@ open import contexts
 
 module core where
   -- types
-  data htyp : Set where
-    b     : htyp
-    ⦇·⦈    : htyp
-    _==>_ : htyp → htyp → htyp
-    _⊗_   : htyp → htyp → htyp
+  data typ : Set where
+    b     : typ
+    ⦇·⦈    : typ
+    _==>_ : typ → typ → typ
+    _⊗_   : typ → typ → typ
 
   -- arrow type constructors bind very tightly
   infixr 25  _==>_
@@ -19,10 +19,10 @@ module core where
   -- first because of the dependence structure below.
   data eexp : Set where
     c       : eexp
-    _·:_    : eexp → htyp → eexp
+    _·:_    : eexp → typ → eexp
     X       : Nat → eexp
     ·λ      : Nat → eexp → eexp
-    ·λ_[_]_ : Nat → htyp → eexp → eexp
+    ·λ_[_]_ : Nat → typ → eexp → eexp
     ⦇⦈[_]   : Nat → eexp
     ⦇⌜_⌟⦈[_] : eexp → Nat → eexp
     _∘_     : eexp → eexp → eexp
@@ -34,7 +34,7 @@ module core where
 
   -- the type of type contexts, i.e. Γs in the judegments below
   tctx : Set
-  tctx = htyp ctx
+  tctx = typ ctx
 
   mutual
     -- identity substitution, substitition environments
@@ -48,33 +48,33 @@ module core where
     data iexp : Set where
       c         : iexp
       X         : Nat → iexp
-      ·λ_[_]_   : Nat → htyp → iexp → iexp
+      ·λ_[_]_   : Nat → typ → iexp → iexp
       ⦇⦈⟨_⟩     : (Nat × env) → iexp
       ⦇⌜_⌟⦈⟨_⟩    : iexp → (Nat × env) → iexp
       _∘_       : iexp → iexp → iexp
-      _⟨_⇒_⟩    : iexp → htyp → htyp → iexp
-      _⟨_⇒⦇⦈⇏_⟩ : iexp → htyp → htyp → iexp
+      _⟨_⇒_⟩    : iexp → typ → typ → iexp
+      _⟨_⇒⦇⦈⇏_⟩ : iexp → typ → typ → iexp
       ⟨_,_⟩   : iexp → iexp → iexp
       fst     : iexp → iexp
       snd     : iexp → iexp
 
 
   -- convenient notation for chaining together two agreeable casts
-  _⟨_⇒_⇒_⟩ : iexp → htyp → htyp → htyp → iexp
+  _⟨_⇒_⇒_⟩ : iexp → typ → typ → typ → iexp
   d ⟨ t1 ⇒ t2 ⇒ t3 ⟩ = d ⟨ t1 ⇒ t2 ⟩ ⟨ t2 ⇒ t3 ⟩
 
   record paldef : Set where -- todo pal
     field
       expand : iexp
-      model-type : htyp
-      expansion-type : htyp
+      model-type : typ
+      expansion-type : typ
 
   record fpaldef : Set where -- todo pal
     field
       expand : eexp
-      model-type : htyp
-      splice-type : htyp
-      expansion-type : htyp
+      model-type : typ
+      splice-type : typ
+      expansion-type : typ
 
   data palctx-entry : Set where -- todo pal
     MPalDef : paldef → palctx-entry
@@ -84,10 +84,10 @@ module core where
   -- exactly like eexp, but also with livelits
   data uexp : Set where
     c       : uexp
-    _·:_    : uexp → htyp → uexp
+    _·:_    : uexp → typ → uexp
     X       : Nat → uexp
     ·λ      : Nat → uexp → uexp
-    ·λ_[_]_ : Nat → htyp → uexp → uexp
+    ·λ_[_]_ : Nat → typ → uexp → uexp
     ⦇⦈[_]   : Nat → uexp
     ⦇⌜_⌟⦈[_]  : uexp → Nat → uexp
     _∘_     : uexp → uexp → uexp
@@ -97,64 +97,64 @@ module core where
     -- new forms below
     -- macro-like livelits --todo pal
     let-pal_be_·in_ : Nat → paldef → uexp → uexp
-    ap-pal : Nat → iexp → (htyp × uexp) → uexp
+    ap-pal : Nat → iexp → (typ × uexp) → uexp
     -- function-like livelits --todo pal
     let-fpal_be_·in_ : Nat → fpaldef → uexp → uexp
     ap-fpal : Nat → eexp → uexp → uexp
 
   -- type consistency
-  data _~_ : (t1 t2 : htyp) → Set where
-    TCRefl  : {τ : htyp} → τ ~ τ
-    TCHole1 : {τ : htyp} → τ ~ ⦇·⦈
-    TCHole2 : {τ : htyp} → ⦇·⦈ ~ τ
-    TCArr   : {τ1 τ2 τ1' τ2' : htyp} →
+  data _~_ : (t1 t2 : typ) → Set where
+    TCRefl  : {τ : typ} → τ ~ τ
+    TCHole1 : {τ : typ} → τ ~ ⦇·⦈
+    TCHole2 : {τ : typ} → ⦇·⦈ ~ τ
+    TCArr   : {τ1 τ2 τ1' τ2' : typ} →
                τ1 ~ τ1' →
                τ2 ~ τ2' →
                τ1 ==> τ2 ~ τ1' ==> τ2'
-    TCProd  : {τ1 τ2 τ1' τ2' : htyp} →
+    TCProd  : {τ1 τ2 τ1' τ2' : typ} →
                τ1 ~ τ1' →
                τ2 ~ τ2' →
                (τ1 ⊗ τ2) ~ (τ1' ⊗ τ2')
 
   -- type inconsistency
-  data _~̸_ : (τ1 τ2 : htyp) → Set where
-    ICBaseArr1 : {τ1 τ2 : htyp} → b ~̸ τ1 ==> τ2
-    ICBaseArr2 : {τ1 τ2 : htyp} → τ1 ==> τ2 ~̸ b
-    ICArr1 : {τ1 τ2 τ3 τ4 : htyp} →
+  data _~̸_ : (τ1 τ2 : typ) → Set where
+    ICBaseArr1 : {τ1 τ2 : typ} → b ~̸ τ1 ==> τ2
+    ICBaseArr2 : {τ1 τ2 : typ} → τ1 ==> τ2 ~̸ b
+    ICArr1 : {τ1 τ2 τ3 τ4 : typ} →
                τ1 ~̸ τ3 →
                τ1 ==> τ2 ~̸ τ3 ==> τ4
-    ICArr2 : {τ1 τ2 τ3 τ4 : htyp} →
+    ICArr2 : {τ1 τ2 τ3 τ4 : typ} →
                τ2 ~̸ τ4 →
                τ1 ==> τ2 ~̸ τ3 ==> τ4
-    ICBaseProd1 : {τ1 τ2 : htyp} → b ~̸ τ1 ⊗ τ2
-    ICBaseProd2 : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ~̸ b
-    ICProdArr1 : {τ1 τ2 τ3 τ4 : htyp} →
+    ICBaseProd1 : {τ1 τ2 : typ} → b ~̸ τ1 ⊗ τ2
+    ICBaseProd2 : {τ1 τ2 : typ} → τ1 ⊗ τ2 ~̸ b
+    ICProdArr1 : {τ1 τ2 τ3 τ4 : typ} →
                 τ1 ==> τ2 ~̸ τ3 ⊗ τ4
-    ICProdArr2 : {τ1 τ2 τ3 τ4 : htyp} →
+    ICProdArr2 : {τ1 τ2 τ3 τ4 : typ} →
                 τ1 ⊗ τ2 ~̸ τ3 ==> τ4
-    ICProd1 : {τ1 τ2 τ3 τ4 : htyp} →
+    ICProd1 : {τ1 τ2 τ3 τ4 : typ} →
                τ1 ~̸ τ3 →
                τ1 ⊗ τ2 ~̸ τ3 ⊗ τ4
-    ICProd2 : {τ1 τ2 τ3 τ4 : htyp} →
+    ICProd2 : {τ1 τ2 τ3 τ4 : typ} →
                τ2 ~̸ τ4 →
                τ1 ⊗ τ2 ~̸ τ3 ⊗ τ4
 
   --- matching for arrows
-  data _▸arr_ : htyp → htyp → Set where
+  data _▸arr_ : typ → typ → Set where
     MAHole : ⦇·⦈ ▸arr ⦇·⦈ ==> ⦇·⦈
-    MAArr  : {τ1 τ2 : htyp} → τ1 ==> τ2 ▸arr τ1 ==> τ2
+    MAArr  : {τ1 τ2 : typ} → τ1 ==> τ2 ▸arr τ1 ==> τ2
 
   -- matching for products
-  data _▸prod_ : htyp → htyp → Set where
+  data _▸prod_ : typ → typ → Set where
     MPHole : ⦇·⦈ ▸prod ⦇·⦈ ⊗ ⦇·⦈
-    MPProd  : {τ1 τ2 : htyp} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
+    MPProd  : {τ1 τ2 : typ} → τ1 ⊗ τ2 ▸prod τ1 ⊗ τ2
 
   -- the type of hole contexts, i.e. Δs in the judgements
   hctx : Set
-  hctx = (htyp ctx × htyp) ctx
+  hctx = (typ ctx × typ) ctx
 
   -- notation for a triple to match the CMTT syntax
-  _::_[_] : Nat → htyp → tctx → (Nat × (tctx × htyp))
+  _::_[_] : Nat → typ → tctx → (Nat × (tctx × typ))
   u :: τ [ Γ ] = u , (Γ , τ)
 
   -- the hole name u does not appear in the term e
@@ -209,26 +209,26 @@ module core where
   -- bidirectional type checking judgements for hexp
   mutual
     -- synthesis
-    data _⊢_=>_ : (Γ : tctx) (e : eexp) (τ : htyp) → Set where
+    data _⊢_=>_ : (Γ : tctx) (e : eexp) (τ : typ) → Set where
       SConst  : {Γ : tctx} → Γ ⊢ c => b
-      SAsc    : {Γ : tctx} {e : eexp} {τ : htyp} →
+      SAsc    : {Γ : tctx} {e : eexp} {τ : typ} →
                  Γ ⊢ e <= τ →
                  Γ ⊢ (e ·: τ) => τ
-      SVar    : {Γ : tctx} {τ : htyp} {x : Nat} →
+      SVar    : {Γ : tctx} {τ : typ} {x : Nat} →
                  (x , τ) ∈ Γ →
                  Γ ⊢ X x => τ
-      SAp     : {Γ : tctx} {e1 e2 : eexp} {τ τ1 τ2 : htyp} →
+      SAp     : {Γ : tctx} {e1 e2 : eexp} {τ τ1 τ2 : typ} →
                  holes-disjoint e1 e2 →
                  Γ ⊢ e1 => τ1 →
                  τ1 ▸arr τ2 ==> τ →
                  Γ ⊢ e2 <= τ2 →
                  Γ ⊢ (e1 ∘ e2) => τ
       SEHole  : {Γ : tctx} {u : Nat} → Γ ⊢ ⦇⦈[ u ] => ⦇·⦈
-      SNEHole : {Γ : tctx} {e : eexp} {τ : htyp} {u : Nat} →
+      SNEHole : {Γ : tctx} {e : eexp} {τ : typ} {u : Nat} →
                  hole-name-new e u →
                  Γ ⊢ e => τ →
                  Γ ⊢ ⦇⌜ e ⌟⦈[ u ] => ⦇·⦈
-      SLam    : {Γ : tctx} {e : eexp} {τ1 τ2 : htyp} {x : Nat} →
+      SLam    : {Γ : tctx} {e : eexp} {τ1 τ2 : typ} {x : Nat} →
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
                  Γ ⊢ ·λ x [ τ1 ] e => τ1 ==> τ2
@@ -247,19 +247,19 @@ module core where
                 Γ ⊢ ⟨ e1 , e2 ⟩ => τ1 ⊗ τ2
 
     -- analysis
-    data _⊢_<=_ : (Γ : htyp ctx) (e : eexp) (τ : htyp) → Set where
-      ASubsume : {Γ : tctx} {e : eexp} {τ τ' : htyp} →
+    data _⊢_<=_ : (Γ : typ ctx) (e : eexp) (τ : typ) → Set where
+      ASubsume : {Γ : tctx} {e : eexp} {τ τ' : typ} →
                  Γ ⊢ e => τ' →
                  τ ~ τ' →
                  Γ ⊢ e <= τ
-      ALam : {Γ : tctx} {e : eexp} {τ τ1 τ2 : htyp} {x : Nat} →
+      ALam : {Γ : tctx} {e : eexp} {τ τ1 τ2 : typ} {x : Nat} →
                  x # Γ →
                  τ ▸arr τ1 ==> τ2 →
                  (Γ ,, (x , τ1)) ⊢ e <= τ2 →
                  Γ ⊢ (·λ x e) <= τ
 
   -- those types without holes
-  data _tcomplete : htyp → Set where
+  data _tcomplete : typ → Set where
     TCBase : b tcomplete
     TCArr : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ==> τ2) tcomplete
     TCProd : ∀{τ1 τ2} → τ1 tcomplete → τ2 tcomplete → (τ1 ⊗ τ2) tcomplete
@@ -290,7 +290,7 @@ module core where
 
   -- contexts that only produce complete types
   _gcomplete : tctx → Set
-  Γ gcomplete = (x : Nat) (τ : htyp) → (x , τ) ∈ Γ → τ tcomplete
+  Γ gcomplete = (x : Nat) (τ : typ) → (x , τ) ∈ Γ → τ tcomplete
 
   -- those internal expressions where every cast is the identity cast and
   -- there are no failed casts
@@ -309,7 +309,7 @@ module core where
   -- expansion
   mutual
     -- synthesis
-    data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : iexp) (Δ : hctx) → Set where
+    data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : typ) (d : iexp) (Δ : hctx) → Set where
       ESConst : ∀{Γ} → Γ ⊢ c ⇒ b ~> c ⊣ ∅
       ESVar   : ∀{Γ x τ} → (x , τ) ∈ Γ →
                          Γ ⊢ X x ⇒ τ ~> X x ⊣ ∅
@@ -352,7 +352,7 @@ module core where
                  Γ ⊢ ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2 ~> ⟨ d1 , d2 ⟩ ⊣ (Δ1 ∪ Δ2)
 
     -- analysis
-    data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : eexp) (τ : htyp) (d : iexp) (τ' : htyp) (Δ : hctx) → Set where
+    data _⊢_⇐_~>_::_⊣_ : (Γ : tctx) (e : eexp) (τ : typ) (d : iexp) (τ' : typ) (Δ : hctx) → Set where
       EALam : ∀{Γ x τ τ1 τ2 e d τ2' Δ } →
               (x # Γ) →
               τ ▸arr τ1 ==> τ2 →
@@ -372,7 +372,7 @@ module core where
                  Γ ⊢ ⦇⌜ e ⌟⦈[ u ] ⇐ τ ~> ⦇⌜ d ⌟⦈⟨ u , Id Γ  ⟩ :: τ ⊣ (Δ ,, u :: τ [ Γ ])
 
   -- ground types
-  data _ground : (τ : htyp) → Set where
+  data _ground : (τ : typ) → Set where
     GBase : b ground
     GHole : ⦇·⦈ ==> ⦇·⦈ ground
     GProd : ⦇·⦈ ⊗ ⦇·⦈ ground
@@ -381,7 +381,7 @@ module core where
     -- substitution typing
     data _,_⊢_:s:_ : hctx → tctx → env → tctx → Set where
       STAId : ∀{Γ Γ' Δ} →
-                  ((x : Nat) (τ : htyp) → (x , τ) ∈ Γ' → (x , τ) ∈ Γ) →
+                  ((x : Nat) (τ : typ) → (x , τ) ∈ Γ' → (x , τ) ∈ Γ) →
                   Δ , Γ ⊢ Id Γ' :s: Γ'
       STASubst : ∀{Γ Δ σ y Γ' d τ } →
                Δ , Γ ,, (y , τ) ⊢ σ :s: Γ' →
@@ -389,7 +389,7 @@ module core where
                Δ , Γ ⊢ Subst d y σ :s: Γ'
 
     -- type assignment
-    data _,_⊢_::_ : (Δ : hctx) (Γ : tctx) (d : iexp) (τ : htyp) → Set where
+    data _,_⊢_::_ : (Δ : hctx) (Γ : tctx) (d : iexp) (τ : typ) → Set where
       TAConst : ∀{Δ Γ} → Δ , Γ ⊢ c :: b
       TAVar : ∀{Δ Γ x τ} → (x , τ) ∈ Γ → Δ , Γ ⊢ X x :: τ
       TALam : ∀{ Δ Γ x τ1 d τ2} →
@@ -480,7 +480,7 @@ module core where
     data _indet : (d : iexp) → Set where
       IEHole : ∀{u σ} → ⦇⦈⟨ u , σ ⟩ indet
       INEHole : ∀{d u σ} → d final → ⦇⌜ d ⌟⦈⟨ u , σ ⟩ indet
-      IAp : ∀{d1 d2} → ((τ1 τ2 τ3 τ4 : htyp) (d1' : iexp) →
+      IAp : ∀{d1 d2} → ((τ1 τ2 τ3 τ4 : typ) (d1' : iexp) →
                        d1 ≠ (d1' ⟨(τ1 ==> τ2) ⇒ (τ3 ==> τ4)⟩)) →
                        d1 indet →
                        d2 final →
@@ -516,7 +516,7 @@ module core where
                         d indet →
                         d ⟨ τ ⇒  ⦇·⦈ ⟩ indet
       ICastHoleGround : ∀ { d τ } →
-                        ((d' : iexp) (τ' : htyp) → d ≠ (d' ⟨ τ' ⇒ ⦇·⦈ ⟩)) →
+                        ((d' : iexp) (τ' : typ) → d ≠ (d' ⟨ τ' ⇒ ⦇·⦈ ⟩)) →
                         d indet →
                         τ ground →
                         d ⟨ ⦇·⦈ ⇒ τ ⟩ indet
@@ -545,8 +545,8 @@ module core where
     snd·_ : ectx → ectx
     ⟨_,_⟩₁ : ectx → iexp → ectx
     ⟨_,_⟩₂ : iexp → ectx → ectx
-    _⟨_⇒_⟩ : ectx → htyp → htyp → ectx
-    _⟨_⇒⦇·⦈⇏_⟩ : ectx → htyp → htyp → ectx
+    _⟨_⇒_⟩ : ectx → typ → typ → ectx
+    _⟨_⇒⦇·⦈⇏_⟩ : ectx → typ → typ → ectx
 
   -- note: this judgement is redundant: in the absence of the premises in
   -- the red brackets, all syntactically well formed ectxs are valid. with
@@ -619,7 +619,7 @@ module core where
             (d ⟨ τ1 ⇒⦇⦈⇏ τ2 ⟩) == (ε ⟨ τ1 ⇒⦇·⦈⇏ τ2 ⟩) ⟦ d' ⟧
 
   -- matched ground types
-  data _▸gnd_ : htyp → htyp → Set where
+  data _▸gnd_ : typ → typ → Set where
     MGArr : ∀{τ1 τ2} →
             (τ1 ==> τ2) ≠ (⦇·⦈ ==> ⦇·⦈) →
             (τ1 ==> τ2) ▸gnd (⦇·⦈ ==> ⦇·⦈)
@@ -828,7 +828,7 @@ module core where
     data binders-unique : iexp → Set where
       BUHole : binders-unique c
       BUVar : ∀{x} → binders-unique (X x)
-      BULam : {x : Nat} {τ : htyp} {d : iexp} → binders-unique d
+      BULam : {x : Nat} {τ : typ} {d : iexp} → binders-unique d
                                                 → unbound-in x d
                                                 → binders-unique (·λ_[_]_ x τ d)
       BUEHole : ∀{u σ} → binders-unique-σ σ
@@ -864,7 +864,7 @@ module core where
     _↑_ : iexp → eexp → Set
     _↓_ : eexp → iexp → Set -- not used (todo so why have it?)
     iso : Set
-    Exp : htyp
+    Exp : typ
 
 -- naming conventions:
 --
@@ -914,7 +914,7 @@ module core where
                        (Γ : tctx) →
                        (P : uexp) →
                        (e : eexp) →
-                       (τ : htyp) →
+                       (τ : typ) →
                        Set
       where
         SPEConst : ∀{Φ Γ} → Φ , Γ ⊢ c ~~> c ⇒ b
@@ -989,7 +989,7 @@ module core where
                        (Γ : tctx) →
                        (P : uexp) →
                        (e : eexp) →
-                       (τ : htyp) →
+                       (τ : typ) →
                        Set
       where
         APELam     : ∀{Φ Γ x e τ τ1 τ2} {p : uexp} →

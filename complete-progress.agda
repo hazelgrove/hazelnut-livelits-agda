@@ -14,7 +14,7 @@ module complete-progress where
     V : ∀{d Δ} → d val → okc d Δ
     S : ∀{d Δ} → Σ[ d' ∈ iexp ] (d ↦ d') → okc d Δ
 
-  complete-progress : {Δ : hctx} {d : iexp} {τ : htyp} →
+  complete-progress : {Δ : hctx} {d : iexp} {τ : typ} →
                        Δ , ∅ ⊢ d :: τ →
                        d dcomplete →
                        okc d Δ

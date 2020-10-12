@@ -7,7 +7,7 @@ open import lemmas-matching
 
 module elaboration-unicity where
   mutual
-    elaboration-unicity-synth : {Γ : tctx} {e : eexp} {τ1 τ2 : htyp} {d1 d2 : iexp} {Δ1 Δ2 : hctx} →
+    elaboration-unicity-synth : {Γ : tctx} {e : eexp} {τ1 τ2 : typ} {d1 d2 : iexp} {Δ1 Δ2 : hctx} →
                             Γ ⊢ e ⇒ τ1 ~> d1 ⊣ Δ1 →
                             Γ ⊢ e ⇒ τ2 ~> d2 ⊣ Δ2 →
                             τ1 == τ2 × d1 == d2 × Δ1 == Δ2
@@ -43,7 +43,7 @@ module elaboration-unicity where
       with elaboration-unicity-synth e1 e3 | elaboration-unicity-synth e2 e4
     ... | refl , refl , refl | refl , refl , refl = refl , refl , refl
 
-    elaboration-unicity-ana : {Γ : tctx} {e : eexp} {τ τ1 τ2 : htyp} {d1 d2 : iexp} {Δ1 Δ2 : hctx} →
+    elaboration-unicity-ana : {Γ : tctx} {e : eexp} {τ τ1 τ2 : typ} {d1 d2 : iexp} {Δ1 Δ2 : hctx} →
                           Γ ⊢ e ⇐ τ ~> d1 :: τ1 ⊣ Δ1  →
                           Γ ⊢ e ⇐ τ ~> d2 :: τ2 ⊣ Δ2 →
                           d1 == d2 × τ1 == τ2 × Δ1 == Δ2

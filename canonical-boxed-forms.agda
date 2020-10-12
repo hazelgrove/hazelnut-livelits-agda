@@ -15,19 +15,19 @@ module canonical-boxed-forms where
 
   -- this type gives somewhat nicer syntax for the output of the canonical
   -- forms lemma for boxed values at arrow type
-  data cbf-arr : (Δ : hctx) (d : iexp) (τ1 τ2 : htyp) → Set where
+  data cbf-arr : (Δ : hctx) (d : iexp) (τ1 τ2 : typ) → Set where
     CBFLam : ∀{Δ d τ1 τ2} →
       (Σ[ x ∈ Nat ] Σ[ d' ∈ iexp ]
          (d == (·λ x [ τ1 ] d') × Δ , ■ (x , τ1) ⊢ d' :: τ2))
       → cbf-arr Δ d τ1 τ2
     CBFCastArr : ∀{Δ d τ1 τ2} →
-      (Σ[ d' ∈ iexp ] Σ[ τ1' ∈ htyp ] Σ[ τ2' ∈ htyp ]
+      (Σ[ d' ∈ iexp ] Σ[ τ1' ∈ typ ] Σ[ τ2' ∈ typ ]
          (d == (d' ⟨ τ1' ==> τ2' ⇒ τ1 ==> τ2 ⟩) ×
          (τ1' ==> τ2' ≠ τ1 ==> τ2) ×
          (Δ , ∅ ⊢ d' :: τ1' ==> τ2')))
       → cbf-arr Δ d τ1 τ2
 
-  data cbf-prod : (Δ : hctx) (d : iexp) (τ1 τ2 : htyp) → Set where
+  data cbf-prod : (Δ : hctx) (d : iexp) (τ1 τ2 : typ) → Set where
     CBFPairVal : ∀{Δ d τ1 τ2} →
               (Σ[ d1 ∈ iexp ] Σ[ d2 ∈ iexp ]
                (d == ⟨ d1 , d2 ⟩ ×
@@ -45,7 +45,7 @@ module canonical-boxed-forms where
                 d2 boxedval  ))
               → cbf-prod Δ d τ1 τ2
     CBFCastProd : ∀{Δ d τ1 τ2} →
-                  (Σ[ d' ∈ iexp ] Σ[ τ1' ∈ htyp ] Σ[ τ2' ∈ htyp ]
+                  (Σ[ d' ∈ iexp ] Σ[ τ1' ∈ typ ] Σ[ τ2' ∈ typ ]
                    (d == (d' ⟨ τ1' ⊗ τ2' ⇒ τ1 ⊗ τ2 ⟩) ×
                    (τ1' ⊗ τ2' ≠ τ1 ⊗ τ2) ×
                    (τ1' ⊗ τ2' ~ τ1 ⊗ τ2) ×
@@ -71,7 +71,7 @@ module canonical-boxed-forms where
   canonical-boxed-forms-hole : ∀{Δ d} →
                                Δ , ∅ ⊢ d :: ⦇·⦈ →
                                d boxedval →
-                               Σ[ d' ∈ iexp ] Σ[ τ' ∈ htyp ]
+                               Σ[ d' ∈ iexp ] Σ[ τ' ∈ typ ]
                                  ((d == d' ⟨ τ' ⇒ ⦇·⦈ ⟩) ×
                                   (τ' ground) ×
                                   (Δ , ∅ ⊢ d' :: τ'))
@@ -105,9 +105,9 @@ module canonical-boxed-forms where
                                    Δ , ∅ ⊢ d :: τ →
                                    d boxedval →
                                    τ ≠ b →
-                                   ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ==> τ2)) →
+                                   ((τ1 : typ) (τ2 : typ) → τ ≠ (τ1 ==> τ2)) →
                                    τ ≠ ⦇·⦈ →
-                                   ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ⊗ τ2)) →
+                                   ((τ1 : typ) (τ2 : typ) → τ ≠ (τ1 ⊗ τ2)) →
                                    ⊥
   canonical-boxed-forms-coverage TAConst (BVVal x) nb na nh = λ _ → nb refl
   canonical-boxed-forms-coverage (TAVar x₁) (BVVal ()) nb na nh

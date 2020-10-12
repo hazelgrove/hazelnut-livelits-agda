@@ -16,9 +16,9 @@ module continuity where
     action : Set
     zexp : Set
     _◆ : zexp → eexp
-    _⊢_=>_~_~>_=>_ : (Γ : tctx) → (e1 : zexp) → (t1 : htyp)
-                        → (α : action) → (e2 : zexp) → (t2 : htyp) → Set
-    sensibility : {Γ : tctx} {e e' : zexp} {τ τ' : htyp} {α : action} →
+    _⊢_=>_~_~>_=>_ : (Γ : tctx) → (e1 : zexp) → (t1 : typ)
+                        → (α : action) → (e2 : zexp) → (t2 : typ) → Set
+    sensibility : {Γ : tctx} {e e' : zexp} {τ τ' : typ} {α : action} →
                   Γ ⊢ (e ◆) => τ →
                   Γ ⊢ e => τ ~ α ~> e' => τ' →
                   Γ ⊢ (e' ◆) => τ'
@@ -26,7 +26,7 @@ module continuity where
     binders-unique-z : zexp → Set
     binders-unique-cursor1 : ∀{e} → binders-unique-z e → binders-unique-h (e ◆)
     binders-unique-cursor2 : ∀{e} → binders-unique-h (e ◆) → binders-unique-z e
-    binders-unique-sensibility : {Γ : tctx} {e e' : zexp} {τ τ' : htyp} {α : action} →
+    binders-unique-sensibility : {Γ : tctx} {e e' : zexp} {τ τ' : typ} {α : action} →
                   binders-unique-z e →
                   Γ ⊢ e => τ ~ α ~> e' => τ' →
                   binders-unique-z e'

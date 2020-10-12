@@ -60,8 +60,8 @@ module canonical-value-forms where
                                    Δ , ∅ ⊢ d :: τ →
                                    d val →
                                    τ ≠ b →
-                                   ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ==> τ2)) →
-                                   ((τ1 : htyp) (τ2 : htyp) → τ ≠ (τ1 ⊗ τ2)) →
+                                   ((τ1 : typ) (τ2 : typ) → τ ≠ (τ1 ==> τ2)) →
+                                   ((τ1 : typ) (τ2 : typ) → τ ≠ (τ1 ⊗ τ2)) →
                                    ⊥
   canonical-value-forms-coverage1 TAConst VConst = λ z _ _ → z refl
   canonical-value-forms-coverage1 (TAVar x₁) ()

@@ -3,7 +3,7 @@ open import core
 
 module lemmas-consistency where
   -- type consistency is symmetric
-  ~sym : {t1 t2 : htyp} → t1 ~ t2 → t2 ~ t1
+  ~sym : {t1 t2 : typ} → t1 ~ t2 → t2 ~ t1
   ~sym TCRefl = TCRefl
   ~sym TCHole1 = TCHole2
   ~sym TCHole2 = TCHole1
@@ -11,12 +11,12 @@ module lemmas-consistency where
   ~sym (TCProd h h₁) = TCProd (~sym h) (~sym h₁)
 
   -- type consistency isn't transitive
-  not-trans : ((t1 t2 t3 : htyp) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
+  not-trans : ((t1 t2 t3 : typ) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
   not-trans t with t (b ==> b) ⦇·⦈ b TCHole1 TCHole2
   ... | ()
 
   --  every pair of types is either consistent or not consistent
-  ~dec : (t1 t2 : htyp) → ((t1 ~ t2) + (t1 ~̸ t2))
+  ~dec : (t1 t2 : typ) → ((t1 ~ t2) + (t1 ~̸ t2))
     -- this takes care of all hole cases, so we don't consider them below
   ~dec _ ⦇·⦈ = Inl TCHole1
   ~dec ⦇·⦈ b = Inl TCHole2
@@ -42,7 +42,7 @@ module lemmas-consistency where
   ~dec (t1 ⊗ t2) (t3 ⊗ t4) | Inr x | Inr x₁ = Inr (ICProd1 x)
 
   -- no pair of types is both consistent and not consistent
-  ~apart : {t1 t2 : htyp} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
+  ~apart : {t1 t2 : typ} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
   ~apart ICBaseArr1 ()
   ~apart ICBaseArr2 ()
   ~apart (ICArr1 x) TCRefl = ~apart x TCRefl
@@ -58,12 +58,12 @@ module lemmas-consistency where
   ~apart (ICProd2 h) TCRefl = ~apart h TCRefl
   ~apart (ICProd2 h) (TCProd h₁ h₂) = ~apart h h₂
 
-  ~apart-converse : (τ1 τ2 : htyp) → (τ1 ~ τ2 → ⊥) → τ1 ~̸ τ2
+  ~apart-converse : (τ1 τ2 : typ) → (τ1 ~ τ2 → ⊥) → τ1 ~̸ τ2
   ~apart-converse τ1 τ2 ne with ~dec τ1 τ2
   ~apart-converse τ1 τ2 ne    | Inl h      = abort (ne h)
   ~apart-converse τ1 τ2 ne    | Inr h      = h
 
-  ~decPair : (τ1 τ2 τ3 τ4 : htyp) → ((τ1 ⊗ τ2) ~ (τ3 ⊗ τ4) → ⊥) → (τ1 ~ τ3 → ⊥) + (τ2 ~ τ4 → ⊥)
+  ~decPair : (τ1 τ2 τ3 τ4 : typ) → ((τ1 ⊗ τ2) ~ (τ3 ⊗ τ4) → ⊥) → (τ1 ~ τ3 → ⊥) + (τ2 ~ τ4 → ⊥)
   ~decPair τ1 τ2 τ3 τ4 inc with ~apart-converse (τ1 ⊗ τ2) (τ3 ⊗ τ4) inc
   ~decPair τ1 τ2 τ3 τ4 inc    | ICProd1 h                                = Inl (~apart h)
   ~decPair τ1 τ2 τ3 τ4 inc    | ICProd2 h                                = Inr (~apart h)

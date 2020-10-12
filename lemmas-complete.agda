@@ -87,7 +87,7 @@ module lemmas-complete where
   comp-synth gc (ECPair ec ec₁) (SPair x wt wt₁) = TCProd (comp-synth gc ec wt) (comp-synth gc ec₁ wt₁)
 
   -- complete boxed values are just values
-  lem-comp-boxed-val : {Δ : hctx} {d : iexp} {τ : htyp} {Γ : tctx} →
+  lem-comp-boxed-val : {Δ : hctx} {d : iexp} {τ : typ} {Γ : tctx} →
                            Δ , Γ ⊢ d :: τ →
                            d dcomplete →
                            d boxedval →

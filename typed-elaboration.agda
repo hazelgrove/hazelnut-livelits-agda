@@ -8,7 +8,7 @@ open import weakening
 
 module typed-elaboration where
   mutual
-    typed-elaboration-synth : {Γ : tctx} {e : eexp} {τ : htyp} {d : iexp} {Δ : hctx} →
+    typed-elaboration-synth : {Γ : tctx} {e : eexp} {τ : typ} {d : iexp} {Δ : hctx} →
                             Γ ⊢ e ⇒ τ ~> d ⊣ Δ →
                             Δ , Γ ⊢ d :: τ
     typed-elaboration-synth ESConst = TAConst
@@ -33,7 +33,7 @@ module typed-elaboration where
     typed-elaboration-synth (ESPair {Δ1 = Δ1} x x₁ h1 h2) =
       TAPair (weaken-ta-Δ1 x₁ (typed-elaboration-synth h1)) (weaken-ta-Δ2 {Δ1 = Δ1} x₁ (typed-elaboration-synth h2))
 
-    typed-elaboration-ana : {Γ : tctx} {e : eexp} {τ τ' : htyp} {d : iexp} {Δ : hctx} →
+    typed-elaboration-ana : {Γ : tctx} {e : eexp} {τ τ' : typ} {d : iexp} {Δ : hctx} →
                           Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ →
                           (τ' ~ τ) × (Δ , Γ ⊢ d :: τ')
     typed-elaboration-ana (EALam x₁ MAHole ex)

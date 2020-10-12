@@ -23,7 +23,7 @@ module progress where
     I  : ∀{d Δ} → d indet → ok d Δ
     BV : ∀{d Δ} → d boxedval → ok d Δ
 
-  progress : {Δ : hctx} {d : iexp} {τ : htyp} →
+  progress : {Δ : hctx} {d : iexp} {τ : typ} →
              Δ , ∅ ⊢ d :: τ →
              ok d Δ
     -- constants

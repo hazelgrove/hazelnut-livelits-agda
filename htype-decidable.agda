@@ -22,7 +22,7 @@ module htype-decidable where
   lemma-prod-b : ∀{t1 t2 t3 t4} → t1 ⊗ t2 == t3 ⊗ t4 → t1 == t3
   lemma-prod-b refl = refl
 
-  htype-dec : dec htyp
+  htype-dec : dec typ
   htype-dec b b = Inl refl
   htype-dec b ⦇·⦈ = Inr (λ ())
   htype-dec b (t2 ==> t3) = Inr (λ ())
