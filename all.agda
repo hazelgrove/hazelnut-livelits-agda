@@ -54,7 +54,6 @@ open import weakening
 open import binders-disjoint-checks
 open import continuity
 
-open import livelits-checks
 open import typed-livelit-elaboration
 open import lemmas-freevars
 open import livelit-reasoning-principles

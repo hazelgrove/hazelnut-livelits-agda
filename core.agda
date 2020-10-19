@@ -86,16 +86,8 @@ module core where
       model-type : typ
       expansion-type : typ
 
-  record fpaldef : Set where -- todo delete this with fpaldef
-    field
-      expand : eexp
-      model-type : typ
-      splice-type : typ
-      expansion-type : typ
-
   data palctx-entry : Set where -- todo pal
     MPalDef : livelitdef → palctx-entry
-    FPalDef : fpaldef → palctx-entry -- todo this goes away so doesn't need to be a datatype any more
 
   -- unexpanded expressions, the outermost layer of expressions: a langauge
   -- exactly like eexp, but also with livelits
@@ -122,11 +114,6 @@ module core where
     -- making it List (type × uexp). also define a type for splice that's this pair.
 
     -- u doesn't appear here, it's a hole name which is nat but we can make a separate alias. todo: generally give aliases for names instead of Nat everywhere.
-
-    -- function-like livelits --TODO: delete these guys but tag a version
-    -- in git so that we can go back to it if we want to
-    let-fpal_be_·in_ : Nat → fpaldef → uexp → uexp
-    ap-fpal : Nat → eexp → uexp → uexp
 
   -- type consistency
   data _~_ : (t1 t2 : typ) → Set where
@@ -917,11 +904,6 @@ module core where
 
     data _palctx' : (Φ' : palctx-entry ctx) → Set where
       PhiWFEmpty     : ∅ palctx'
-      PhiWFInductive : ∀{ρ π} →
-                           (Φ : palctx) →
-                           ρ # π1 Φ →
-                           ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
-                           (π1 Φ ,, (ρ , FPalDef π)) palctx'
       PhiWFMac       : ∀{ρ π} →
                            (Φ : palctx) →
                            ρ # π1 Φ →
@@ -938,14 +920,6 @@ module core where
                  a # (Φ)₁ →
                  palctx
   Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , MPalDef π) , PhiWFMac Φ #h)
-
-  _,,_::_⦅given_and_⦆ : (Φ : palctx) →
-                   (a : livelitname) →
-                   (π : fpaldef) →
-                   a # (Φ)₁ →
-                   ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
-                   palctx
-  Φ ,, a :: π ⦅given #h and eh ⦆ = ((Φ)₁ ,, (a , FPalDef π) , PhiWFInductive Φ #h eh)
 
   -- livelit expansion -- todo, should this be called elaboration?
   mutual
@@ -1001,23 +975,6 @@ module core where
                          Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice →
                          ∅ ⊢ eexpanded <= τsplice ==> (livelitdef.expansion-type π) →
                          Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> livelitdef.expansion-type π) ∘ esplice) ⇒ livelitdef.expansion-type π
-        SPELetFPal : ∀{Φ Γ π ρ ê e τ} →
-                         (#h : ρ # (Φ)₁) →
-                         (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
-                         (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ ê ~~> e ⇒ τ →
-                         Φ , Γ ⊢ let-fpal ρ be π ·in ê ~~> e ⇒ τ
-        SPEApFPal : ∀{Φ Γ π ρ emodel psplice esplice} →
-                         holes-disjoint (fpaldef.expand π) emodel →
-                         holes-disjoint (fpaldef.expand π) esplice →
-                         holes-disjoint emodel esplice →
-                         freshΓ Γ (fpaldef.expand π) →
-                         freshΓ Γ emodel →
-                         (ρ , FPalDef π) ∈ (Φ)₁ →
-                         Φ , Γ ⊢ psplice ~~> esplice ⇐ fpaldef.splice-type π →
-                         ∅ ⊢ emodel <= fpaldef.model-type π →
-                         Φ , Γ ⊢ ap-fpal ρ emodel psplice ~~>
-                                 (((fpaldef.expand π ·: fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) ∘ emodel) ∘ esplice) ⇒
-                                 fpaldef.expansion-type π
 
     data _,_⊢_~~>_⇐_ : (Φ : palctx) →
                        (Γ : tctx) →
@@ -1035,8 +992,3 @@ module core where
                            Φ , Γ ⊢ ê ~~> e ⇒ τ' →
                            τ ~ τ' →
                            Φ , Γ ⊢ ê ~~> e ⇐ τ
-        APELetFPal : ∀{Φ Γ π ρ ê e τ} →
-                           (#h : ρ # (Φ)₁) →
-                           (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
-                           (Φ ,, ρ :: π ⦅given #h and eh ⦆) , Γ ⊢ ê ~~> e ⇐ τ →
-                           Φ , Γ ⊢ let-fpal ρ be π ·in ê ~~> e ⇐ τ
