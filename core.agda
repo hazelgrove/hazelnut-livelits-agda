@@ -15,16 +15,35 @@ module core where
   infixr 25  _==>_
   infixr 25  _⊗_
 
+
+  -- we use natural numbers as names throughout the development. here we
+  -- provide some aliases to that the definitions below are more readable
+  -- about what's being named, even though the underlying implementations
+  -- are the same and there's no abstraction protecting you from breaking
+  -- invariants.
+
+  -- written `x` in math
+  varname : Set
+  varname = Nat
+
+  -- written `u` in math
+  holename : Set
+  holename = Nat
+
+  -- written `a` in math
+  livelitname : Set
+  livelitname = Nat
+
   -- "external expressions", or the middle layer of expressions. presented
   -- first because of the dependence structure below.
   data eexp : Set where
     c       : eexp
     _·:_    : eexp → typ → eexp
-    X       : Nat → eexp
-    ·λ      : Nat → eexp → eexp
-    ·λ_[_]_ : Nat → typ → eexp → eexp
-    ⦇⦈[_]   : Nat → eexp
-    ⦇⌜_⌟⦈[_] : eexp → Nat → eexp
+    X       : varname → eexp
+    ·λ      : varname → eexp → eexp
+    ·λ_[_]_ : varname → typ → eexp → eexp
+    ⦇⦈[_]   : holename → eexp
+    ⦇⌜_⌟⦈[_] : eexp → holename → eexp
     _∘_     : eexp → eexp → eexp
     ⟨_,_⟩   : eexp → eexp → eexp
     fst     : eexp → eexp
@@ -38,17 +57,17 @@ module core where
     -- identity substitution, substitition environments
     data env : Set where
       Id : (Γ : tctx) → env
-      Subst : (d : iexp) → (y : Nat) → env → env
+      Subst : (d : iexp) → (y : varname) → env → env
 
     -- internal expressions, the bottom most layer of expresions. these are
     -- what the elaboration phase targets and the expressions on which
     -- evaluation is given.
     data iexp : Set where
       c         : iexp
-      X         : Nat → iexp
-      ·λ_[_]_   : Nat → typ → iexp → iexp
-      ⦇⦈⟨_⟩     : (Nat × env) → iexp
-      ⦇⌜_⌟⦈⟨_⟩    : iexp → (Nat × env) → iexp
+      X         : varname → iexp
+      ·λ_[_]_   : varname → typ → iexp → iexp
+      ⦇⦈⟨_⟩     : (holename × env) → iexp
+      ⦇⌜_⌟⦈⟨_⟩    : iexp → (holename × env) → iexp
       _∘_       : iexp → iexp → iexp
       _⟨_⇒_⟩    : iexp → typ → typ → iexp
       _⟨_⇒⦇⦈⇏_⟩ : iexp → typ → typ → iexp
@@ -83,11 +102,11 @@ module core where
   data uexp : Set where
     c       : uexp
     _·:_    : uexp → typ → uexp
-    X       : Nat → uexp
-    ·λ      : Nat → uexp → uexp
-    ·λ_[_]_ : Nat → typ → uexp → uexp
-    ⦇⦈[_]   : Nat → uexp
-    ⦇⌜_⌟⦈[_]  : uexp → Nat → uexp
+    X       : varname → uexp
+    ·λ      : varname → uexp → uexp
+    ·λ_[_]_ : varname → typ → uexp → uexp
+    ⦇⦈[_]   : holename → uexp
+    ⦇⌜_⌟⦈[_]  : uexp → holename → uexp
     _∘_     : uexp → uexp → uexp
     ⟨_,_⟩   : uexp → uexp → uexp
     fst     : uexp → uexp
@@ -95,7 +114,7 @@ module core where
     -- new forms below
     -- macro-like livelits --todo pal
     let-pal_be_·in_ : Nat → paldef → uexp → uexp -- delete this but also tag in version control
-    ap-pal : Nat → iexp → (typ × uexp) → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
+    ap-pal : livelitname → iexp → (typ × uexp) → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
 
     -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp -- give livelit name = nat and then this first nat is that
 
@@ -162,11 +181,11 @@ module core where
   hctx = (typ ctx × typ) ctx
 
   -- notation for a triple to match the CMTT syntax
-  _::_[_] : Nat → typ → tctx → (Nat × (tctx × typ))
+  _::_[_] : holename → typ → tctx → (holename × (tctx × typ))
   u :: τ [ Γ ] = u , (Γ , τ)
 
   -- the hole name u does not appear in the term e
-  data hole-name-new : (e : eexp) (u : Nat) → Set where
+  data hole-name-new : (e : eexp) (u : holename) → Set where
     HNConst : ∀{u} → hole-name-new c u
     HNAsc : ∀{e τ u} →
             hole-name-new e u →
@@ -222,7 +241,7 @@ module core where
       SAsc    : {Γ : tctx} {e : eexp} {τ : typ} →
                  Γ ⊢ e <= τ →
                  Γ ⊢ (e ·: τ) => τ
-      SVar    : {Γ : tctx} {τ : typ} {x : Nat} →
+      SVar    : {Γ : tctx} {τ : typ} {x : varname} →
                  (x , τ) ∈ Γ →
                  Γ ⊢ X x => τ
       SAp     : {Γ : tctx} {e1 e2 : eexp} {τ τ1 τ2 : typ} →
@@ -231,12 +250,12 @@ module core where
                  τ1 ▸arr τ2 ==> τ →
                  Γ ⊢ e2 <= τ2 →
                  Γ ⊢ (e1 ∘ e2) => τ
-      SEHole  : {Γ : tctx} {u : Nat} → Γ ⊢ ⦇⦈[ u ] => ⦇·⦈
-      SNEHole : {Γ : tctx} {e : eexp} {τ : typ} {u : Nat} →
+      SEHole  : {Γ : tctx} {u : holename} → Γ ⊢ ⦇⦈[ u ] => ⦇·⦈
+      SNEHole : {Γ : tctx} {e : eexp} {τ : typ} {u : holename} →
                  hole-name-new e u →
                  Γ ⊢ e => τ →
                  Γ ⊢ ⦇⌜ e ⌟⦈[ u ] => ⦇·⦈
-      SLam    : {Γ : tctx} {e : eexp} {τ1 τ2 : typ} {x : Nat} →
+      SLam    : {Γ : tctx} {e : eexp} {τ1 τ2 : typ} {x : varname} →
                  x # Γ →
                  (Γ ,, (x , τ1)) ⊢ e => τ2 →
                  Γ ⊢ ·λ x [ τ1 ] e => τ1 ==> τ2
@@ -260,7 +279,7 @@ module core where
                  Γ ⊢ e => τ' →
                  τ ~ τ' →
                  Γ ⊢ e <= τ
-      ALam : {Γ : tctx} {e : eexp} {τ τ1 τ2 : typ} {x : Nat} →
+      ALam : {Γ : tctx} {e : eexp} {τ τ1 τ2 : typ} {x : varname} →
                  x # Γ →
                  τ ▸arr τ1 ==> τ2 →
                  (Γ ,, (x , τ1)) ⊢ e <= τ2 →
@@ -298,7 +317,7 @@ module core where
 
   -- contexts that only produce complete types
   _gcomplete : tctx → Set
-  Γ gcomplete = (x : Nat) (τ : typ) → (x , τ) ∈ Γ → τ tcomplete
+  Γ gcomplete = (x : varname) (τ : typ) → (x , τ) ∈ Γ → τ tcomplete
 
   -- those internal expressions where every cast is the identity cast and
   -- there are no failed casts
@@ -367,8 +386,8 @@ module core where
               (Γ ,, (x , τ1)) ⊢ e ⇐ τ2 ~> d :: τ2' ⊣ Δ →
               Γ ⊢ ·λ x e ⇐ τ ~> ·λ x [ τ1 ] d :: τ1 ==> τ2' ⊣ Δ
       EASubsume : ∀{e Γ τ' d Δ τ} →
-                  ((u : Nat) → e ≠ ⦇⦈[ u ]) →
-                  ((e' : eexp) (u : Nat) → e ≠ ⦇⌜ e' ⌟⦈[ u ]) →
+                  ((u : holename) → e ≠ ⦇⦈[ u ]) →
+                  ((e' : eexp) (u : holename) → e ≠ ⦇⌜ e' ⌟⦈[ u ]) →
                   Γ ⊢ e ⇒ τ' ~> d ⊣ Δ →
                   τ ~ τ' →
                   Γ ⊢ e ⇐ τ ~> d :: τ' ⊣ Δ
@@ -389,7 +408,7 @@ module core where
     -- substitution typing
     data _,_⊢_:s:_ : hctx → tctx → env → tctx → Set where
       STAId : ∀{Γ Γ' Δ} →
-                  ((x : Nat) (τ : typ) → (x , τ) ∈ Γ' → (x , τ) ∈ Γ) →
+                  ((x : varname) (τ : typ) → (x , τ) ∈ Γ' → (x , τ) ∈ Γ) →
                   Δ , Γ ⊢ Id Γ' :s: Γ'
       STASubst : ∀{Γ Δ σ y Γ' d τ } →
                Δ , Γ ,, (y , τ) ⊢ σ :s: Γ' →
@@ -439,7 +458,7 @@ module core where
              Δ , Γ ⊢ ⟨ d1 , d2 ⟩ :: τ1 ⊗ τ2
 
   -- substitution
-  [_/_]_ : iexp → Nat → iexp → iexp
+  [_/_]_ : iexp → varname → iexp → iexp
   [ d / y ] c = c
   [ d / y ] X x
     with natEQ x y
@@ -548,7 +567,7 @@ module core where
     ⊙ : ectx
     _∘₁_ : ectx → iexp → ectx
     _∘₂_ : iexp → ectx → ectx
-    ⦇⌜_⌟⦈⟨_⟩ : ectx → (Nat × env ) → ectx
+    ⦇⌜_⌟⦈⟨_⟩ : ectx → (holename × env ) → ectx
     fst·_ : ectx → ectx
     snd·_ : ectx → ectx
     ⟨_,_⟩₁ : ectx → iexp → ectx
@@ -699,7 +718,7 @@ module core where
   -- freshness
   mutual
     -- ... with respect to a hole context
-    data envfresh : Nat → env → Set where
+    data envfresh : varname → env → Set where
       EFId : ∀{x Γ} → x # Γ → envfresh x (Id Γ)
       EFSubst : ∀{x d σ y} → fresh x d
                            → envfresh x σ
@@ -707,7 +726,7 @@ module core where
                            → envfresh x (Subst d y σ)
 
     -- ... for inernal expressions
-    data fresh : Nat → iexp → Set where
+    data fresh : varname → iexp → Set where
       FConst : ∀{x} → fresh x c
       FVar   : ∀{x y} → x ≠ y → fresh x (X y)
       FLam   : ∀{x y τ d} → x ≠ y → fresh x d → fresh x (·λ y [ τ ] d)
@@ -721,7 +740,7 @@ module core where
       FPair : ∀{x d1 d2} → fresh x d1 → fresh x d2 → fresh x ⟨ d1 , d2 ⟩
 
   -- ... for external expressions
-  data freshe : Nat → eexp → Set where
+  data freshe : varname → eexp → Set where
     -- TODO: should be FRE* not FRH*
     FRHConst : ∀{x} → freshe x c
     FRHAsc   : ∀{x e τ} → freshe x e → freshe x (e ·: τ)
@@ -737,18 +756,18 @@ module core where
 
   -- with respect to all bindings in a context
   freshΓ : {A : Set} → (Γ : A ctx) → (e : eexp) → Set
-  freshΓ {A} Γ e = (x : Nat) → dom Γ x → freshe x e
+  freshΓ {A} Γ e = (x : varname) → dom Γ x → freshe x e
 
   -- x is not used in a binding site in d
   mutual
-    data unbound-in-σ : Nat → env → Set where
+    data unbound-in-σ : varname → env → Set where
       UBσId : ∀{x Γ} → unbound-in-σ x (Id Γ)
       UBσSubst : ∀{x d y σ} → unbound-in x d
                             → unbound-in-σ x σ
                             → x ≠ y
                             → unbound-in-σ x (Subst d y σ)
 
-    data unbound-in : (x : Nat) (d : iexp) → Set where
+    data unbound-in : (x : varname) (d : iexp) → Set where
       UBConst : ∀{x} → unbound-in x c
       UBVar : ∀{x y} → unbound-in x (X y)
       UBLam2 : ∀{x d y τ} → x ≠ y
@@ -776,10 +795,10 @@ module core where
   -- structure module imports with new agda syntax so you inheret the
   -- imports of what you import.
   mutual
-    remove-from-free' : Nat → eexp → List Nat
+    remove-from-free' : varname → eexp → List varname
     remove-from-free' x e = remove-all natEQ (free-vars e) x
 
-    free-vars : (e : eexp) → List Nat
+    free-vars : (e : eexp) → List varname
     free-vars c = []
     free-vars (e ·: τ) = free-vars e
     free-vars (X x) = x :: []
@@ -837,7 +856,7 @@ module core where
     data binders-unique : iexp → Set where
       BUHole : binders-unique c
       BUVar : ∀{x} → binders-unique (X x)
-      BULam : {x : Nat} {τ : typ} {d : iexp} → binders-unique d
+      BULam : {x : varname} {τ : typ} {d : iexp} → binders-unique d
                                                 → unbound-in x d
                                                 → binders-unique (·λ_[_]_ x τ d)
       BUEHole : ∀{u σ} → binders-unique-σ σ
@@ -915,19 +934,19 @@ module core where
   infixr 25 _₁
 
   _,,_::_⦅given_⦆ : (Φ : palctx) →
-                 (ρ : Nat) →
+                 (a : livelitname) →
                  paldef →
-                 ρ # (Φ)₁ →
+                 a # (Φ)₁ →
                  palctx
-  Φ ,, ρ :: π ⦅given #h ⦆ = ((Φ)₁ ,, (ρ , MPalDef π) , PhiWFMac Φ #h)
+  Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , MPalDef π) , PhiWFMac Φ #h)
 
   _,,_::_⦅given_and_⦆ : (Φ : palctx) →
-                   (ρ : Nat) →
+                   (a : livelitname) →
                    (π : fpaldef) →
-                   ρ # (Φ)₁ →
+                   a # (Φ)₁ →
                    ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π →
                    palctx
-  Φ ,, ρ :: π ⦅given #h and eh ⦆ = ((Φ)₁ ,, (ρ , FPalDef π) , PhiWFInductive Φ #h eh)
+  Φ ,, a :: π ⦅given #h and eh ⦆ = ((Φ)₁ ,, (a , FPalDef π) , PhiWFInductive Φ #h eh)
 
   -- livelit expansion -- todo, should this be called elaboration?
   mutual
