@@ -75,7 +75,6 @@ module core where
       fst     : iexp → iexp
       snd     : iexp → iexp
 
-
   -- convenient notation for chaining together two agreeable casts
   _⟨_⇒_⇒_⟩ : iexp → typ → typ → typ → iexp
   d ⟨ τ1 ⇒ τ2 ⇒ τ3 ⟩ = d ⟨ τ1 ⇒ τ2 ⟩ ⟨ τ2 ⇒ τ3 ⟩
@@ -85,9 +84,6 @@ module core where
       expand : iexp
       model-type : typ
       expansion-type : typ
-
-  data palctx-entry : Set where -- todo pal
-    MPalDef : livelitdef → palctx-entry
 
   -- unexpanded expressions, the outermost layer of expressions: a langauge
   -- exactly like eexp, but also with livelits
@@ -107,13 +103,16 @@ module core where
     -- macro-like livelits --todo pal
     ap-pal : livelitname → iexp → (typ × uexp) → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
 
-    -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp -- give livelit name = nat and then this first nat is that
+    -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp --
+    -- give livelit name = nat and then this first nat is that
 
     -- phi is a splice, which is a pair of typ and uexp. in the paper it's
     -- n-ary but here we have one becauase we could tuple it up. look into
     -- making it List (type × uexp). also define a type for splice that's this pair.
 
-    -- u doesn't appear here, it's a hole name which is nat but we can make a separate alias. todo: generally give aliases for names instead of Nat everywhere.
+    -- u doesn't appear here, it's a hole name which is nat but we can make
+    -- a separate alias. add it but just carry it around. todo: generally
+    -- give aliases for names instead of Nat everywhere.
 
   -- type consistency
   data _~_ : (t1 t2 : typ) → Set where
@@ -898,18 +897,18 @@ module core where
 -- pexps are p  -- TODO should now be uexps, which we call ê
 -- paldefs are π
 
-  -- function-like livelit context well-formedness
+  -- function-like livelit context well-formedness -- TODO delete this entirely?
   mutual
-    palctx = Σ[ Φ' ∈ palctx-entry ctx ] (Φ' palctx')
+    palctx = Σ[ Φ' ∈ livelitdef ctx ] (Φ' palctx')
 
-    data _palctx' : (Φ' : palctx-entry ctx) → Set where
+    data _palctx' : (Φ' : livelitdef ctx) → Set where
       PhiWFEmpty     : ∅ palctx'
       PhiWFMac       : ∀{ρ π} →
                            (Φ : palctx) →
                            ρ # π1 Φ →
-                           (π1 Φ ,, (ρ , MPalDef π)) palctx'
+                           (π1 Φ ,, (ρ , π)) palctx'
 
-  _₁ : (Φ : palctx) → palctx-entry ctx
+  _₁ : (Φ : palctx) → livelitdef ctx
   _₁ = π1
 
   infixr 25 _₁
@@ -919,7 +918,7 @@ module core where
                  livelitdef →
                  a # (Φ)₁ →
                  palctx
-  Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , MPalDef π) , PhiWFMac Φ #h)
+  Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , π) , PhiWFMac Φ #h)
 
   -- livelit expansion -- todo, should this be called elaboration?
   mutual
@@ -968,7 +967,7 @@ module core where
         SPEApPal  : ∀{Φ Γ ρ dm π denc eexpanded τsplice psplice esplice} →
                          holes-disjoint eexpanded esplice →
                          freshΓ Γ eexpanded →
-                         (ρ , MPalDef π) ∈ (Φ)₁ →
+                         (ρ , π) ∈ (Φ)₁ →
                          ∅ , ∅ ⊢ dm :: (livelitdef.model-type π) →
                          ((livelitdef.expand π) ∘ dm) ⇓ denc →
                          denc ↑ eexpanded →
