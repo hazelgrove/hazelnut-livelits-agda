@@ -27,9 +27,9 @@ module livelit-reasoning-principles where
       splice-typing             : Φ , Γ ⊢ êsplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 
-  livelit-reasoning-principles : ∀{Φ Γ ρ dm τsplice psplice eresult τresult} →
-        Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> eresult ⇒ τresult →
-        reasoning-principles Φ Γ ρ dm τsplice psplice eresult τresult
+  livelit-reasoning-principles : ∀{Φ Γ a dm τsplice psplice eresult τresult u} →
+        Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) ⟩[ u ] ~~> eresult ⇒ τresult →
+        reasoning-principles Φ Γ a dm τsplice psplice eresult τresult
   livelit-reasoning-principles h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
        record
          { π                         = π
