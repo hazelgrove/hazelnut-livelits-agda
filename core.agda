@@ -67,7 +67,7 @@ module core where
       model-type : typ
       expansion-type : typ
 
-  record fpaldef : Set where -- todo pal
+  record fpaldef : Set where -- todo delete this with fpaldef
     field
       expand : eexp
       model-type : typ
@@ -76,7 +76,7 @@ module core where
 
   data palctx-entry : Set where -- todo pal
     MPalDef : paldef → palctx-entry
-    FPalDef : fpaldef → palctx-entry
+    FPalDef : fpaldef → palctx-entry -- todo this goes away so doesn't need to be a datatype any more
 
   -- unexpanded expressions, the outermost layer of expressions: a langauge
   -- exactly like eexp, but also with livelits
@@ -94,9 +94,19 @@ module core where
     snd     : uexp → uexp
     -- new forms below
     -- macro-like livelits --todo pal
-    let-pal_be_·in_ : Nat → paldef → uexp → uexp
-    ap-pal : Nat → iexp → (typ × uexp) → uexp
-    -- function-like livelits --todo pal
+    let-pal_be_·in_ : Nat → paldef → uexp → uexp -- delete this but also tag in version control
+    ap-pal : Nat → iexp → (typ × uexp) → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
+
+    -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp -- give livelit name = nat and then this first nat is that
+
+    -- phi is a splice, which is a pair of typ and uexp. in the paper it's
+    -- n-ary but here we have one becauase we could tuple it up. look into
+    -- making it List (type × uexp). also define a type for splice that's this pair.
+
+    -- u doesn't appear here, it's a hole name which is nat but we can make a separate alias. todo: generally give aliases for names instead of Nat everywhere.
+
+    -- function-like livelits --TODO: delete these guys but tag a version
+    -- in git so that we can go back to it if we want to
     let-fpal_be_·in_ : Nat → fpaldef → uexp → uexp
     ap-fpal : Nat → eexp → uexp → uexp
 
