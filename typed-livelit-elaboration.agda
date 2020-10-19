@@ -16,7 +16,6 @@ module typed-livelit-elaboration where
     typed-livelit-elaboration-synth (SPEAp D1 x D2 x₂) = SAp x₂ (typed-livelit-elaboration-synth D1) x (typed-livelit-elaboration-ana D2)
     typed-livelit-elaboration-synth SPEHole = SEHole
     typed-livelit-elaboration-synth (SPNEHole x D) = SNEHole x (typed-livelit-elaboration-synth D)
-    typed-livelit-elaboration-synth (SPELetPal _ _ D) = typed-livelit-elaboration-synth D
     typed-livelit-elaboration-synth (SPEApPal hd fr x x₁ x₂ x₃ x₄ x₅) = SAp (HDAsc hd) (SAsc (weaken-ana-closed fr x₅)) MAArr (typed-livelit-elaboration-ana x₄)
     typed-livelit-elaboration-synth (SPELetFPal _ _ D) = typed-livelit-elaboration-synth D
     typed-livelit-elaboration-synth {Φ} (SPEApFPal hd1 hd2 hd3 fr1 fr2 h h1 h2) =
@@ -30,5 +29,4 @@ module typed-livelit-elaboration where
                                   Γ ⊢ e <= τ
     typed-livelit-elaboration-ana (APELam x₁ x₂ D) = ALam x₁ x₂ (typed-livelit-elaboration-ana D)
     typed-livelit-elaboration-ana (APESubsume h ch) = ASubsume (typed-livelit-elaboration-synth h) ch
-    typed-livelit-elaboration-ana (APELetPal pcH x D) = typed-livelit-elaboration-ana D
     typed-livelit-elaboration-ana (APELetFPal pcH x D) = typed-livelit-elaboration-ana D

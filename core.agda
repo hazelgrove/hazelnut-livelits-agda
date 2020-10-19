@@ -113,7 +113,6 @@ module core where
     snd     : uexp → uexp
     -- new forms below
     -- macro-like livelits --todo pal
-    let-pal_be_·in_ : Nat → livelitdef → uexp → uexp -- delete this but also tag in version control
     ap-pal : livelitname → iexp → (typ × uexp) → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
 
     -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp -- give livelit name = nat and then this first nat is that
@@ -992,11 +991,6 @@ module core where
                            Φ , Γ ⊢ ê2 ~~> e2 ⇒ τ2 →
                            holes-disjoint e1 e2 →
                            Φ , Γ ⊢ ⟨ ê1 , ê2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
-        SPELetPal : ∀{Φ Γ π ρ ê e τ} → --todo rule names here
-                           (#h : ρ # (Φ)₁) →
-                           ∅ , ∅ ⊢ livelitdef.expand π :: ((livelitdef.model-type π) ==> Exp) →
-                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ ê ~~> e ⇒ τ →
-                           Φ , Γ ⊢ let-pal ρ be π ·in ê ~~> e ⇒ τ
         SPEApPal  : ∀{Φ Γ ρ dm π denc eexpanded τsplice psplice esplice} →
                          holes-disjoint eexpanded esplice →
                          freshΓ Γ eexpanded →
@@ -1041,11 +1035,6 @@ module core where
                            Φ , Γ ⊢ ê ~~> e ⇒ τ' →
                            τ ~ τ' →
                            Φ , Γ ⊢ ê ~~> e ⇐ τ
-        APELetPal  : ∀{Φ Γ π ρ ê e τ} →
-                           (#h : ρ # (Φ)₁) →
-                           ∅ , ∅ ⊢ livelitdef.expand π :: ((livelitdef.model-type π) ==> Exp) →
-                           (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ ê ~~> e ⇐ τ →
-                           Φ , Γ ⊢ let-pal ρ be π ·in ê ~~> e ⇐ τ
         APELetFPal : ∀{Φ Γ π ρ ê e τ} →
                            (#h : ρ # (Φ)₁) →
                            (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
