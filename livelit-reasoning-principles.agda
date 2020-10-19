@@ -16,14 +16,14 @@ module livelit-reasoning-principles where
                               (eresult : eexp)
                               (τresult : typ) : Set where
     field
-      π   : paldef
+      π   : livelitdef
       domain : dom (Φ ₁) ρ
       eexpanded : eexp
       esplice : eexp
 
       expanded-application-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
-      expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == paldef.expansion-type π)
-      responsibility            : Σ[ denc ∈ iexp ] (((paldef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
+      expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == livelitdef.expansion-type π)
+      responsibility            : Σ[ denc ∈ iexp ] (((livelitdef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
       splice-typing             : Φ , Γ ⊢ êsplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 

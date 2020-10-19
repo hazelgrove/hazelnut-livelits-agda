@@ -80,7 +80,7 @@ module core where
   _⟨_⇒_⇒_⟩ : iexp → typ → typ → typ → iexp
   d ⟨ τ1 ⇒ τ2 ⇒ τ3 ⟩ = d ⟨ τ1 ⇒ τ2 ⟩ ⟨ τ2 ⇒ τ3 ⟩
 
-  record paldef : Set where -- todo pal
+  record livelitdef : Set where
     field
       expand : iexp
       model-type : typ
@@ -94,7 +94,7 @@ module core where
       expansion-type : typ
 
   data palctx-entry : Set where -- todo pal
-    MPalDef : paldef → palctx-entry
+    MPalDef : livelitdef → palctx-entry
     FPalDef : fpaldef → palctx-entry -- todo this goes away so doesn't need to be a datatype any more
 
   -- unexpanded expressions, the outermost layer of expressions: a langauge
@@ -113,7 +113,7 @@ module core where
     snd     : uexp → uexp
     -- new forms below
     -- macro-like livelits --todo pal
-    let-pal_be_·in_ : Nat → paldef → uexp → uexp -- delete this but also tag in version control
+    let-pal_be_·in_ : Nat → livelitdef → uexp → uexp -- delete this but also tag in version control
     ap-pal : livelitname → iexp → (typ × uexp) → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
 
     -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp -- give livelit name = nat and then this first nat is that
@@ -935,7 +935,7 @@ module core where
 
   _,,_::_⦅given_⦆ : (Φ : palctx) →
                  (a : livelitname) →
-                 paldef →
+                 livelitdef →
                  a # (Φ)₁ →
                  palctx
   Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , MPalDef π) , PhiWFMac Φ #h)
@@ -994,19 +994,19 @@ module core where
                            Φ , Γ ⊢ ⟨ ê1 , ê2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
         SPELetPal : ∀{Φ Γ π ρ ê e τ} → --todo rule names here
                            (#h : ρ # (Φ)₁) →
-                           ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
+                           ∅ , ∅ ⊢ livelitdef.expand π :: ((livelitdef.model-type π) ==> Exp) →
                            (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ ê ~~> e ⇒ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in ê ~~> e ⇒ τ
         SPEApPal  : ∀{Φ Γ ρ dm π denc eexpanded τsplice psplice esplice} →
                          holes-disjoint eexpanded esplice →
                          freshΓ Γ eexpanded →
                          (ρ , MPalDef π) ∈ (Φ)₁ →
-                         ∅ , ∅ ⊢ dm :: (paldef.model-type π) →
-                         ((paldef.expand π) ∘ dm) ⇓ denc →
+                         ∅ , ∅ ⊢ dm :: (livelitdef.model-type π) →
+                         ((livelitdef.expand π) ∘ dm) ⇓ denc →
                          denc ↑ eexpanded →
                          Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice →
-                         ∅ ⊢ eexpanded <= τsplice ==> (paldef.expansion-type π) →
-                         Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> paldef.expansion-type π) ∘ esplice) ⇒ paldef.expansion-type π
+                         ∅ ⊢ eexpanded <= τsplice ==> (livelitdef.expansion-type π) →
+                         Φ , Γ ⊢ ap-pal ρ dm (τsplice , psplice) ~~> ((eexpanded ·: τsplice ==> livelitdef.expansion-type π) ∘ esplice) ⇒ livelitdef.expansion-type π
         SPELetFPal : ∀{Φ Γ π ρ ê e τ} →
                          (#h : ρ # (Φ)₁) →
                          (eh : ∅ ⊢ fpaldef.expand π <= fpaldef.model-type π ==> fpaldef.splice-type π ==> fpaldef.expansion-type π) →
@@ -1043,7 +1043,7 @@ module core where
                            Φ , Γ ⊢ ê ~~> e ⇐ τ
         APELetPal  : ∀{Φ Γ π ρ ê e τ} →
                            (#h : ρ # (Φ)₁) →
-                           ∅ , ∅ ⊢ paldef.expand π :: ((paldef.model-type π) ==> Exp) →
+                           ∅ , ∅ ⊢ livelitdef.expand π :: ((livelitdef.model-type π) ==> Exp) →
                            (Φ ,, ρ :: π ⦅given #h ⦆) , Γ ⊢ ê ~~> e ⇐ τ →
                            Φ , Γ ⊢ let-pal ρ be π ·in ê ~~> e ⇐ τ
         APELetFPal : ∀{Φ Γ π ρ ê e τ} →
