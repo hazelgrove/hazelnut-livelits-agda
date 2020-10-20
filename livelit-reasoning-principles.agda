@@ -7,7 +7,7 @@ open import typed-livelit-elaboration
 open import lemmas-freevars
 
 module livelit-reasoning-principles where
-  record reasoning-principles (Φ : palctx)
+  record reasoning-principles (Φ : livelitctx)
                               (Γ : tctx)
                               (ρ : Nat)
                               (dm : iexp)
@@ -31,7 +31,7 @@ module livelit-reasoning-principles where
   livelit-reasoning-principles : ∀{Φ Γ a dm τsplice psplice eresult τresult u} →
         Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) :: [] ⟩[ u ] ~~> eresult ⇒ τresult →
         reasoning-principles Φ Γ a dm τsplice psplice eresult τresult
-  livelit-reasoning-principles h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
+  livelit-reasoning-principles h@(SPEApLivelit {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
        record
          { π                         = π
          ; domain                    = _ , x₂

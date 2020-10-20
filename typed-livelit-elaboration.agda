@@ -15,7 +15,7 @@ module typed-livelit-elaboration where
     typed-livelit-elaboration-synth (SPEAp D1 x D2 x₂) = SAp x₂ (typed-livelit-elaboration-synth D1) x (typed-livelit-elaboration-ana D2)
     typed-livelit-elaboration-synth SPEHole = SEHole
     typed-livelit-elaboration-synth (SPNEHole x D) = SNEHole x (typed-livelit-elaboration-synth D)
-    typed-livelit-elaboration-synth (SPEApPal hd fr x x₁ x₂ x₃ x₄ x₅) = SAp (HDAsc hd) (SAsc (weaken-ana-closed fr x₅)) MAArr (typed-livelit-elaboration-ana x₄)
+    typed-livelit-elaboration-synth (SPEApLivelit hd fr x x₁ x₂ x₃ x₄ x₅) = SAp (HDAsc hd) (SAsc (weaken-ana-closed fr x₅)) MAArr (typed-livelit-elaboration-ana x₄)
     typed-livelit-elaboration-synth (SPEFst h x) = SFst (typed-livelit-elaboration-synth h) x
     typed-livelit-elaboration-synth (SPESnd h x) = SSnd (typed-livelit-elaboration-synth h) x
     typed-livelit-elaboration-synth (SPEPair h h₁ x) = SPair x (typed-livelit-elaboration-synth h) (typed-livelit-elaboration-synth h₁)

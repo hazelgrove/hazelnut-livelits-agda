@@ -85,7 +85,6 @@ module core where
       model-type : typ
       expansion-type : typ
 
-
   -- unexpanded expressions, the outermost layer of expressions: a langauge
   -- exactly like eexp, but also with livelits
   mutual
@@ -885,38 +884,32 @@ module core where
 -- internal expressions, iexp, are named d (because they have a _d_ynamics)
 -- splices, ??, are named ψ
 
------------------------ below this line is out of date but not ready to remove yet TODO
---
--- pal names are ρ
--- pexps are p  -- TODO should now be uexps, which we call ê
--- paldefs are π
-
   -- function-like livelit context well-formedness -- TODO delete this entirely?
   mutual
-    palctx = Σ[ Φ' ∈ livelitdef ctx ] (Φ' palctx')
+    livelitctx = Σ[ Φ' ∈ livelitdef ctx ] (Φ' livelitctx')
 
-    data _palctx' : (Φ' : livelitdef ctx) → Set where
-      PhiWFEmpty     : ∅ palctx'
-      PhiWFMac       : ∀{ρ π} →
-                           (Φ : palctx) →
-                           ρ # π1 Φ →
-                           (π1 Φ ,, (ρ , π)) palctx'
+    data _livelitctx' : (Φ' : livelitdef ctx) → Set where
+      PhiWFEmpty     : ∅ livelitctx'
+      PhiWFMac       : ∀{a π} → --todo what should π be?
+                           (Φ : livelitctx) →
+                           a # π1 Φ →
+                           (π1 Φ ,, (a , π)) livelitctx'
 
-  _₁ : (Φ : palctx) → livelitdef ctx
+  _₁ : (Φ : livelitctx) → livelitdef ctx
   _₁ = π1
 
   infixr 25 _₁
 
-  _,,_::_⦅given_⦆ : (Φ : palctx) →
+  _,,_::_⦅given_⦆ : (Φ : livelitctx) →
                  (a : livelitname) →
                  livelitdef →
                  a # (Φ)₁ →
-                 palctx
+                 livelitctx
   Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , π) , PhiWFMac Φ #h)
 
   -- livelit expansion -- todo, should this be called elaboration?
   mutual
-    data _,_⊢_~~>_⇒_ : (Φ : palctx) →
+    data _,_⊢_~~>_⇒_ : (Φ : livelitctx) →
                        (Γ : tctx) →
                        (ê : uexp) →
                        (e : eexp) →
@@ -958,7 +951,7 @@ module core where
                            Φ , Γ ⊢ ê2 ~~> e2 ⇒ τ2 →
                            holes-disjoint e1 e2 →
                            Φ , Γ ⊢ ⟨ ê1 , ê2 ⟩ ~~> ⟨ e1 , e2 ⟩ ⇒ τ1 ⊗ τ2
-        SPEApPal  : ∀{Φ Γ a dm π denc eexpanded τsplice psplice esplice u} →
+        SPEApLivelit  : ∀{Φ Γ a dm π denc eexpanded τsplice psplice esplice u} →
                          holes-disjoint eexpanded esplice →
                          freshΓ Γ eexpanded →
                          (a , π) ∈ (Φ)₁ →
@@ -969,7 +962,7 @@ module core where
                          ∅ ⊢ eexpanded <= τsplice ==> (livelitdef.expansion-type π) →
                          Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) :: [] ⟩[ u ] ~~> ((eexpanded ·: τsplice ==> livelitdef.expansion-type π) ∘ esplice) ⇒ livelitdef.expansion-type π
 
-    data _,_⊢_~~>_⇐_ : (Φ : palctx) →
+    data _,_⊢_~~>_⇐_ : (Φ : livelitctx) →
                        (Γ : tctx) →
                        (ê : uexp) →
                        (e : eexp) →
