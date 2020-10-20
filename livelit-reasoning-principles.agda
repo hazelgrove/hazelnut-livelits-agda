@@ -9,7 +9,7 @@ open import lemmas-freevars
 module livelit-reasoning-principles where
   record reasoning-principles (Φ : livelitctx)
                               (Γ : tctx)
-                              (ρ : Nat)
+                              (a : livelitname)
                               (dm : iexp)
                               (τsplice : typ)
                               (êsplice : uexp)
@@ -17,7 +17,7 @@ module livelit-reasoning-principles where
                               (τresult : typ) : Set where
     field
       π   : livelitdef
-      domain : dom (Φ ₁) ρ
+      domain : dom (Φ ₁) a
       eexpanded : eexp
       esplice : eexp
 
