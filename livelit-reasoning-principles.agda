@@ -27,8 +27,9 @@ module livelit-reasoning-principles where
       splice-typing             : Φ , Γ ⊢ êsplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 
+  -- todo should that list be longer?
   livelit-reasoning-principles : ∀{Φ Γ a dm τsplice psplice eresult τresult u} →
-        Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) ⟩[ u ] ~~> eresult ⇒ τresult →
+        Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) :: [] ⟩[ u ] ~~> eresult ⇒ τresult →
         reasoning-principles Φ Γ a dm τsplice psplice eresult τresult
   livelit-reasoning-principles h@(SPEApPal {dm = dm} {π} {denc} {eexpanded} {esplice = esplice} x x₁ x₂ x₃ x₄ x₅ x₆ x₇) =
        record

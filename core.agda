@@ -102,20 +102,7 @@ module core where
       fst     : uexp → uexp
       snd     : uexp → uexp
       -- new forms below
-      -- macro-like livelits --todo pal
-      --ap-pal : livelitname → iexp → splice → uexp  -- paper: $a<d_model; {phi_i} i<n >^u
-      ＄_⟨_⁏_⟩[_] : livelitname → iexp → splice → holename → uexp
-
-      -- ap-pal : ($a : Nat) → (d : iexp) → (splice : typ × uexp) → uexp --
-      -- give livelit name = nat and then this first nat is that
-
-      -- phi is a splice, which is a pair of typ and uexp. in the paper it's
-      -- n-ary but here we have one becauase we could tuple it up. look into
-      -- making it List (type × uexp). also define a type for splice that's this pair.
-
-      -- u doesn't appear here, it's a hole name which is nat but we can make
-      -- a separate alias. add it but just carry it around. todo: generally
-      -- give aliases for names instead of Nat everywhere.
+      ＄_⟨_⁏_⟩[_] : (a : livelitname) → (d : iexp) → (ϕᵢ : List splice) → (u : holename) → uexp
 
     splice : Set
     splice = typ × uexp
@@ -980,7 +967,7 @@ module core where
                          denc ↑ eexpanded →
                          Φ , Γ ⊢ psplice ~~> esplice ⇐ τsplice →
                          ∅ ⊢ eexpanded <= τsplice ==> (livelitdef.expansion-type π) →
-                         Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) ⟩[ u ] ~~> ((eexpanded ·: τsplice ==> livelitdef.expansion-type π) ∘ esplice) ⇒ livelitdef.expansion-type π
+                         Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) :: [] ⟩[ u ] ~~> ((eexpanded ·: τsplice ==> livelitdef.expansion-type π) ∘ esplice) ⇒ livelitdef.expansion-type π
 
     data _,_⊢_~~>_⇐_ : (Φ : palctx) →
                        (Γ : tctx) →
