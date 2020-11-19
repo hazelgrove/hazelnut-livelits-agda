@@ -40,3 +40,15 @@ instead a Docker container instead of your host machine, so you can
 experiment with or evolve this code without making too much of a mess. For
 some example instructions, see [the docker-agda
 repo](https://github.com/banacorn/docker-agda).
+
+# Where To Start Reading
+
+The definitions and encodings of the mathematical objects from the paper
+are all in `core.agda`, so that is the place to start. Each theorem is
+broken out in to a file and module named after that theorem. Files with
+`lemmas-` in them are generally uninteresting in that they contain lemmas
+and small theorems that must be proven in order to make the particular
+encoding of things correct, but are often unsurprising, obscure, or
+both. They should be read as needed, really only if a particular use is
+puzzling. `Prelude.agda`, `Nat.agda` and `List.agda` define some standard
+types, some theorems on them, and some notation used throughout.
