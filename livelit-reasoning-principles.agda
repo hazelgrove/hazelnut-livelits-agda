@@ -23,11 +23,10 @@ module livelit-reasoning-principles where
 
       expanded-application-form : eresult == (eexpanded ·: τsplice ==> τresult) ∘ esplice
       expansion-typing          : (Γ ⊢ eresult => τresult) × (τresult == livelitdef.expansion-type π)
-      responsibility            : Σ[ denc ∈ iexp ] (((livelitdef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded) --todo: denc could be taken above with esplice etc if we want to
+      responsibility            : Σ[ denc ∈ iexp ] (((livelitdef.expand π) ∘ dm) ⇓ denc × denc ↑ eexpanded)
       splice-typing             : Φ , Γ ⊢ êsplice ~~> esplice ⇐ τsplice × Γ ⊢ esplice <= τsplice
       context-independence      : free-vars (eexpanded ·: τsplice ==> τresult) == []
 
-  -- todo should that list be longer?
   livelit-reasoning-principles : ∀{Φ Γ a dm τsplice psplice eresult τresult u} →
         Φ , Γ ⊢ ＄ a ⟨ dm ⁏ (τsplice , psplice) :: [] ⟩[ u ] ~~> eresult ⇒ τresult →
         reasoning-principles Φ Γ a dm τsplice psplice eresult τresult

@@ -311,7 +311,6 @@ module core where
     CISnd    : ∀{d} → cast-id d → cast-id (snd d)
     CIPair   : ∀{d1 d2} → cast-id d1 → cast-id d2 → cast-id ⟨ d1 , d2 ⟩
 
-  -- expansion TODO: make sure this really is expansion / get it clear with elaboration in your head
   mutual
     -- synthesis
     data _⊢_⇒_~>_⊣_ : (Γ : tctx) (e : eexp) (τ : typ) (d : iexp) (Δ : hctx) → Set where
@@ -719,7 +718,6 @@ module core where
 
   -- ... for external expressions
   data freshe : varname → eexp → Set where
-    -- TODO: should be FRE* not FRH*
     FRHConst : ∀{x} → freshe x c
     FRHAsc   : ∀{x e τ} → freshe x e → freshe x (e ·: τ)
     FRHVar   : ∀{x y} → x ≠ y → freshe x (X y)
@@ -767,11 +765,6 @@ module core where
       UBSnd  : ∀{x d} → unbound-in x d → unbound-in x (snd d)
       UBPair : ∀{x d1 d2} → unbound-in x d1 → unbound-in x d2 → unbound-in x ⟨ d1 , d2 ⟩
 
-  -- todo does this belong in core? do we use it any more? maybe i just
-  -- want to refactor core a little bit and remove some of the techincal
-  -- devices into techincal-core.agda or something. there's a way to
-  -- structure module imports with new agda syntax so you inheret the
-  -- imports of what you import.
   mutual
     remove-from-free' : varname → eexp → List varname
     remove-from-free' x e = remove-all natEQ (free-vars e) x
@@ -868,29 +861,25 @@ module core where
   -- this is the decoding function, so half the iso. this won't work long term
   postulate
     _↑_ : iexp → eexp → Set
-    _↓_ : eexp → iexp → Set -- not used (todo so why have it?)
+    _↓_ : eexp → iexp → Set
     iso : Set
     Exp : typ
 
--- naming conventions:
---
--- type contexts, tctx, are named Γ (because they always are)
--- hole contextst, ??, are named Δ
--- livelit contexts (TODO  name?), ?? (todo rename), are named ??
---
--- types, typ, are named τ
--- unexpanded expressions, uexp, are named ê (for "_e_xpression but also following the POPL17 notation)
--- expanded expressions, eexp, are named e (for "_e_xpression")
--- internal expressions, iexp, are named d (because they have a _d_ynamics)
--- splices, ??, are named ψ
+  -- naming conventions:
+  --
+  -- types, typ, are named τ
+  -- unexpanded expressions, uexp, are named ê (for "_e_xpression)
+  -- expanded expressions, eexp, are named e (for "_e_xpression")
+  -- internal expressions, iexp, are named d (because they have a _d_ynamics)
+  -- splices, ??, are named ψ
 
-  -- function-like livelit context well-formedness -- TODO delete this entirely?
+  -- function-like livelit context well-formedness
   mutual
     livelitctx = Σ[ Φ' ∈ livelitdef ctx ] (Φ' livelitctx')
 
     data _livelitctx' : (Φ' : livelitdef ctx) → Set where
       PhiWFEmpty     : ∅ livelitctx'
-      PhiWFMac       : ∀{a π} → --todo what should π be?
+      PhiWFMac       : ∀{a π} →
                            (Φ : livelitctx) →
                            a # π1 Φ →
                            (π1 Φ ,, (a , π)) livelitctx'
@@ -907,7 +896,7 @@ module core where
                  livelitctx
   Φ ,, a :: π ⦅given #h ⦆ = ((Φ)₁ ,, (a , π) , PhiWFMac Φ #h)
 
-  -- livelit expansion -- todo, should this be called elaboration?
+  -- livelit expansion
   mutual
     data _,_⊢_~~>_⇒_ : (Φ : livelitctx) →
                        (Γ : tctx) →

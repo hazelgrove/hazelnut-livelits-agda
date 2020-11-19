@@ -1,11 +1,6 @@
 # hazel-livelits-agda
-This repository is the mechanization of our ongoing work on livelits. The
-starting point is the dynamics developed in our in our [POPL19
-paper](https://arxiv.org/pdf/1805.00155), mechanized
-[here](https://github.com/hazelgrove/hazelnut-dynamics-agda). This
-mechanization is paired with [this
-paper](https://github.com/hazelgrove/livelits-paper), which is in submission
-to [POPL21](https://popl21.sigplan.org/).
+This repository is the mechanization of our ongoing work on livelits,
+supporting our submission to PLDI 2021.
 
 # How To Check These Proofs
 
@@ -45,9 +40,3 @@ instead a Docker container instead of your host machine, so you can
 experiment with or evolve this code without making too much of a mess. For
 some example instructions, see [the docker-agda
 repo](https://github.com/banacorn/docker-agda).
-
-# How To Connect The Paper To This Mechanization
-
-* elaboration @ core TODO in `_⊢_⇒_~>_⊣_`
-
-*
