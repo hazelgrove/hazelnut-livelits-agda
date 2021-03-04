@@ -162,8 +162,9 @@ Section 4 can be found as follows:
 * The contents of Figure 5 can be found in
   [core.agda:903-973](core.agda#L903-L973).
 
-* Definition 4.3, "", is given in a functional style rather than a
-  declarative one at [core.agda:880-889](core.agda#L880-L889).
+* Definition 4.3, "Livelit Context Well-Formedness", is given in a
+  functional style rather than a declarative one at
+  [core.agda:880-889](core.agda#L880-L889).
 
 * The rule `EApLiveLit` discussed at length in Section 4.2.2 is given by
   `SPEApLivelit` at [core.agda:947-956](core.agda#L947-L956).
