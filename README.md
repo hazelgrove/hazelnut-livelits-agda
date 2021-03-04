@@ -161,7 +161,8 @@ Section 4 can be found as follows:
 * The rule `EApLiveLit` discussed at length in Section 4.2.2 is given by
   `SPEApLivelit` at [core.agda:947-956](core.agda#L947-L956).
 
-* Theorem 4.4, "Typed Expansion", is proven in `XXXX`
+* Theorem 4.4, "Typed Expansion", is proven in
+  [typed-expansion.agda](typed-expansion.agda).
 
 `all.agda` acts a bit like an ad hoc `Makefile` in that it imports every
 other file in the repository; running `agda all.agda` and not getting any
