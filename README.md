@@ -31,8 +31,10 @@ machine. Then, at a command line inside that clone, run
 docker build -t hazel-livelit .
 ```
 
-This may take a fair amount of time as Docker installs Agda on top of a
-base Ubuntu image (something like 200 sec). When it finishes, run
+The first time you run this it may take a fair amount of time as Docker
+installs Agda on top of a base Ubuntu image (something like 200 sec), but
+subsequent runs after small changes to the Agda files will be much
+faster. When it finishes, run
 
 ```
 docker run hazel-livelit
@@ -40,6 +42,11 @@ docker run hazel-livelit
 
 This should take less than a minute, produce a line of output per agda file
 as Agda checks each module, and then exit without producing an error.
+
+Note that the `docker build` command copies the files from your host
+machine into the virtual one, so if you modify them and then just rerun the
+`docker run` command without rerunning `docker build`, you will be checking
+stale files.
 
 Example output of each of these two steps is shown here, although the exact
 output may differ on your machine slightly:
@@ -118,7 +125,7 @@ Checking all (/all.agda).
  Checking complete-progress (/complete-progress.agda).
  Checking contraction (/contraction.agda).
  Checking continuity (/continuity.agda).
- Checking typed-livelit-elaboration (/typed-livelit-elaboration.agda).
+ Checking typed-expansion (/typed-expansion.agda).
  Checking lemmas-freevars (/lemmas-freevars.agda).
  Checking livelit-reasoning-principles (/livelit-reasoning-principles.agda).
 pldi@bruce hazelnut-livelits-agda %
