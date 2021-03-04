@@ -1,11 +1,11 @@
 # start from a known base ubuntu image
-from ubuntu:focal
+from ubuntu:groovy
 
 # update the apt repo
 run apt-get -qy update
 
 #install agda
-run apt-get -qy install agda=2.6.0.1-1build4
+run apt-get -qy install agda=2.6.1-1build1
 
 # copy over everything in the current directory
 copy . .
