@@ -155,7 +155,12 @@ Section 4 can be found as follows:
   types in the mechanization is `⊗` rather than `×` and that sums and
   recursive types are not present in the mechanization. It would be
   straightforward to add them, but doing so would only make the
-  mechanization larger not more instructive so we have omitted them here.
+  mechanization larger not more instructive so we have omitted them
+  here. Sums and recursive types are included in the paper since they would
+  be required to encode the syntax in the language in the standard way; in
+  the mechanization we instead postulate that such an encoding exists to be
+  able to state the rules that mention it without proving anything about it
+  explictly.
 
 * Theorem 4.1, "Typed Elaboration", is proven in
   [typed-elaboration.agda](typed-elaboration.agda).
