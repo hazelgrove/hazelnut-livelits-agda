@@ -146,18 +146,29 @@ repo](https://github.com/banacorn/docker-agda).
 
 # How To Connect The Paper To This Mechanization
 
-Genearlly, files are named after the theorems that they prove. In
+Generally, files are named after the theorems that they prove. In
 particular, the theorems, figures, and definitions mentioned explicitly in
 Section 4 can be found as follows:
 
 * The contents of Figure 4 can be found in
-  [core.agda:7-107](core.agda#L7-L107).
+  [core.agda:7-107](core.agda#L7-L107). Note that the notation for product
+  types in the mechanization is `⊗` rather than `×` and that sums and
+  recursive types are not present in the mechanization. It would be
+  straightforward to add them, but doing so would only make the
+  mechanization larger not more instructive so we have omitted them
+  here. Sums and recursive types are included in the paper since they would
+  be required to encode the syntax in the language in the standard way; in
+  the mechanization we instead postulate that such an encoding exists to be
+  able to state the rules that mention it without proving anything about it
+  explictly.
 
 * Theorem 4.1, "Typed Elaboration", is proven in
   [typed-elaboration.agda](typed-elaboration.agda).
 
 * Theorem 4.2, "Preservation", is proven in
-  [preservation.agda](preservation.agda).
+  [preservation.agda](preservation.agda). `d final` is given at
+  [core.agda:536-538](core.agda#L536-L538) and `d1 ⇓ d2` is given at
+  [core.agda:859-860](core.agda#L859-L860).
 
 * The contents of Figure 5 can be found in
   [core.agda:903-973](core.agda#L903-L973).
@@ -172,6 +183,9 @@ Section 4 can be found as follows:
 * Theorem 4.4, "Typed Expansion", is proven in
   [typed-expansion.agda](typed-expansion.agda).
 
+Note that, as stated in the paper, the theorems and definitions past
+Theorem 4.4 are not currently mechanized.
+
 `all.agda` acts a bit like an ad hoc `Makefile` in that it imports every
 other file in the repository; running `agda all.agda` and not getting any
 errors shows that everything checks as written.
@@ -181,5 +195,5 @@ helper theorems that, while true and required, are more technical in nature
 than particularly interesting. `Prelude.agda` contains shorthand and
 idiomatic notation specific to this development; `List.agda` and `Nat.agda`
 are similar but define the standard types for lists and unary
-naturals. This was done to avoid dependancy on a particular version of any
+naturals. This was done to avoid dependency on a particular version of any
 one standard library or another, since the things we need are modest.
